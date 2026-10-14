@@ -1,0 +1,39 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+!.env.prod.example
+
+# Temporary bundles copied out of build output
+.dist-stage/
+
+# Python exporter caches
+__pycache__/
+*.py[cod]
+
+# Turborepo task cache
+.turbo/
+
+.next/
+apps/game/public/chibi-assets/
+apps/game/src/assets/generated-assets.ts
+apps/game/src/assets/generated-map-assets.ts
+apps/game/src/assets/generated-sprite-sources.ts
+apps/game/src/assets/generated-styles.ts
+*.tsbuildinfo
+
+apps/game/next-env.d.ts
+
+# Intermediate PNG slices; runtime assets are selected WebP derivatives.
+tools/.farm-export/
+apps/api/.data/
+
+# Local pnpm store some tools create inside the repository
+.pnpm-store/
+
+# Production secrets and image archives
+deploy/.env.prod
+*.tar.gz

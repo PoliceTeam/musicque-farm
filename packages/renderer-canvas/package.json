@@ -1,0 +1,28 @@
+{
+  "name": "@chibi-town/renderer-canvas",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./canvas-provider": {
+      "types": "./dist/canvas-provider.d.ts",
+      "default": "./dist/canvas-provider.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check . --formatter-enabled=false"
+  },
+  "dependencies": {
+    "@chibi-town/character-core": "workspace:*",
+    "@chibi-town/render-contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

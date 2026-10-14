@@ -1,0 +1,1349 @@
+/* Chibi Town shared game skin. Layout and gameplay stay in each screen. */
+.game-ui,
+.game-ui * {
+  box-sizing: border-box;
+}
+.game-ui {
+  --ui-space-1: 8px;
+  --ui-space-2: 16px;
+  --ui-space-3: 24px;
+  --ui-control-height: 44px;
+  --ui-paper: #fff7e5;
+  --ui-paper-deep: #f0dfb9;
+  --ui-ink: #59452f;
+  --ui-muted: #6f604c;
+  --ui-border: #ad8b58;
+  --ui-green: #5e7e45;
+  --ui-green-dark: #506e38;
+  --ui-gold: #ffe3a1;
+  --bg: #f4edda;
+  --surface: var(--ui-paper);
+  --border: #d1bc94;
+  --text: var(--ui-ink);
+  --muted: var(--ui-muted);
+  --accent: var(--ui-green-dark);
+  --accent-text: #fffbea;
+  font-family: "Trebuchet MS", system-ui, sans-serif;
+}
+.game-ui button,
+.game-ui summary,
+.game-ui select,
+.game-ui .ui-form-field :is(input:not([type="range"]), textarea),
+.game-ui .header-actions a,
+.game-ui .enter-zone {
+  font-family: inherit;
+  font-weight: 800;
+  border: 2px solid var(--ui-border);
+  border-radius: 10px;
+  background: linear-gradient(#fffbea, #f4e6c7);
+  color: var(--ui-ink);
+  box-shadow:
+    inset 0 1px #ffffffb0,
+    0 2px #8a6b4555;
+  transition:
+    filter 100ms ease,
+    box-shadow 100ms ease;
+}
+.game-ui button:hover:enabled,
+.game-ui summary:hover,
+.game-ui .header-actions a:hover {
+  filter: brightness(1.04);
+}
+.game-ui button:active:enabled,
+.game-ui summary:active {
+  box-shadow: inset 0 2px 3px #725a3528;
+}
+.game-ui button:disabled {
+  background: #e8dfcc;
+  color: #675944;
+  border-color: #cebea0;
+  box-shadow: none;
+  cursor: default;
+}
+.game-ui button:focus-visible,
+.game-ui summary:focus-visible,
+.game-ui a:focus-visible,
+.game-ui select:focus-visible {
+  outline: 3px solid #966b1f;
+  outline-offset: 3px;
+}
+.game-ui button[aria-pressed="true"],
+.game-ui button[aria-selected="true"] {
+  background: var(--ui-gold);
+  border-color: #926b28;
+  color: var(--ui-ink);
+}
+.game-ui :is(.panel, .map-panel, .time-popover, .farm-selection, .farm-menu nav, dialog, #warehouse, #batch) {
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  border: 2px solid var(--ui-border);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px #fffdf5,
+    0 4px #8a6b4550,
+    0 8px 24px #263a3025;
+}
+.game-ui :is(.panel, .map-panel, .farm-selection, dialog) h2 {
+  color: var(--ui-ink);
+}
+.game-ui :is(.map-panel, .farm-selection, dialog) p,
+.game-ui :is(.map-panel, .farm-selection, dialog) small {
+  color: var(--ui-muted);
+}
+.game-ui :is(.farm-tools button, button.primary, .enter-zone),
+.game-ui :is(#unit-expand, #unit-feed, #unit-buy, #unit-collect) {
+  background: linear-gradient(#56783f, #446631);
+  color: #fffbea;
+  border-color: var(--ui-green-dark);
+  box-shadow:
+    inset 0 1px #b9ce9690,
+    0 3px #4d6b3655;
+}
+.game-ui :is(.farm-tools button, #unit-expand, #unit-feed, #unit-buy, #unit-collect):disabled {
+  background: #e8dfcc;
+  color: #675944;
+  border-color: #cebea0;
+  box-shadow: none;
+}
+.game-ui .farm-menu :is(button, a) {
+  border: 0;
+  box-shadow: none;
+  background: none;
+  color: var(--ui-ink);
+}
+.game-ui .farm-menu :is(button, a):hover {
+  background: #e9eccd;
+}
+.game-ui :is(.farm-title, .farm-capacity) {
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  border-color: var(--ui-border);
+}
+.game-ui .warehouse-tabs [aria-pressed="true"] {
+  background: var(--ui-gold);
+  border-color: #926b28;
+}
+.game-ui .stock-slot {
+  background: #eee5ce;
+  border-radius: 10px;
+}
+.game-ui .stock-slot.active {
+  background: #fff5d5;
+  border-color: #926b28;
+}
+.game-ui .world-header,
+.game-ui .world-footer {
+  background: linear-gradient(#fff6e1f5, #eaddbcf5);
+  color: var(--ui-ink);
+  border-color: var(--ui-border);
+}
+.game-ui .town-brand,
+.game-ui .world-status,
+.game-ui .footer-caption,
+.game-ui .footer-heading .eyebrow {
+  color: var(--ui-ink);
+}
+.game-ui .town-brand small,
+.game-ui .zone-directory small,
+.game-ui .time-settings small {
+  color: var(--ui-muted);
+}
+.game-ui .time-settings summary {
+  color: var(--ui-ink);
+}
+.game-ui .zone-directory button {
+  color: var(--ui-ink);
+}
+.game-ui .brand-emblem,
+.game-ui .zone-icon {
+  background: #eadbb8;
+}
+.game-ui #warehouse-detail {
+  min-height: 44px;
+}
+.game-ui #warehouse .warehouse-actions {
+  min-height: 52px;
+}
+.game-ui .ui-audio-settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+}
+.game-ui .ui-audio-settings label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-ui button,
+  .game-ui summary {
+    transition: none;
+  }
+}
+.game-ui .world-shell > .time-tools .time-settings summary {
+  background: linear-gradient(#fffbea, #f4e6c7);
+  color: var(--ui-ink);
+  border: 2px solid var(--ui-border);
+}
+.game-ui .world-shell > .time-tools .time-settings small {
+  color: var(--ui-muted);
+}
+.game-ui .ui-audio-settings-panel summary {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.game-ui .ui-audio-settings input {
+  accent-color: var(--ui-green-dark);
+  max-width: 140px;
+}
+
+/* Shared component layout: screens supply content, never a second skin. */
+.game-ui dialog {
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 20px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.game-ui dialog::backdrop {
+  background: #26342580;
+}
+.game-ui dialog header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.game-ui dialog h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.game-ui dialog header button {
+  min-width: 44px;
+  flex-shrink: 0;
+}
+.game-ui :is(button, summary, select, .map-tools a) {
+  min-height: 44px;
+}
+.game-ui :is(dialog button, .ui-actions button) {
+  padding: 10px 14px;
+}
+.game-ui .ui-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.game-ui .ui-actions button {
+  flex: 1;
+}
+.game-ui .ui-facts {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--ui-paper-deep);
+}
+.game-ui .ui-facts:empty {
+  display: none;
+}
+.game-ui .ui-facts :is(dt, dd) {
+  margin: 0;
+}
+.game-ui .ui-facts dd {
+  font-weight: 800;
+  text-align: right;
+}
+.game-ui .ui-notices {
+  position: fixed;
+  z-index: 20;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, calc(100vw - 24px));
+  pointer-events: none;
+}
+.game-ui .ui-notice {
+  margin: 8px 0;
+  padding: 12px 16px;
+  border: 2px solid var(--ui-border);
+  border-radius: 12px;
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  box-shadow: 0 4px 12px #26342530;
+  font-size: 14px;
+}
+.game-ui .ui-notice-success {
+  border-color: var(--ui-green-dark);
+}
+.game-ui .ui-notice-error {
+  border-color: #b35c40;
+  background: #fff0df;
+}
+.game-ui .ui-meter {
+  margin: 12px 0;
+}
+.game-ui .ui-meter-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--ui-ink);
+  margin-bottom: 5px;
+}
+.game-ui .ui-meter progress {
+  display: block;
+  width: 100%;
+  height: 10px;
+  border: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #dfd2b6;
+  accent-color: var(--ui-green);
+}
+.game-ui .ui-meter progress::-webkit-progress-bar {
+  background: #dfd2b6;
+  border-radius: 8px;
+}
+.game-ui .ui-meter progress::-webkit-progress-value {
+  background: var(--ui-green);
+  border-radius: 8px;
+}
+.game-ui .stock-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+}
+.game-ui .stock-slot img {
+  width: 100%;
+  height: 100%;
+  max-width: 48px;
+  max-height: 48px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.game-ui .stock-slot b {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 12px;
+  color: var(--ui-ink);
+}
+.game-ui .farm-menu nav {
+  max-height: calc(100dvh - 88px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  width: min(280px, calc(100vw - 28px));
+}
+.game-ui .farm-menu p {
+  color: var(--ui-muted);
+}
+.game-ui .farm-selection {
+  max-height: calc(100dvh - 88px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.game-ui .farm-title {
+  outline: none;
+}
+.game-ui .map-tools a {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  border: 2px solid var(--ui-border);
+  border-radius: 10px;
+}
+.game-ui .map-hint {
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  border-color: var(--ui-border);
+}
+.game-ui [aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.7;
+}
+@media (max-width: 600px) {
+  .game-ui dialog {
+    padding: 14px;
+  }
+  .game-ui :is(#warehouse-grid, .preview-grid) {
+    gap: 5px;
+  }
+  .game-ui .farm-title {
+    min-width: 0;
+    padding: 8px 12px;
+    font-size: 14px;
+    left: 46%;
+  }
+  .game-ui .farm-capacity {
+    padding: 8px;
+    gap: 5px;
+    font-size: 11px;
+  }
+  .game-ui .ui-facts {
+    font-size: 13px;
+  }
+  .game-ui .ui-audio-settings {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .game-ui .ui-audio-settings label {
+    justify-content: space-between;
+  }
+}
+.game-ui.farm-style-sample .farm-selection header button {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 2px solid var(--ui-border);
+  background: linear-gradient(#fffbea, #f4e6c7);
+  color: var(--ui-ink);
+}
+.game-ui.farm-style-sample .farm-selection :is(p, small) {
+  color: var(--ui-muted);
+}
+.game-ui #selection-meters {
+  padding: 0 10px;
+}
+@media (max-width: 600px) {
+  .game-ui.farm-style-sample .farm-title {
+    min-width: 0;
+    left: 46%;
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+
+.game-ui button:disabled {
+  opacity: 1;
+}
+.game-ui button.primary:disabled {
+  background: #e8dfcc;
+  color: #675944;
+  border-color: #cebea0;
+  box-shadow: none;
+}
+.game-ui .close-selection {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+}
+.game-ui .coming-soon {
+  color: var(--ui-muted);
+}
+/* Compact in-game HUD; the avatar owns the action dropdown. */
+.game-ui .ui-game-header {
+  position: fixed;
+  z-index: 4;
+  inset: 16px 16px auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  pointer-events: none;
+}
+.game-ui .ui-game-header > * {
+  pointer-events: auto;
+}
+.game-ui .ui-game-header .farm-menu {
+  position: relative;
+  top: auto;
+  left: auto;
+  flex: 0 0 auto;
+}
+.game-ui .ui-profile-menu summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 8px;
+  min-width: 224px;
+  list-style: none;
+}
+.game-ui .ui-profile-menu summary::-webkit-details-marker {
+  display: none;
+}
+.game-ui #player-portrait {
+  width: 52px;
+  height: 52px;
+  border-radius: 9px;
+  border: 2px solid var(--ui-border);
+  background: #dce7b7;
+  image-rendering: pixelated;
+}
+.game-ui .ui-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  line-height: 1.4;
+  text-align: left;
+}
+.game-ui .ui-profile-info strong {
+  font-size: 15px;
+}
+.game-ui .ui-profile-info > span {
+  font-size: 12px;
+  color: var(--ui-muted);
+}
+.game-ui .ui-profile-chevron {
+  margin-left: auto;
+  color: var(--ui-muted);
+}
+.game-ui .ui-game-header .farm-title {
+  text-align: center;
+  position: static;
+  transform: none;
+  margin: 0 auto;
+  min-width: 150px;
+  font-size: 16px;
+  border-radius: 14px;
+  padding: 13px 20px;
+}
+.game-ui .ui-game-header .farm-capacity {
+  position: static;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: none;
+}
+/* HUD counters are informational, not purchase buttons. */
+.game-ui .ui-currency,
+.game-ui .ui-land-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 6px 14px 6px 8px;
+  border: 2px solid #789796;
+  border-radius: 12px;
+  background: linear-gradient(#345966, #203e4b);
+  color: #fffbea;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow:
+    inset 0 1px #ffffff30,
+    0 3px #18303970;
+}
+.game-ui .ui-currency-icon {
+  display: flex;
+  flex: 0 0 28px;
+}
+.game-ui .ui-currency svg {
+  width: 28px;
+  height: 28px;
+}
+.game-ui .ui-land-count {
+  padding: 6px 14px;
+  border-color: #9aaf73;
+  background: linear-gradient(#5b783c, #3e582a);
+}
+@media (max-width: 700px) {
+  .game-ui .ui-game-header {
+    inset: 8px 8px auto;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .game-ui .ui-profile-menu summary {
+    min-width: 190px;
+  }
+  .game-ui .ui-game-header .farm-title {
+    min-width: 0;
+    padding: 14px 10px;
+    font-size: 13px;
+    margin: 0 0 0 auto;
+  }
+  .game-ui .ui-game-header .farm-capacity {
+    width: 100%;
+    gap: 6px;
+  }
+  .game-ui .ui-currency {
+    font-size: 12px;
+    height: 44px;
+    padding: 6px 10px 6px 6px;
+  }
+  .game-ui .ui-currency svg {
+    width: 24px;
+    height: 24px;
+  }
+  .game-ui .ui-profile-menu nav {
+    position: absolute;
+    width: min(290px, calc(100vw - 16px));
+    z-index: 5;
+  }
+  .game-ui .ui-notices {
+    top: 125px;
+  }
+}
+.game-ui .ui-profile-menu nav {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: min(280px, calc(100vw - 24px));
+  margin-top: 8px;
+  z-index: 5;
+}
+.game-ui .ui-profile-menu nav a {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+/* Text and controls must remain legible over the shared cream surfaces. */
+.game-ui {
+  line-height: 1.45;
+}
+.game-ui :is(.time-popover, .ui-audio-settings-panel) :is(p, small, output, label) {
+  color: var(--ui-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.game-ui .world-shell > .time-tools .time-popover {
+  width: 360px;
+  max-height: calc(100dvh - 100px);
+  overflow: auto;
+  padding: 16px;
+}
+.game-ui .world-shell > .time-tools .time-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.game-ui .time-presets button {
+  min-width: 0;
+  padding: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.game-ui .time-popover label {
+  margin-top: 16px;
+  gap: 8px;
+}
+.game-ui .time-popover p {
+  margin: 12px 0 16px;
+}
+.game-ui .world-shell > .time-tools .time-settings output {
+  color: var(--ui-ink);
+}
+.game-ui .ui-audio-settings-panel {
+  margin-top: 16px;
+}
+.game-ui .ui-audio-settings-panel > summary {
+  font-size: 14px;
+  padding: 10px 12px;
+}
+.game-ui .ui-audio-settings {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  padding: 14px 0 0;
+}
+.game-ui .ui-audio-settings label {
+  display: grid;
+  margin: 0;
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 12px;
+  font-size: 13px;
+}
+.game-ui .ui-audio-settings input {
+  max-width: none;
+  width: 100%;
+}
+.game-ui input[type="range"] {
+  min-height: 32px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--ui-green-dark);
+}
+.game-ui input:focus-visible {
+  outline: 3px solid #966b1f;
+  outline-offset: 3px;
+}
+.game-ui dialog header {
+  margin-bottom: 16px;
+}
+.game-ui :is(dialog, .farm-selection, .map-panel) p {
+  line-height: 1.55;
+}
+.game-ui :is(.farm-tools, .warehouse-actions) {
+  gap: 10px;
+}
+.game-ui .ui-meter-label,
+.game-ui .ui-profile-info > span {
+  font-size: 12px;
+}
+.game-ui :is(.farm-menu nav button, .farm-menu nav a) {
+  padding: 10px 12px;
+  line-height: 1.4;
+}
+
+.game-ui.farm-style-sample .farm-selection :is(button, select, p) {
+  font-size: 13px;
+}
+.game-ui.farm-style-sample .farm-selection small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.game-ui.farm-style-sample .farm-tools button span {
+  font-size: 12px;
+  opacity: 1;
+}
+/* Shared form and panel rhythm: 8px within controls, 16px between groups. */
+.game-ui .ui-button,
+.game-ui.farm-style-sample .farm-selection .ui-button {
+  min-height: var(--ui-control-height);
+  padding: 10px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.game-ui .ui-icon-button,
+.game-ui.farm-style-sample .farm-selection .ui-icon-button {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  flex: 0 0 44px;
+  font-size: 22px;
+}
+.game-ui .ui-form-field {
+  display: grid;
+  gap: var(--ui-space-1);
+  margin: 0;
+  min-width: 0;
+  color: var(--ui-ink);
+  font-size: 14px;
+}
+.game-ui .ui-form-label {
+  font-weight: 800;
+  line-height: 1.4;
+}
+.game-ui .ui-form-field :is(select, input:not([type="range"]), textarea) {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--ui-control-height);
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.game-ui .ui-stack,
+.game-ui .ui-section,
+.game-ui .ui-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-2);
+  min-width: 0;
+}
+.game-ui .ui-section {
+  padding: 16px;
+  border: 1px solid #d6c49c;
+  border-radius: 12px;
+  background: #fffaf0;
+  gap: 12px;
+}
+.game-ui .ui-section h3 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.game-ui .ui-section > .ui-button {
+  width: 100%;
+}
+.game-ui .ui-section .warehouse-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.game-ui .ui-section .warehouse-actions > :only-child {
+  grid-column: 1 / -1;
+}
+.game-ui.farm-style-sample .farm-selection {
+  padding: 0;
+  width: min(390px, calc(100vw - 32px));
+  max-height: calc(100dvh - 132px);
+}
+.game-ui.farm-style-sample .farm-selection header {
+  padding: 12px 16px;
+  gap: 16px;
+  margin: 0;
+  border-bottom: 1px solid #d6c49c;
+  background: #f4e8cc;
+}
+.game-ui.farm-style-sample .farm-selection h2 {
+  font-size: 16px;
+  line-height: 1.4;
+}
+.game-ui .ui-panel-body {
+  padding: 16px;
+}
+.game-ui.farm-style-sample .ui-panel-body p {
+  margin: 0;
+  line-height: 1.6;
+}
+.game-ui.farm-style-sample .ui-panel-body .farm-tools {
+  padding: 0;
+}
+.game-ui.farm-style-sample .ui-panel-body .farm-tools .ui-button {
+  width: 100%;
+}
+.game-ui .ui-purchase-section {
+  background: #f4f5e8;
+  border-color: #c8d0ac;
+}
+@media (max-width: 700px) {
+  .game-ui .ui-profile-menu summary {
+    min-width: 180px;
+  }
+  .game-ui #player-portrait {
+    width: 44px;
+    height: 44px;
+  }
+  .game-ui .ui-game-header .farm-capacity {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .game-ui .ui-currency,
+  .game-ui .ui-land-count {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+  .game-ui.farm-style-sample .farm-selection {
+    max-height: calc(100dvh - 160px);
+  }
+}
+.game-ui .ui-game-header .farm-capacity :is(.ui-currency-value, .ui-land-count) {
+  color: #fffbea;
+  font-size: 14px;
+  font-weight: 800;
+}
+@media (max-width: 700px) {
+  .game-ui .ui-game-header .farm-capacity :is(.ui-currency-value, .ui-land-count) {
+    font-size: 12px;
+  }
+}
+.game-ui .ui-section :is(.ui-meter, .warehouse-actions) {
+  margin: 0;
+}
+.game-ui .ui-button:disabled,
+.game-ui.farm-style-sample .farm-selection .ui-button:disabled {
+  background: #ece5d5;
+  color: #776c59;
+  border-color: #ccbea3;
+  box-shadow: none;
+  cursor: default;
+}
+/* Grid tracks may shrink; item hit targets stay usable on narrow screens. */
+.game-ui #warehouse .ui-inventory-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.game-ui #warehouse .stock-slot {
+  min-width: 0;
+  padding: 8px;
+}
+.game-ui dialog header .ui-icon-button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+}
+@media (max-width: 540px) {
+  .game-ui #warehouse .ui-inventory-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.game-ui .farm-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.game-ui .farm-quick-actions .ui-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  padding: 16px;
+  min-height: 96px;
+}
+.game-ui .farm-quick-actions span {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.game-ui .ui-section > p {
+  margin: 0;
+}
+
+/* Shared empty states keep blank panels purposeful and visually consistent. */
+.game-ui .ui-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 20px;
+  min-height: 220px;
+  text-align: center;
+  border: 1px dashed #c9b787;
+  border-radius: 16px;
+  background: #faf4e4;
+}
+.game-ui .ui-empty-state-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  color: #58753c;
+  background: #e7ebd3;
+}
+.game-ui .ui-empty-state h3 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ui-ink);
+}
+.game-ui .ui-empty-state p {
+  margin: 0;
+  max-width: 38ch;
+  line-height: 1.65;
+  color: #695a42;
+}
+.game-ui .farm-crop-selector {
+  gap: 16px;
+}
+.game-ui .farm-crop-details {
+  display: grid;
+  gap: 8px;
+}
+.game-ui .farm-crop-details p {
+  margin: 0;
+}
+.game-ui .farm-crop-selector select:focus-visible {
+  outline: 2px solid #95702f;
+  outline-offset: 3px;
+}
+
+.game-ui .farm-selection > header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.game-ui dialog > header {
+  position: sticky;
+  top: -18px;
+  z-index: 1;
+  background: var(--ui-paper);
+  padding: 8px 0;
+}
+
+/* Farm tool buttons use the same readable primary treatment as shared dialogs. */
+.game-ui.farm-style-sample .farm-tools .ui-button.primary:enabled {
+  background: linear-gradient(#56783f, #446631);
+  color: #fffbea;
+  border: 2px solid var(--ui-green-dark);
+}
+
+/* Folder tabs and compact inventory: content determines height. */
+.game-ui #warehouse {
+  height: fit-content;
+  max-height: calc(100dvh - 32px);
+}
+.game-ui .warehouse-folder {
+  margin-top: 16px;
+}
+.game-ui .ui-folder-tabs {
+  gap: 4px;
+  margin: 0 0 -2px;
+  position: relative;
+  z-index: 1;
+  align-items: flex-end;
+}
+.game-ui .ui-folder-tabs .ui-button {
+  border-radius: 12px 12px 0 0;
+  box-shadow: none;
+  border: 2px solid var(--ui-border);
+  border-bottom-color: var(--ui-border);
+  background: #e9dfc4;
+  padding: 12px 16px;
+}
+.game-ui .ui-folder-tabs .ui-button[aria-selected="true"] {
+  background: var(--ui-paper);
+  border-bottom-color: var(--ui-paper);
+  color: var(--ui-ink);
+}
+.game-ui .warehouse-folder-body {
+  border: 2px solid var(--ui-border);
+  background: #fffaf0;
+  border-radius: 0 12px 12px 12px;
+  padding: 16px;
+}
+.game-ui .warehouse-content {
+  min-height: 0;
+}
+.game-ui .warehouse-content .ui-empty-state {
+  min-height: 180px;
+}
+.game-ui #warehouse-detail {
+  min-height: 0;
+  margin: 16px 0 12px;
+}
+.game-ui #warehouse .warehouse-actions {
+  min-height: 0;
+  margin: 0;
+}
+.game-ui .kitchen-recipes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.game-ui .kitchen-recipes .ui-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 4px;
+  font-size: 12px;
+  min-height: 88px;
+}
+.game-ui .kitchen-dish-icon {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+.game-ui #kitchen h3:has(.kitchen-dish-icon) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.game-ui #kitchen .kitchen-recipe-detail {
+  margin: 16px 0 0;
+  padding: 16px;
+}
+.game-ui #kitchen .kitchen-recipe-detail p {
+  margin: 0;
+}
+.game-ui #kitchen .kitchen-recipe-detail ul {
+  margin: 0;
+  padding-left: 20px;
+}
+@media (max-width: 480px) {
+  .game-ui .kitchen-recipes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-height: 240px;
+  }
+  .game-ui .warehouse-folder-body {
+    padding: 12px;
+  }
+}
+
+.game-ui .kitchen-recipes {
+  margin: 0;
+  border: 0;
+  min-width: 0;
+}
+
+/* In a tabbed dialog, the tabs form the upper edge of the modal itself. */
+.game-ui :is(dialog.ui-tab-dialog, #warehouse.ui-tab-dialog) {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  height: fit-content;
+  max-height: calc(100dvh - 32px);
+}
+.game-ui .ui-tab-dialog > .ui-folder-tabs {
+  margin: 0 0 -2px;
+  padding: 0;
+}
+.game-ui .ui-dialog-surface {
+  border: 2px solid var(--ui-border);
+  border-radius: 0 16px 16px 16px;
+  background: var(--ui-paper);
+  padding: 20px;
+  box-shadow:
+    0 4px #8a6b4550,
+    0 8px 24px #263a3025;
+  max-height: calc(100dvh - 88px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.game-ui .ui-tab-dialog .warehouse-folder-body {
+  border: 0;
+  padding: 0;
+  margin-top: 16px;
+  background: transparent;
+}
+.game-ui .ui-tab-dialog .ui-dialog-surface > header {
+  margin-bottom: 16px;
+}
+
+/* Location headers use the same title plate without depending on farm CSS. */
+.game-ui .ui-location-layout .ui-game-header .farm-title,
+.ui-location-layout .ui-game-header .farm-title {
+  border: 2px solid var(--ui-border);
+  box-shadow:
+    0 3px #8a6a47,
+    inset 0 2px #fffaf0;
+}
+.ui-location-layout .ui-profile-menu nav {
+  padding: 6px;
+}
+.ui-location-layout .ui-profile-menu nav :is(a, button, summary) {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  box-shadow: none;
+  text-align: left;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+}
+.ui-location-layout .ui-profile-menu nav summary:hover {
+  background: #e9eccd;
+}
+
+/* Modal chrome stays in place; only the shared content region scrolls. */
+.game-ui dialog.ui-modal[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+}
+.game-ui dialog.ui-modal > .ui-dialog-header,
+.game-ui .ui-dialog-surface > .ui-dialog-header {
+  position: static;
+  margin: 0;
+  padding: 0 0 16px;
+  background: var(--ui-paper);
+}
+.game-ui .ui-dialog-body {
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 6px 2px 0;
+  scrollbar-width: thin;
+  scrollbar-color: #bda781 transparent;
+}
+.game-ui .ui-dialog-body::-webkit-scrollbar {
+  width: 6px;
+}
+.game-ui .ui-dialog-body::-webkit-scrollbar-thumb {
+  background: #bda781;
+  border-radius: 8px;
+}
+.game-ui .ui-dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 16px 0 0;
+  background: var(--ui-paper);
+}
+.game-ui dialog.ui-tab-dialog[open] {
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: visible;
+}
+.game-ui .ui-tab-dialog .ui-dialog-surface {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+}
+.game-ui .ui-dialog-body .warehouse-content,
+.game-ui .ui-dialog-body .warehouse-content .ui-inventory-grid {
+  max-height: none;
+  overflow: visible;
+}
+.game-ui .warehouse-footer {
+  width: 100%;
+}
+.game-ui .warehouse-footer > .ui-button {
+  margin-top: 12px;
+}
+
+/* Profile actions form compact rows rather than oversized, uneven menu blocks. */
+.ui-location-layout .ui-profile-menu > nav {
+  width: min(250px, calc(100vw - 32px));
+  padding: 6px;
+}
+.ui-location-layout .ui-profile-menu > nav > :is(a, button),
+.ui-location-layout .ui-profile-menu > nav > .ui-audio-settings-panel > summary {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  margin: 0;
+  padding: 8px 12px;
+  line-height: 1.4;
+  font-size: 13px;
+}
+.ui-location-layout .ui-profile-menu > nav > .ui-audio-settings-panel {
+  margin: 0;
+  border-top: 1px solid #d9c9a7;
+}
+.ui-location-layout .ui-profile-menu[open] > summary {
+  outline: none;
+}
+.ui-location-layout .ui-profile-menu[open] > summary:focus-visible {
+  outline: 3px solid #966b1f;
+  outline-offset: 3px;
+}
+.ui-location-layout .ui-profile-menu .ui-menu-value {
+  margin-left: auto;
+  padding: 3px 7px;
+  border-radius: 6px;
+  color: #526c3c;
+  background: #e8edda;
+  font-size: 11px;
+}
+.ui-location-layout .ui-profile-menu .ui-audio-settings-panel > summary::after {
+  content: "›";
+  margin-left: auto;
+  font-size: 18px;
+}
+.ui-location-layout .ui-profile-menu .ui-audio-settings-panel[open] > summary::after {
+  transform: rotate(90deg);
+}
+.game-ui .warehouse-footer > .ui-button {
+  display: flex;
+  margin-left: auto;
+}
+
+.game-ui .ui-select-trigger,
+.game-ui .ui-select-options [role="option"] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  color: var(--ui-ink);
+  text-align: left;
+  font: inherit;
+}
+.game-ui .ui-select-trigger {
+  border: 2px solid var(--ui-border);
+  border-radius: 12px;
+  background: #fff8e7;
+  cursor: pointer;
+}
+.game-ui .ui-select-trigger:focus-visible {
+  outline: 3px solid #648b40;
+  outline-offset: 2px;
+}
+.game-ui .ui-select-trigger:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.game-ui .ui-select-trigger > span:first-of-type,
+.game-ui .ui-select-options [role="option"] > span:first-of-type {
+  flex: 1;
+  min-width: 0;
+}
+.game-ui .ui-select-trigger img,
+.game-ui .ui-select-options img {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  object-fit: contain;
+}
+.game-ui .ui-select-options {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 2px solid var(--ui-border);
+  border-radius: 12px;
+  background: #fff8e7;
+  box-shadow: 0 8px 22px #49341b30;
+  scrollbar-width: thin;
+  scrollbar-color: #bda781 transparent;
+}
+.game-ui .ui-select-options [role="option"] {
+  border-radius: 8px;
+  cursor: pointer;
+}
+.game-ui .ui-select-options [role="option"].is-active {
+  background: #e2edc8;
+}
+.game-ui .ui-select-options [aria-selected="true"] {
+  font-weight: 700;
+}
+
+.game-ui .ui-form-field :is(input, textarea)::placeholder {
+  color: var(--ui-muted);
+  opacity: 1;
+}
+.game-ui .ui-form-field :is(input, textarea, select):focus-visible {
+  outline: 2px solid #966b1f;
+  outline-offset: -2px;
+}
+.game-ui .ui-form-field :is(input, textarea, select):disabled {
+  background: #e8dfcc;
+  color: var(--ui-muted);
+  border-color: #cebea0;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.game-ui .ui-form-field :is(input, textarea, select)[aria-invalid="true"] {
+  border-color: #a43825;
+}
+.game-ui .ui-form-field :is(input, textarea, select)[aria-invalid="true"]:focus-visible {
+  outline-color: #a43825;
+  outline-offset: -2px;
+}
+
+.game-ui .ui-field-required,
+.game-ui .ui-field-error {
+  color: #a32e2e;
+}
+.game-ui .ui-field-error {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.game-ui .warehouse-tabs:not(.ui-folder-tabs) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 6px;
+}
+
+.game-ui dialog.ui-modal:focus {
+  outline: none;
+}
+
+.game-ui .ui-modal .ui-button:focus-visible,
+.game-ui .ui-modal .ui-select-trigger:focus-visible {
+  outline: 2px solid #966b1f;
+  outline-offset: -4px;
+}

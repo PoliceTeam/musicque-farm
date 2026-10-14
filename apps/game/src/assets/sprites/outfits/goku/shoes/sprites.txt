@@ -1,0 +1,33 @@
+@piece shoes.goku
+......................KK...
+K.................K..
+K........KKKQoOOOOOK.
+KKoOKKoOOOOOOOKK
+KKooOOOOOOOOOKKKK
+KKKooOOOOOOOOKKKKKKKKKKKK
+.KKKKKKKKKKKKKKK.
+..KKKKKKKKKKKKKKK..........
+.....KKKKKKKKKKK...........
+
+@piece shoes.goku.step
+...................KK...
+...............K..
+............oOOOOOK.
+K...........KooOOOOOOOKK
+K........KKKKK
+KKoOOoKKKKKKKKKK
+KKooOOOOOOOOOQKKKKKKKK.
+KKKooOOOOOOOO.........
+.KKKK.........
+..KKKKKKKKKKKKKKK.......
+.....KKKKKKKKKKK........
+
+@piece shoes.goku.step2
+K.............................
+K........KKK..........KK...
+KKoOK......K..
+KKooOOOOOOOOO...QoOOOOOK.
+KKKooOOOOOOOO...KoOOOOOOOKK
+.KKKK...KKKK
+..KKKKKKKKKKKKKKKKKKKKKKKKKKKK
+.....KKKKKKKKKKKKKKKKKKKKKKKK.

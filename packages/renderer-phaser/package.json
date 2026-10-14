@@ -1,0 +1,34 @@
+{
+  "name": "@chibi-town/renderer-phaser",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./phaser-provider": {
+      "types": "./dist/phaser-provider.d.ts",
+      "default": "./dist/phaser-provider.js"
+    },
+    "./world-map-view": {
+      "types": "./dist/world-map-view.d.ts",
+      "default": "./dist/world-map-view.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check . --formatter-enabled=false",
+    "test": "pnpm build && node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@chibi-town/character-core": "workspace:*",
+    "@chibi-town/render-contracts": "workspace:*",
+    "phaser": "^4.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

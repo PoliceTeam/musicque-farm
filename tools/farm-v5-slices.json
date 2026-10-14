@@ -1,0 +1,98 @@
+{
+  "shore-rocks": {
+    "sourceRect": [
+      0,
+      0,
+      418,
+      627
+    ],
+    "trimRect": [
+      0,
+      22,
+      418,
+      627
+    ],
+    "width": 418,
+    "height": 605
+  },
+  "lotus": {
+    "sourceRect": [
+      418,
+      0,
+      836,
+      627
+    ],
+    "trimRect": [
+      0,
+      17,
+      418,
+      627
+    ],
+    "width": 418,
+    "height": 610
+  },
+  "cattails": {
+    "sourceRect": [
+      836,
+      0,
+      1254,
+      627
+    ],
+    "trimRect": [
+      1,
+      23,
+      402,
+      627
+    ],
+    "width": 401,
+    "height": 604
+  },
+  "lantern": {
+    "sourceRect": [
+      0,
+      627,
+      418,
+      1254
+    ],
+    "trimRect": [
+      25,
+      1,
+      418,
+      627
+    ],
+    "width": 393,
+    "height": 626
+  },
+  "shelter": {
+    "sourceRect": [
+      418,
+      627,
+      836,
+      1254
+    ],
+    "trimRect": [
+      0,
+      0,
+      418,
+      627
+    ],
+    "width": 418,
+    "height": 627
+  },
+  "flower-border": {
+    "sourceRect": [
+      836,
+      627,
+      1254,
+      1254
+    ],
+    "trimRect": [
+      0,
+      0,
+      417,
+      627
+    ],
+    "width": 417,
+    "height": 627
+  }
+}

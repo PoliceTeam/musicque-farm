@@ -1,0 +1,5 @@
+[
+  {"id": "hair.female-short", "label": "Tóc nữ ngắn", "front": {"crop": [286, 491, 376, 558], "width": 48, "height": 34, "origin": [-27, -66]}, "back": {"crop": [391, 491, 481, 558], "width": 48, "height": 34, "origin": [-27, -66]}},
+  {"id": "hair.female-shoulder", "label": "Tóc nữ ngang vai", "front": {"crop": [533, 487, 625, 564], "width": 48, "height": 41, "origin": [-27, -67]}, "back": {"crop": [641, 487, 736, 566], "width": 50, "height": 42, "origin": [-28, -67]}},
+  {"id": "hair.female-ponytail", "label": "Tóc nữ buộc cao", "front": {"crop": [285, 627, 387, 747], "width": 56, "height": 62, "origin": [-37, -75], "tie": true}}
+]

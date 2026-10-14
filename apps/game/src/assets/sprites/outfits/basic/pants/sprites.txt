@@ -1,0 +1,73 @@
+@piece pants
+.....DppDppppppDppp..
+....KppPPPPPPpPPPPpK.
+....KpPPPPpKKKDPPPpK.
+...KDpPPPPKKKDpPPPpK.
+KKKDppPPPpKDDpppPPPKK
+KDDppPPPPpKDDppPPPpDK
+KDDpPPPPPPKKDpppDKKKK
+KKDDDDDDDKKKKKKKK....
+..KKKKKKKK...........
+
+@piece pants.step
+.....DppDppppppDppp..
+....KppPPPPPPpPPPPpK.
+....KpPPPPpKKKDPPPpK.
+...KDpPPPPKKKDpPPPpK.
+KKKDppPPPpKDDpppPPPKK
+KDDppPPPPpKDDppPPPpDK
+..KDDpPPPPPPKKD......
+..KKDDDDDDDKKKK......
+....KKKKKKKK.........
+
+@piece pants.step2
+......DppDppppppDppp....
+.....KppPPPPPPpPPPPpK...
+.....KpPPPPpKKKDPPPpK...
+....KDpPPPPKKKDpPPPpK...
+KDDpPPPPPPKKDDpppPPPKK..
+KKDDDDDDDKKKKDppPPPpDK..
+..KKKKKKKK......pppDKKKK
+................KKKK....
+
+@piece pants.shorts
+.....DppDppppppDppp..
+....KppPPPPPPpPPPPpK.
+....KpPPPPpKKKDPPPpK.
+...KDpPPPPKKKDpPPPpK.
+KKKDppPPPpKDDpppPPPKK
+KKKKKKKKKKKKKKKKKKKKK
+
+@piece pants.shorts.step
+.....DppDppppppDppp..
+....KppPPPPPPpPPPPpK.
+....KpPPPPpKKKDPPPpK.
+...KDpPPPPKKKDpPPPpK.
+KKKDppPPPpKDDpppPPPKK
+KKKKKKKKKKKKKKKKKKKKK
+
+@piece pants.shorts.step2
+......DppDppppppDppp....
+.....KppPPPPPPpPPPPpK...
+.....KpPPPPpKKKDPPPpK...
+....KDpPPPPKKKDpPPPpK...
+KDDpPPPPPPKKDDpppPPPKK..
+KKKKKKKKKKKKKKKKKKKKKK..
+
+@piece pants.swim
+.....DNpDppppppDppp..
+....KpNPPPPPPpPPPPpK.
+....KpNPPPpKKKDPPPpK.
+...KKKKKKKKKKKKKKKKK.
+
+@piece pants.swim.step
+.....DNpDppppppDppp..
+....KpNPPPPPPpPPPPpK.
+....KpNPPPpKKKDPPPpK.
+...KKKKKKKKKKKKKKKKK.
+
+@piece pants.swim.step2
+......DNpDppppppDppp....
+.....KpNPPPPPPpPPPPpK...
+.....KpNPPPpKKKDPPPpK...
+....KKKKKKKKKKKKKKKKK...

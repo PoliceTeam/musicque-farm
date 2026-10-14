@@ -1,0 +1,861 @@
+{
+  "sourceWidth": 1536,
+  "sourceHeight": 1024,
+  "sprites": {
+    "tree-yellow": [
+      1083,
+      37,
+      140,
+      153
+    ],
+    "tree-orange": [
+      1216,
+      37,
+      116,
+      143
+    ],
+    "tree-pink": [
+      1335,
+      62,
+      90,
+      111
+    ],
+    "tree-green": [
+      1424,
+      39,
+      103,
+      136
+    ],
+    "bush-yellow": [
+      1084,
+      247,
+      58,
+      38
+    ],
+    "flower-patch": [
+      1204,
+      269,
+      49,
+      38
+    ],
+    "kitchen": [
+      500,
+      385,
+      153,
+      134
+    ],
+    "warehouse": [
+      652,
+      391,
+      131,
+      119
+    ],
+    "shop": [
+      830,
+      388,
+      118,
+      104
+    ],
+    "fence-horizontal": [
+      276,
+      387,
+      65,
+      42
+    ],
+    "fence-horizontal-alt": [
+      342,
+      387,
+      87,
+      43
+    ],
+    "entry-gate": [
+      274,
+      433,
+      174,
+      85
+    ],
+    "buy-sign": [
+      873,
+      505,
+      59,
+      63
+    ],
+    "hay": [
+      695,
+      512,
+      59,
+      61
+    ],
+    "well": [
+      800,
+      505,
+      61,
+      62
+    ],
+    "pond": [
+      780,
+      38,
+      174,
+      218
+    ],
+    "pond-small": [
+      960,
+      37,
+      107,
+      102
+    ],
+    "water-tile": [
+      315,
+      143,
+      33,
+      43
+    ],
+    "grass-tile": [
+      243,
+      34,
+      34,
+      37
+    ],
+    "path-tile": [
+      19,
+      115,
+      40,
+      29
+    ],
+    "soil-seeded": [
+      482,
+      45,
+      50,
+      58
+    ],
+    "soil-sprouting": [
+      648,
+      45,
+      50,
+      58
+    ],
+    "soil-cracked": [
+      648,
+      177,
+      51,
+      59
+    ],
+    "soil-grown": [
+      538,
+      112,
+      50,
+      59
+    ],
+    "soil-fruit": [
+      593,
+      112,
+      51,
+      59
+    ],
+    "cow-1": [
+      13,
+      617,
+      54,
+      41
+    ],
+    "cow-2": [
+      67,
+      617,
+      52,
+      42
+    ],
+    "cow-3": [
+      120,
+      621,
+      60,
+      42
+    ],
+    "cow-4": [
+      183,
+      618,
+      58,
+      45
+    ],
+    "cow-5": [
+      242,
+      615,
+      65,
+      49
+    ],
+    "cow-6": [
+      308,
+      614,
+      65,
+      50
+    ],
+    "pig-1": [
+      378,
+      618,
+      61,
+      45
+    ],
+    "pig-2": [
+      440,
+      618,
+      61,
+      45
+    ],
+    "pig-3": [
+      502,
+      618,
+      57,
+      45
+    ],
+    "sheep-1": [
+      13,
+      667,
+      58,
+      46
+    ],
+    "sheep-2": [
+      72,
+      670,
+      52,
+      43
+    ],
+    "sheep-3": [
+      124,
+      670,
+      39,
+      37
+    ],
+    "hen-1": [
+      217,
+      669,
+      41,
+      46
+    ],
+    "hen-2": [
+      264,
+      670,
+      37,
+      45
+    ],
+    "hen-3": [
+      308,
+      671,
+      36,
+      44
+    ],
+    "hen-4": [
+      350,
+      672,
+      35,
+      42
+    ],
+    "hen-5": [
+      391,
+      671,
+      38,
+      44
+    ],
+    "duck-1": [
+      369,
+      717,
+      49,
+      48
+    ],
+    "duck-2": [
+      424,
+      717,
+      50,
+      48
+    ],
+    "duck-3": [
+      478,
+      717,
+      46,
+      48
+    ],
+    "feed-trough": [
+      723,
+      620,
+      77,
+      44
+    ],
+    "water-trough": [
+      820,
+      620,
+      74,
+      45
+    ],
+    "nest": [
+      582,
+      620,
+      62,
+      44
+    ],
+    "egg-basket": [
+      839,
+      686,
+      58,
+      61
+    ],
+    "chick-1": [
+      223,
+      723,
+      30,
+      35
+    ],
+    "chick-2": [
+      261,
+      724,
+      30,
+      34
+    ],
+    "chick-3": [
+      298,
+      724,
+      27,
+      34
+    ],
+    "egg-basket-empty": [
+      0,
+      0,
+      1,
+      1
+    ],
+    "terrain-grass-a": [
+      242,
+      33,
+      37,
+      38
+    ],
+    "terrain-grass-b": [
+      281,
+      33,
+      37,
+      38
+    ],
+    "terrain-grass-c": [
+      319,
+      33,
+      37,
+      38
+    ],
+    "terrain-grass-d": [
+      357,
+      33,
+      35,
+      38
+    ],
+    "terrain-grass-e": [
+      428,
+      33,
+      33,
+      38
+    ],
+    "terrain-grass-stones-a": [
+      242,
+      72,
+      37,
+      35
+    ],
+    "terrain-grass-stones-b": [
+      281,
+      72,
+      37,
+      35
+    ],
+    "terrain-grass-stones-c": [
+      319,
+      72,
+      37,
+      35
+    ],
+    "terrain-grass-stones-d": [
+      358,
+      72,
+      36,
+      35
+    ],
+    "terrain-grass-stones-e": [
+      394,
+      72,
+      35,
+      35
+    ],
+    "terrain-grass-stones-f": [
+      428,
+      71,
+      32,
+      36
+    ],
+    "terrain-path-a": [
+      242,
+      108,
+      37,
+      34
+    ],
+    "terrain-path-b": [
+      281,
+      108,
+      37,
+      34
+    ],
+    "terrain-path-c": [
+      319,
+      108,
+      37,
+      34
+    ],
+    "terrain-stone-a": [
+      358,
+      108,
+      36,
+      34
+    ],
+    "terrain-stone-b": [
+      394,
+      107,
+      33,
+      35
+    ],
+    "terrain-stone-c": [
+      429,
+      108,
+      35,
+      34
+    ],
+    "terrain-water-a": [
+      242,
+      142,
+      37,
+      45
+    ],
+    "terrain-water-lily-small": [
+      281,
+      142,
+      37,
+      22
+    ],
+    "terrain-water-b": [
+      281,
+      165,
+      37,
+      22
+    ],
+    "terrain-water-c": [
+      319,
+      142,
+      37,
+      45
+    ],
+    "terrain-water-d": [
+      357,
+      142,
+      35,
+      22
+    ],
+    "terrain-water-e": [
+      357,
+      165,
+      35,
+      22
+    ],
+    "terrain-water-lily-large": [
+      394,
+      142,
+      70,
+      45
+    ],
+    "terrain-grass-corner-a": [
+      13,
+      38,
+      55,
+      68
+    ],
+    "terrain-grass-edge-a": [
+      69,
+      38,
+      34,
+      35
+    ],
+    "terrain-grass-edge-b": [
+      69,
+      76,
+      34,
+      38
+    ],
+    "terrain-grass-corner-b": [
+      13,
+      146,
+      55,
+      39
+    ],
+    "terrain-grass-edge-c": [
+      69,
+      146,
+      34,
+      39
+    ],
+    "terrain-grass-corner-c": [
+      138,
+      145,
+      43,
+      40
+    ],
+    "terrain-grass-edge-d": [
+      184,
+      145,
+      51,
+      22
+    ],
+    "terrain-grass-stones-g": [
+      184,
+      168,
+      51,
+      20
+    ],
+    "terrain-grass-dot-a": [
+      393,
+      33,
+      15,
+      20
+    ],
+    "terrain-grass-dot-b": [
+      409,
+      33,
+      18,
+      20
+    ],
+    "terrain-grass-dot-c": [
+      393,
+      54,
+      15,
+      17
+    ],
+    "terrain-grass-dot-d": [
+      409,
+      54,
+      18,
+      17
+    ],
+    "decor-flowers-white": [
+      14,
+      192,
+      59,
+      41
+    ],
+    "decor-flowers-pink": [
+      79,
+      190,
+      54,
+      39
+    ],
+    "decor-flowers-orange": [
+      138,
+      191,
+      55,
+      38
+    ],
+    "decor-grass-tall": [
+      194,
+      192,
+      42,
+      42
+    ],
+    "decor-bush-gold": [
+      238,
+      192,
+      49,
+      42
+    ],
+    "decor-bush-green": [
+      293,
+      190,
+      35,
+      34
+    ],
+    "decor-flowers-mixed": [
+      331,
+      190,
+      45,
+      34
+    ],
+    "decor-flowers-orange-low": [
+      14,
+      235,
+      59,
+      35
+    ],
+    "decor-flowers-white-low": [
+      79,
+      231,
+      54,
+      36
+    ],
+    "decor-flowers-mixed-low": [
+      138,
+      232,
+      54,
+      36
+    ],
+    "decor-reeds": [
+      195,
+      235,
+      38,
+      37
+    ],
+    "decor-leaves-orange": [
+      238,
+      235,
+      46,
+      38
+    ],
+    "decor-bush-blue": [
+      289,
+      224,
+      41,
+      45
+    ],
+    "terrain-stone-slab-a": [
+      331,
+      225,
+      45,
+      47
+    ],
+    "terrain-stone-slab-b": [
+      321,
+      271,
+      58,
+      42
+    ],
+    "terrain-dry-earth": [
+      420,
+      266,
+      40,
+      42
+    ],
+    "decor-grass-yellow": [
+      380,
+      278,
+      39,
+      30
+    ],
+    "decor-grass-green": [
+      377,
+      237,
+      42,
+      41
+    ],
+    "decor-reeds-tall": [
+      380,
+      192,
+      38,
+      42
+    ],
+    "decor-plants-a": [
+      419,
+      190,
+      41,
+      32
+    ],
+    "decor-plants-b": [
+      420,
+      222,
+      41,
+      44
+    ],
+    "fence-terrain-a": [
+      14,
+      270,
+      90,
+      43
+    ],
+    "fence-terrain-b": [
+      105,
+      270,
+      83,
+      43
+    ],
+    "wall-stone-a": [
+      14,
+      315,
+      89,
+      32
+    ],
+    "wall-stone-b": [
+      106,
+      314,
+      81,
+      33
+    ],
+    "wall-stone-c": [
+      189,
+      314,
+      82,
+      33
+    ],
+    "wall-stone-d": [
+      334,
+      317,
+      24,
+      31
+    ],
+    "decor-flowers-border": [
+      276,
+      317,
+      55,
+      31
+    ],
+    "decor-grass-border": [
+      360,
+      317,
+      32,
+      31
+    ],
+    "fence-post-a": [
+      398,
+      308,
+      20,
+      40
+    ],
+    "fence-post-b": [
+      432,
+      308,
+      25,
+      40
+    ],
+    "soil-tilled": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "treeSource": "docs/art/farm-v4-tree-cutouts.png",
+  "treeSprites": {
+    "tree-yellow": [
+      0,
+      200,
+      400,
+      580
+    ],
+    "tree-orange": [
+      400,
+      200,
+      393,
+      580
+    ],
+    "tree-pink": [
+      793,
+      200,
+      346,
+      580
+    ],
+    "tree-green": [
+      1139,
+      200,
+      397,
+      580
+    ]
+  },
+  "overrides": {
+    "cow-1": {
+      "source": "docs/art/farm-v4-cow-repaired.png",
+      "maxSize": [
+        55,
+        44
+      ]
+    },
+    "egg-basket-empty": {
+      "source": "docs/art/farm-v4-basket-empty.png",
+      "maxSize": [
+        53,
+        51
+      ]
+    },
+    "soil-tilled": {
+      "source": "docs/art/farm-v4-soil-tilled.png",
+      "maxSize": [
+        50,
+        58
+      ]
+    }
+  },
+  "contents": {
+    "egg-basket": {
+      "kind": "eggs",
+      "condition": "eggCount > 0"
+    },
+    "egg-basket-empty": {
+      "kind": "empty",
+      "condition": "eggCount === 0"
+    }
+  },
+  "terrainSprites": [
+    "terrain-grass-a",
+    "terrain-grass-b",
+    "terrain-grass-c",
+    "terrain-grass-d",
+    "terrain-grass-e",
+    "terrain-grass-stones-a",
+    "terrain-grass-stones-b",
+    "terrain-grass-stones-c",
+    "terrain-grass-stones-d",
+    "terrain-grass-stones-e",
+    "terrain-grass-stones-f",
+    "terrain-path-a",
+    "terrain-path-b",
+    "terrain-path-c",
+    "terrain-stone-a",
+    "terrain-stone-b",
+    "terrain-stone-c",
+    "terrain-water-a",
+    "terrain-water-lily-small",
+    "terrain-water-b",
+    "terrain-water-c",
+    "terrain-water-d",
+    "terrain-water-e",
+    "terrain-water-lily-large",
+    "terrain-grass-corner-a",
+    "terrain-grass-edge-a",
+    "terrain-grass-edge-b",
+    "terrain-grass-corner-b",
+    "terrain-grass-edge-c",
+    "terrain-grass-corner-c",
+    "terrain-grass-edge-d",
+    "terrain-grass-stones-g",
+    "terrain-grass-dot-a",
+    "terrain-grass-dot-b",
+    "terrain-grass-dot-c",
+    "terrain-grass-dot-d",
+    "decor-flowers-white",
+    "decor-flowers-pink",
+    "decor-flowers-orange",
+    "decor-grass-tall",
+    "decor-bush-gold",
+    "decor-bush-green",
+    "decor-flowers-mixed",
+    "decor-flowers-orange-low",
+    "decor-flowers-white-low",
+    "decor-flowers-mixed-low",
+    "decor-reeds",
+    "decor-leaves-orange",
+    "decor-bush-blue",
+    "terrain-stone-slab-a",
+    "terrain-stone-slab-b",
+    "terrain-dry-earth",
+    "decor-grass-yellow",
+    "decor-grass-green",
+    "decor-reeds-tall",
+    "decor-plants-a",
+    "decor-plants-b",
+    "fence-terrain-a",
+    "fence-terrain-b",
+    "wall-stone-a",
+    "wall-stone-b",
+    "wall-stone-c",
+    "wall-stone-d",
+    "decor-flowers-border",
+    "decor-grass-border",
+    "fence-post-a",
+    "fence-post-b"
+  ]
+}

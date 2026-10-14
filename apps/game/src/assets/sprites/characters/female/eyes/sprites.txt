@@ -1,0 +1,10 @@
+@piece eyes.female
+.EEEE..........EEEE
+EEEEEE........EEEEE
+EEEEEEE........EEEW
+CWWCCC........WCCCW
+WCCCCC........CCCCW
+WCCCCC........CCCCW
+WCCBBB........BBBCW
+WBbbbb........bbbb.
+WWbbb..........bb..

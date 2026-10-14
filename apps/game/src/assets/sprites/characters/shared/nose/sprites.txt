@@ -1,0 +1,7 @@
+@piece nose.dot
+k
+n
+
+@piece nose.small
+.k
+kn

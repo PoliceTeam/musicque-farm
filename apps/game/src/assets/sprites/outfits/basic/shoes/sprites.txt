@@ -1,0 +1,33 @@
+@piece shoes
+......................KK...
+K.................ooOOOQK..
+KoQ........oKKKQQooOOOOOoK.
+KKoooooooOOOOoKKooOOOOOOOKK
+KKoooOOOOOOOOOQKKooOOOOOOKK
+KKKooooOOOOOOOOKKKKKKKKKKKK
+.KKKKoooOOOOOOoKKKKKKKKKKK.
+..KKKKKKKKKKKKKKK..........
+.....KKKKKKKKKKK...........
+
+@piece shoes.step
+...................KK...
+...............ooOOOQK..
+............QQooOOOOOoK.
+K...........KooOOOOOOOKK
+KoQ........oKKKoOOOOOOKK
+KKoooooooOOOOoKKKKKKKKKK
+KKoooOOOOOOOOOQKKKKKKKK.
+KKKooooOOOOOOOO.........
+.KKKKoooOOOOOOo.........
+..KKKKKKKKKKKKKKK.......
+.....KKKKKKKKKKK........
+
+@piece shoes.step2
+K.............................
+KoQ........oKKK..........KK...
+KKoooooooOOOOoK......ooOOOQK..
+KKoooOOOOOOOOOQ...QQooOOOOOoK.
+KKKooooOOOOOOOO...KooOOOOOOOKK
+.KKKKoooOOOOOOo...KKooOOOOOOKK
+..KKKKKKKKKKKKKKKKKKKKKKKKKKKK
+.....KKKKKKKKKKKKKKKKKKKKKKKK.

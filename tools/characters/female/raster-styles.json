@@ -1,0 +1,293 @@
+{
+  "atlas": "docs/art/female-hair-atlas-v6.png",
+  "tones": [
+    [
+      19,
+      6,
+      8
+    ],
+    [
+      55,
+      26,
+      27
+    ],
+    [
+      86,
+      43,
+      38
+    ],
+    [
+      112,
+      57,
+      46
+    ],
+    [
+      159,
+      84,
+      60
+    ]
+  ],
+  "styles": [
+    {
+      "id": "hair.female-long",
+      "label": "Tóc nữ dài",
+      "crop": [
+        0,
+        0,
+        715,
+        570
+      ],
+      "size": [
+        48,
+        54
+      ],
+      "origin": [
+        -26,
+        -65
+      ],
+      "face_shift_x": -3
+    },
+    {
+      "id": "hair.female-short",
+      "label": "Tóc nữ ngắn",
+      "crop": [
+        715,
+        0,
+        1430,
+        570
+      ],
+      "size": [
+        44,
+        38
+      ],
+      "origin": [
+        -25,
+        -64
+      ],
+      "face_shift_x": -2
+    },
+    {
+      "id": "hair.female-shoulder",
+      "label": "Tóc nữ ngang vai",
+      "crop": [
+        0,
+        570,
+        715,
+        1100
+      ],
+      "size": [
+        46,
+        40
+      ],
+      "origin": [
+        -26,
+        -64
+      ],
+      "tones": [
+        [
+          23,
+          7,
+          8
+        ],
+        [
+          82,
+          39,
+          34
+        ],
+        [
+          120,
+          61,
+          48
+        ],
+        [
+          154,
+          82,
+          59
+        ],
+        [
+          204,
+          116,
+          74
+        ]
+      ],
+      "face_shift_x": -3
+    },
+    {
+      "id": "hair.female-ponytail",
+      "label": "Tóc nữ buộc cao",
+      "crop": [
+        715,
+        570,
+        1430,
+        1100
+      ],
+      "size": [
+        52,
+        52
+      ],
+      "origin": [
+        -32,
+        -68
+      ],
+      "tie": true,
+      "face_shift_x": -2
+    },
+    {
+      "id": "hair.female-twintails",
+      "label": "Tóc nữ hai chùm",
+      "atlas": "docs/art/female-extra-hair-atlas-v1.png",
+      "crop": [
+        0,
+        0,
+        780,
+        724
+      ],
+      "size": [
+        56,
+        46
+      ],
+      "origin": [
+        -32,
+        -65
+      ],
+      "face_shift_x": 0,
+      "accent": true
+    },
+    {
+      "id": "hair.female-double-buns",
+      "label": "Tóc nữ hai búi",
+      "atlas": "docs/art/female-extra-hair-atlas-v1.png",
+      "crop": [
+        780,
+        0,
+        1450,
+        724
+      ],
+      "size": [
+        52,
+        48
+      ],
+      "origin": [
+        -32,
+        -72
+      ],
+      "face_shift_x": 0,
+      "accent": false
+    },
+    {
+      "id": "hair.female-half-up",
+      "label": "Tóc nữ buộc nửa đầu",
+      "atlas": "docs/art/female-extra-hair-atlas-v1.png",
+      "crop": [
+        1450,
+        0,
+        2172,
+        724
+      ],
+      "size": [
+        50,
+        48
+      ],
+      "origin": [
+        -30,
+        -65
+      ],
+      "face_shift_x": 0,
+      "accent": false
+    },
+    {
+      "id": "hair.female-low-bun",
+      "label": "Tóc nữ búi thấp",
+      "atlas": "docs/art/female-low-hair-atlas-v1.png",
+      "crop": [
+        0,
+        0,
+        991,
+        793
+      ],
+      "size": [
+        52,
+        49
+      ],
+      "origin": [
+        -34,
+        -65
+      ],
+      "accent": false,
+      "tones": [
+        [
+          24,
+          9,
+          10
+        ],
+        [
+          81,
+          36,
+          30
+        ],
+        [
+          125,
+          60,
+          45
+        ],
+        [
+          159,
+          82,
+          60
+        ],
+        [
+          207,
+          115,
+          76
+        ]
+      ]
+    },
+    {
+      "id": "hair.female-low-ponytail",
+      "label": "Tóc nữ buộc thấp",
+      "atlas": "docs/art/female-low-hair-atlas-v1.png",
+      "crop": [
+        991,
+        0,
+        1983,
+        793
+      ],
+      "size": [
+        54,
+        48
+      ],
+      "origin": [
+        -36,
+        -65
+      ],
+      "accent": true,
+      "tones": [
+        [
+          24,
+          9,
+          10
+        ],
+        [
+          81,
+          36,
+          30
+        ],
+        [
+          125,
+          60,
+          45
+        ],
+        [
+          159,
+          82,
+          60
+        ],
+        [
+          207,
+          115,
+          76
+        ]
+      ]
+    }
+  ]
+}

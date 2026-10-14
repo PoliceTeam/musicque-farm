@@ -1,0 +1,28 @@
+{
+ "pets": [
+  {"id": "cat", "label": "Mèo trắng", "piece": "pet.cat", "walk": ["pet.cat.walk1", "pet.cat", "pet.cat.walk2", "pet.cat"], "hop": 1, "family": "cat", "level": 1},
+  {"id": "cat.2", "label": "Mèo trắng Lv.2", "piece": "pet.cat.2", "family": "cat", "level": 2, "hop": 1, "walk": ["pet.cat.2.walk1", "pet.cat.2", "pet.cat.2.walk2", "pet.cat.2"]},
+  {"id": "cat.3", "label": "Mèo trắng Lv.3", "piece": "pet.cat.3", "family": "cat", "level": 3, "hop": 1, "walk": ["pet.cat.3.walk1", "pet.cat.3", "pet.cat.3.walk2", "pet.cat.3"], "effect": "stars", "aura": 2},
+  {"id": "corgi", "label": "Chó corgi", "piece": "pet.corgi", "walk": ["pet.corgi.walk1", "pet.corgi", "pet.corgi.walk2", "pet.corgi"], "hop": 1, "family": "corgi", "level": 1},
+  {"id": "corgi.2", "label": "Chó corgi Lv.2", "piece": "pet.corgi.2", "family": "corgi", "level": 2, "hop": 1, "walk": ["pet.corgi.2.walk1", "pet.corgi.2", "pet.corgi.2.walk2", "pet.corgi.2"]},
+  {"id": "corgi.3", "label": "Chó corgi Lv.3", "piece": "pet.corgi.3", "family": "corgi", "level": 3, "hop": 1, "walk": ["pet.corgi.3.walk1", "pet.corgi.3", "pet.corgi.3.walk2", "pet.corgi.3"], "effect": "stars", "aura": 2},
+  {"id": "bunny", "label": "Thỏ", "piece": "pet.bunny", "walk": ["pet.bunny.walk1", "pet.bunny", "pet.bunny.walk2", "pet.bunny"], "hop": 3, "family": "bunny", "level": 1},
+  {"id": "bunny.2", "label": "Thỏ Lv.2", "piece": "pet.bunny.2", "family": "bunny", "level": 2, "hop": 3, "walk": ["pet.bunny.2.walk1", "pet.bunny.2", "pet.bunny.2.walk2", "pet.bunny.2"]},
+  {"id": "bunny.3", "label": "Thỏ Lv.3", "piece": "pet.bunny.3", "family": "bunny", "level": 3, "hop": 3, "walk": ["pet.bunny.3.walk1", "pet.bunny.3", "pet.bunny.3.walk2", "pet.bunny.3"], "effect": "petals", "aura": 2},
+  {"id": "chick", "label": "Gà con", "piece": "pet.chick", "walk": ["pet.chick.walk1", "pet.chick", "pet.chick.walk2", "pet.chick"], "hop": 1, "family": "chick", "level": 1},
+  {"id": "chick.2", "label": "Gà con Lv.2", "piece": "pet.chick.2", "family": "chick", "level": 2, "hop": 1, "walk": ["pet.chick.2.walk1", "pet.chick.2", "pet.chick.2.walk2", "pet.chick.2"]},
+  {"id": "chick.3", "label": "Gà con Lv.3", "piece": "pet.chick.3", "family": "chick", "level": 3, "hop": 1, "walk": ["pet.chick.3.walk1", "pet.chick.3", "pet.chick.3.walk2", "pet.chick.3"], "effect": "embers", "aura": 2},
+  {"id": "slime", "label": "Slime mầm", "piece": "pet.slime", "walk": ["pet.slime.walk1", "pet.slime"], "hop": 2, "family": "slime", "level": 1},
+  {"id": "slime.2", "label": "Slime mầm Lv.2", "piece": "pet.slime.2", "family": "slime", "level": 2, "hop": 2, "walk": ["pet.slime.2.walk1", "pet.slime.2"]},
+  {"id": "slime.3", "label": "Slime mầm Lv.3", "piece": "pet.slime.3", "family": "slime", "level": 3, "hop": 2, "walk": ["pet.slime.3.walk1", "pet.slime.3"], "effect": "leaves", "aura": 2},
+  {"id": "dragon", "label": "Rồng con", "piece": "pet.dragon", "hop": 0, "flap": ["pet.dragon", "pet.dragon.flap1", "pet.dragon.flap2", "pet.dragon.flap1"], "fly": 20, "family": "dragon", "level": 1},
+  {"id": "dragon.2", "label": "Rồng con Lv.2", "piece": "pet.dragon.2", "family": "dragon", "level": 2, "hop": 0, "fly": 20, "flap": ["pet.dragon.2", "pet.dragon.2.flap1", "pet.dragon.2.flap2", "pet.dragon.2.flap1"]},
+  {"id": "dragon.3", "label": "Rồng con Lv.3", "piece": "pet.dragon.3", "family": "dragon", "level": 3, "hop": 0, "fly": 20, "flap": ["pet.dragon.3", "pet.dragon.3.flap1", "pet.dragon.3.flap2", "pet.dragon.3.flap1"], "effect": "embers", "aura": 2},
+  {"id": "fox", "label": "Cáo", "piece": "pet.fox", "walk": ["pet.fox.walk1", "pet.fox", "pet.fox.walk2", "pet.fox"], "hop": 1, "family": "fox", "level": 1},
+  {"id": "fox.2", "label": "Cáo Lv.2", "piece": "pet.fox.2", "family": "fox", "level": 2, "hop": 1, "walk": ["pet.fox.2.walk1", "pet.fox.2", "pet.fox.2.walk2", "pet.fox.2"]},
+  {"id": "fox.3", "label": "Cáo Lv.3", "piece": "pet.fox.3", "family": "fox", "level": 3, "hop": 1, "walk": ["pet.fox.3.walk1", "pet.fox.3", "pet.fox.3.walk2", "pet.fox.3"], "effect": "spirit", "aura": 2},
+  {"id": "robot", "label": "Robot", "piece": "pet.robot", "walk": ["pet.robot.walk1", "pet.robot", "pet.robot.walk2", "pet.robot"], "hop": 1, "family": "robot", "level": 1},
+  {"id": "robot.2", "label": "Robot Lv.2", "piece": "pet.robot.2", "family": "robot", "level": 2, "hop": 1, "walk": ["pet.robot.2.walk1", "pet.robot.2", "pet.robot.2.walk2", "pet.robot.2"]},
+  {"id": "robot.3", "label": "Robot Lv.3", "piece": "pet.robot.3", "family": "robot", "level": 3, "hop": 1, "walk": ["pet.robot.3.walk1", "pet.robot.3", "pet.robot.3.walk2", "pet.robot.3"], "effect": "sparks", "aura": 2}
+ ]
+}

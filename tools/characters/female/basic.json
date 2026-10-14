@@ -1,0 +1,42 @@
+{
+  "source": "docs/art/female-hair-long-v2.png",
+  "reference": "docs/art/female-example-v2.png",
+  "hair": {
+    "id": "hair.female-long",
+    "width": 54,
+    "height": 54,
+    "offset": [
+      -30,
+      -66
+    ],
+    "tones": [
+      [
+        42,
+        22,
+        16
+      ],
+      [
+        77,
+        42,
+        30
+      ],
+      [
+        117,
+        67,
+        46
+      ],
+      [
+        158,
+        98,
+        67
+      ],
+      [
+        205,
+        143,
+        99
+      ]
+    ],
+    "scalp-until": -46,
+    "back-from": -44
+  }
+}

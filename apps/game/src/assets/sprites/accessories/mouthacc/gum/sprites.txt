@@ -1,0 +1,8 @@
+@piece mouthacc.gum
+..ddd..
+.dfffd.
+dfffwfd
+dfffffd
+dfffffd
+.dfffd.
+..ddd..

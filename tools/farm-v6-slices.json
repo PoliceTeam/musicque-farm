@@ -1,0 +1,146 @@
+{
+  "soil-dry-v6": {
+    "sourceRect": [
+      0,
+      0,
+      418,
+      418
+    ],
+    "trimRect": [
+      45,
+      63,
+      405,
+      405
+    ],
+    "width": 360,
+    "height": 342
+  },
+  "soil-tilled-v6": {
+    "sourceRect": [
+      418,
+      0,
+      836,
+      418
+    ],
+    "trimRect": [
+      31,
+      63,
+      396,
+      406
+    ],
+    "width": 365,
+    "height": 343
+  },
+  "soil-seeded-v6": {
+    "sourceRect": [
+      836,
+      0,
+      1254,
+      418
+    ],
+    "trimRect": [
+      17,
+      37,
+      372,
+      405
+    ],
+    "width": 355,
+    "height": 368
+  },
+  "crop-seedling": {
+    "sourceRect": [
+      0,
+      418,
+      418,
+      836
+    ],
+    "trimRect": [
+      0,
+      29,
+      418,
+      416
+    ],
+    "width": 418,
+    "height": 387
+  },
+  "crop-green": {
+    "sourceRect": [
+      418,
+      418,
+      836,
+      836
+    ],
+    "trimRect": [
+      0,
+      9,
+      418,
+      418
+    ],
+    "width": 418,
+    "height": 409
+  },
+  "crop-ripe": {
+    "sourceRect": [
+      836,
+      418,
+      1254,
+      836
+    ],
+    "trimRect": [
+      1,
+      3,
+      402,
+      418
+    ],
+    "width": 401,
+    "height": 415
+  },
+  "fish-gold": {
+    "sourceRect": [
+      0,
+      836,
+      418,
+      1254
+    ],
+    "trimRect": [
+      42,
+      7,
+      404,
+      418
+    ],
+    "width": 362,
+    "height": 411
+  },
+  "fish-blue": {
+    "sourceRect": [
+      418,
+      836,
+      836,
+      1254
+    ],
+    "trimRect": [
+      7,
+      0,
+      388,
+      418
+    ],
+    "width": 381,
+    "height": 418
+  },
+  "fish-koi": {
+    "sourceRect": [
+      830,
+      836,
+      1254,
+      1254
+    ],
+    "trimRect": [
+      7,
+      2,
+      386,
+      364
+    ],
+    "width": 379,
+    "height": 362
+  }
+}

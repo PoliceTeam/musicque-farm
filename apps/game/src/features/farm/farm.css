@@ -1,0 +1,759 @@
+:root {
+  font-family: "Nunito", "Trebuchet MS", system-ui, sans-serif;
+  color: #f8f8ed;
+  background: #72b756;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  overflow: hidden;
+}
+button,
+a,
+summary {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+}
+#farm-canvas {
+  position: fixed;
+  inset: 0;
+}
+#farm-canvas canvas {
+  display: block;
+  touch-action: none;
+  cursor: pointer;
+}
+.farm-menu {
+  position: fixed;
+  top: 12px;
+  left: 14px;
+  z-index: 3;
+}
+.farm-menu summary {
+  padding: 8px 15px;
+  border: 2px solid #fff6d8;
+  border-radius: 7px;
+  background: linear-gradient(#278fd3, #1767a0);
+  box-shadow:
+    0 0 0 2px #526f79,
+    0 3px 0 #224c62;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  list-style: none;
+}
+.farm-menu summary::-webkit-details-marker {
+  display: none;
+}
+.farm-menu nav {
+  margin-top: 10px;
+  width: 218px;
+  padding: 6px;
+  border: 2px solid #9ed0e3;
+  border-radius: 8px;
+  background: #193f55f2;
+  box-shadow: 0 4px 10px #153b4960;
+}
+.farm-menu a,
+.farm-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: #fff9de;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+}
+.farm-menu a:hover,
+.farm-menu button:hover {
+  background: #377490;
+}
+.farm-menu p {
+  padding: 0 10px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #b8d7e1;
+}
+.farm-title {
+  position: fixed;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  min-width: 180px;
+  padding: 7px 22px;
+  border: 2px solid #87c7e3;
+  outline: 1px solid #35657d;
+  border-radius: 10px;
+  background: linear-gradient(#25536ac9, #1d4058e8);
+  box-shadow: inset 0 1px 0 #c7e4e85c;
+  text-align: center;
+  font-size: 19px;
+  font-weight: 900;
+  text-shadow: 0 2px 0 #193748;
+  pointer-events: none;
+}
+.farm-capacity {
+  position: fixed;
+  right: 14px;
+  top: 13px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 5px;
+  border: 1px solid #8bbed0;
+  border-radius: 6px;
+  background: #123547dd;
+  box-shadow: 0 2px 2px #173c4445;
+  font-size: 16px;
+}
+.farm-capacity > span {
+  font-size: 18px;
+}
+.farm-capacity strong {
+  color: #ffdf79;
+  font-size: 15px;
+}
+.farm-capacity strong span {
+  color: #d3e5e5;
+  font-size: 12px;
+  font-weight: 700;
+}
+.farm-selection {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: min(245px, calc(100vw - 24px));
+  border: 2px solid #8bc3d7;
+  border-radius: 8px;
+  background: #183e52ed;
+  box-shadow:
+    0 3px 0 #244d61,
+    0 4px 14px #16364550;
+}
+.farm-selection[hidden],
+[hidden] {
+  display: none;
+}
+.farm-selection header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-bottom: 1px solid #5f879744;
+  background: #54829b33;
+}
+.farm-selection h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+  color: #fff2ca;
+}
+.farm-selection button {
+  border: 0;
+  background: transparent;
+  color: #d2e7ee;
+  font-size: 20px;
+  padding: 0 2px;
+  line-height: 1;
+}
+.farm-selection p {
+  margin: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.farm-selection small {
+  display: block;
+  margin: 0 10px 10px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #a8c6d1;
+}
+.farm-selection small:empty {
+  display: none;
+}
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid #ffdf79;
+  outline-offset: 4px;
+}
+@media (max-width: 600px) {
+  .farm-menu {
+    left: 9px;
+    top: 10px;
+  }
+  .farm-menu summary {
+    padding: 7px 9px;
+    font-size: 11px;
+  }
+  .farm-title {
+    top: 7px;
+    min-width: 128px;
+    padding: 6px 15px;
+    font-size: 16px;
+  }
+  .farm-capacity {
+    top: 12px;
+    right: 9px;
+    padding: 3px 6px;
+  }
+  .farm-capacity > span {
+    font-size: 13px;
+  }
+  .farm-capacity strong {
+    font-size: 12px;
+  }
+  .farm-capacity strong span {
+    font-size: 10px;
+  }
+  .farm-selection {
+    right: 10px;
+    bottom: 12px;
+  }
+}
+
+/* Compact cream and wood UI for the modular farm. */
+.farm-style-sample {
+  color: #5d4938;
+  background: #88bc64;
+}
+.farm-style-sample .farm-menu summary {
+  background: #fff3d5;
+  color: #5b4935;
+  border: 2px solid #96724b;
+  border-radius: 12px;
+  box-shadow:
+    inset 0 2px #fffaf0,
+    0 3px #725538,
+    0 5px 10px #42563225;
+  padding: 10px 16px;
+  letter-spacing: 0;
+}
+.farm-style-sample .farm-menu nav {
+  background: #fff6df;
+  border-color: #aa8758;
+  color: #5b4935;
+  border-radius: 12px;
+}
+.farm-style-sample .farm-menu a,
+.farm-style-sample .farm-menu button {
+  color: #5b4935;
+}
+.farm-style-sample .farm-menu a:hover,
+.farm-style-sample .farm-menu button:hover {
+  background: #e8edcf;
+}
+.farm-style-sample .farm-menu p {
+  color: #85735c;
+}
+.farm-style-sample .farm-title {
+  background: #fff3d8;
+  color: #5d4938;
+  border: 2px solid #aa8758;
+  outline: none;
+  border-radius: 0 0 16px 16px;
+  box-shadow:
+    0 3px #8a6a47,
+    inset 0 2px #fffaf0;
+  text-shadow: none;
+  padding: 10px 25px;
+  top: -2px;
+  font-size: 18px;
+}
+.farm-style-sample .farm-capacity {
+  background: #fff3d8;
+  border: 2px solid #aa8758;
+  border-radius: 12px;
+  box-shadow: 0 3px #8a6a47;
+  padding: 7px 10px;
+}
+.farm-style-sample .farm-capacity strong {
+  color: #507b3e;
+}
+.farm-style-sample .farm-capacity strong span {
+  color: #85735c;
+}
+.farm-review-note {
+  position: fixed;
+  top: 58px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: #fff5dfd9;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6f7550;
+  pointer-events: none;
+}
+.farm-style-sample .farm-selection {
+  width: min(340px, calc(100vw - 24px));
+  right: 50%;
+  transform: translateX(50%);
+  bottom: 20px;
+  border: 2px solid #aa8758;
+  border-radius: 16px;
+  background: #fff5dd;
+  color: #66523f;
+  box-shadow:
+    0 4px #8a6a47,
+    0 8px 22px #374b3430;
+  padding: 6px;
+}
+.farm-style-sample .farm-selection header {
+  border: none;
+  background: transparent;
+  padding: 7px 10px 0;
+}
+.farm-style-sample .farm-selection h2 {
+  color: #5e4933;
+  font-size: 15px;
+}
+
+.farm-style-sample .farm-selection p {
+  margin: 2px 10px 12px;
+  color: #7a7958;
+}
+.farm-style-sample .farm-selection small {
+  color: #9a8972;
+  text-align: center;
+}
+.farm-tools {
+  display: flex;
+  gap: 8px;
+  padding: 0 10px 12px;
+}
+.farm-style-sample .farm-tools button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  min-height: 54px;
+  line-height: 1.35;
+  background: #6e9857;
+  color: #fff7e6;
+  border: 1px solid #50763e;
+  border-radius: 10px;
+  box-shadow: 0 3px #4e733b;
+  font-size: 11px;
+  font-weight: 800;
+}
+.farm-tools img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.farm-style-sample .farm-tools button:hover:enabled {
+  background: #7ca760;
+}
+.farm-style-sample .farm-tools button:active:enabled {
+  transform: translateY(2px);
+  box-shadow: 0 1px #4e733b;
+}
+.farm-style-sample .farm-tools button:disabled {
+  background: #eadfc6;
+  color: #a18d6e;
+  border-color: #d3c3a5;
+  box-shadow: 0 3px #d3c3a5;
+  cursor: default;
+}
+.farm-style-sample .farm-tools button:disabled img {
+  opacity: 0.5;
+}
+.farm-style-sample .farm-selection header button {
+  color: #887255;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #eadcbd;
+}
+@media (max-width: 600px) {
+  .farm-style-sample .farm-menu summary {
+    padding: 9px 12px;
+  }
+  .farm-style-sample .farm-title {
+    min-width: 120px;
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+  .farm-style-sample .farm-capacity {
+    padding: 7px;
+  }
+  .farm-review-note {
+    top: 51px;
+    font-size: 10px;
+  }
+  .farm-style-sample .farm-selection {
+    bottom: 16px;
+  }
+}
+.farm-style-sample .farm-selection {
+  width: min(390px, calc(100vw - 24px));
+}
+.farm-style-sample .farm-capacity {
+  gap: 12px;
+  font-size: 12px;
+}
+.farm-coins {
+  color: #8b622d;
+  font-weight: 800;
+}
+@media (max-width: 600px) {
+  .farm-style-sample .farm-capacity {
+    flex-direction: column;
+    gap: 1px;
+    font-size: 10px;
+    padding: 5px;
+  }
+  .farm-style-sample .farm-selection {
+    bottom: 10px;
+  }
+}
+
+.farm-style-sample .farm-tools button[hidden] {
+  display: none;
+}
+.farm-style-sample .farm-tools button span {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.farm-style-sample :is(#unit-expand, #unit-feed, #unit-buy) {
+  border: 1px solid #ad9565;
+  border-radius: 10px;
+  background: #76924d;
+  color: #fffbe9;
+  padding: 12px 20px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.farm-style-sample :is(#unit-expand, #unit-feed, #unit-buy):disabled {
+  background: #ddd0af;
+  color: #847957;
+  cursor: default;
+}
+.farm-style-sample :is(#unit-expand, #unit-feed, #unit-buy)[hidden] {
+  display: none;
+}
+.farm-style-sample .farm-tools[hidden] {
+  display: none;
+}
+
+.farm-style-sample #unit-feed {
+  margin: 8px 0 0;
+}
+
+#unit-purchase {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+#unit-purchase[hidden],
+#animal-species[hidden] {
+  display: none;
+}
+#unit-purchase label {
+  font-size: 13px;
+}
+#animal-species {
+  padding: 8px;
+  border: 1px solid #b5a581;
+  border-radius: 8px;
+  background: #fff8e6;
+  color: #51452f;
+  font: inherit;
+  font-size: 13px;
+}
+
+:is(#warehouse, #batch, #kitchen) {
+  width: min(530px, calc(100vw - 28px));
+  border: 3px solid #77b5cb;
+  border-radius: 22px;
+  padding: 18px;
+  background: #fffefa;
+  color: #476978;
+  box-shadow:
+    0 5px 0 #427e97,
+    0 18px 60px #203c4855;
+}
+dialog::backdrop {
+  background: #13313e55;
+}
+dialog header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+dialog h2 {
+  margin: 0;
+  font-size: 20px;
+}
+dialog button {
+  border: 1px solid #8ab5c6;
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #34586b;
+  background: #e4f2f6;
+  font-size: 13px;
+  font-weight: 800;
+}
+dialog button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.warehouse-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0 12px;
+}
+.warehouse-tabs [aria-pressed="true"] {
+  background: #fff0bd;
+  border-color: #c8a553;
+}
+#warehouse-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+.stock-slot {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: #d6e9f2;
+  border: 2px solid transparent;
+  display: grid;
+  place-items: center;
+}
+.stock-slot.active {
+  border-color: #ddb650;
+  background: #fff9e6;
+}
+.stock-slot span {
+  font-size: 29px;
+}
+.stock-slot b {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  color: #927430;
+  font-size: 12px;
+}
+.warehouse-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+dialog p {
+  line-height: 1.6;
+  font-size: 14px;
+}
+dialog small {
+  color: #78919c;
+}
+#batch-progress {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 2px solid #aa8758;
+  border-radius: 12px;
+  background: #fff3d8;
+  color: #5d4938;
+  padding: 10px 15px;
+  font-size: 12px;
+}
+
+/* Reserve the detail and command rows so switching stock tabs never moves the modal. */
+#warehouse-detail {
+  min-height: 44px;
+  margin: 14px 0;
+}
+#warehouse .warehouse-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 52px;
+  align-items: stretch;
+}
+#warehouse {
+  height: fit-content;
+  max-height: calc(100dvh - 28px);
+  overflow-y: auto;
+}
+
+#kitchen select {
+  width: 100%;
+}
+#kitchen ul {
+  padding-left: 22px;
+  line-height: 1.8;
+}
+#kitchen section {
+  padding: 12px;
+  margin: 12px 0;
+  border: 1px solid #c4a575;
+  border-radius: 12px;
+  background: #fff3cf;
+}
+.farm-selection {
+  max-height: calc(100dvh - 110px);
+  overflow-y: auto;
+}
+
+.chest-upgrade {
+  padding: 10px 12px;
+  border: 1px solid #b49563;
+  border-radius: 12px;
+  background: #fff3d8;
+  margin-bottom: 12px;
+}
+.chest-upgrade p {
+  margin: 6px 0;
+}
+
+#warehouse > small {
+  display: block;
+  margin-top: 14px;
+  line-height: 1.6;
+}
+#warehouse > button {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.game-ui .farm-picture-select {
+  position: relative;
+  min-width: 0;
+}
+.game-ui .farm-picture-trigger,
+.game-ui .farm-picture-options [role="option"] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  padding: 8px 12px;
+  color: var(--ui-ink);
+  text-align: left;
+  font: inherit;
+}
+.game-ui .farm-picture-trigger {
+  border: 2px solid #aa8758;
+  border-radius: 12px;
+  background: #fff8e7;
+  cursor: pointer;
+}
+.game-ui .farm-picture-trigger:focus-visible {
+  outline: 3px solid #648b40;
+  outline-offset: 2px;
+}
+.game-ui .farm-picture-trigger img,
+.game-ui .farm-picture-options img {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  object-fit: contain;
+}
+.game-ui .farm-picture-trigger > span:nth-child(2),
+.game-ui .farm-picture-options [role="option"] > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.game-ui .farm-picture-options {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 4px;
+  box-sizing: border-box;
+  max-height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 2px solid #aa8758;
+  border-radius: 12px;
+  background: #fff8e7;
+  box-shadow: 0 8px 22px #49341b30;
+}
+.game-ui .farm-picture-options [role="option"] {
+  border-radius: 8px;
+  cursor: pointer;
+}
+.game-ui .farm-picture-options [role="option"].is-active {
+  background: #e2edc8;
+}
+.game-ui .farm-picture-options [aria-selected="true"] {
+  font-weight: 700;
+}
+.game-ui #kitchen .kitchen-recipe-detail li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+.game-ui #kitchen .kitchen-recipe-detail li img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex: 0 0 36px;
+}
+
+/* Keep scrolling controls quiet on the farm's cream panels and picture menus. */
+.game-ui :is(dialog:has(.farm-picture-select), .ui-dialog-surface:has(.farm-picture-select), .farm-picture-options) {
+  scrollbar-width: thin;
+  scrollbar-color: #bda781 transparent;
+}
+.game-ui
+  :is(
+    dialog:has(.farm-picture-select),
+    .ui-dialog-surface:has(.farm-picture-select),
+    .farm-picture-options
+  )::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.game-ui
+  :is(
+    dialog:has(.farm-picture-select),
+    .ui-dialog-surface:has(.farm-picture-select),
+    .farm-picture-options
+  )::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 12px 0;
+}
+.game-ui
+  :is(
+    dialog:has(.farm-picture-select),
+    .ui-dialog-surface:has(.farm-picture-select),
+    .farm-picture-options
+  )::-webkit-scrollbar-thumb {
+  background: #bda781;
+  border-radius: 999px;
+}
+.game-ui
+  :is(
+    dialog:has(.farm-picture-select),
+    .ui-dialog-surface:has(.farm-picture-select),
+    .farm-picture-options
+  )::-webkit-scrollbar-thumb:hover {
+  background: #9e825b;
+}

@@ -1,0 +1,167 @@
+[
+  {
+    "key": "felt",
+    "file": "felt.webp",
+    "source": "diamond-reference.png",
+    "box": [
+      400,
+      160,
+      656,
+      416
+    ]
+  },
+  {
+    "key": "banner",
+    "file": "banner.webp",
+    "source": "lobby-atlas.png",
+    "box": [
+      40,
+      8,
+      1270,
+      293
+    ]
+  },
+  {
+    "key": "tien-len",
+    "file": "tien-len.webp",
+    "source": "lobby-atlas.png",
+    "box": [
+      17,
+      314,
+      338,
+      650
+    ]
+  },
+  {
+    "key": "phom",
+    "file": "phom.webp",
+    "source": "lobby-atlas.png",
+    "box": [
+      343,
+      314,
+      653,
+      650
+    ]
+  },
+  {
+    "key": "diamonds",
+    "file": "diamonds.webp",
+    "source": "lobby-atlas.png",
+    "box": [
+      654,
+      314,
+      971,
+      650
+    ]
+  },
+  {
+    "key": "bau-cua",
+    "file": "bau-cua.webp",
+    "source": "lobby-atlas.png",
+    "box": [
+      976,
+      314,
+      1306,
+      650
+    ]
+  },
+  {
+    "key": "slots",
+    "file": "slots.webp",
+    "source": "lobby-atlas.png",
+    "box": [
+      157,
+      660,
+      484,
+      1012
+    ]
+  },
+  {
+    "key": "chess",
+    "file": "chess.webp",
+    "source": "lobby-atlas.png",
+    "box": [
+      488,
+      660,
+      822,
+      1012
+    ]
+  },
+  {
+    "key": "chinese-chess",
+    "file": "chinese-chess.webp",
+    "source": "lobby-atlas.png",
+    "box": [
+      830,
+      660,
+      1160,
+      1012
+    ]
+  },
+  {
+    "key": "gem-attack",
+    "file": "gem-attack.webp",
+    "source": "diamond-reference.png",
+    "box": [
+      2414,
+      54,
+      2539,
+      184
+    ]
+  },
+  {
+    "key": "gem-heal",
+    "file": "gem-heal.webp",
+    "source": "diamond-reference.png",
+    "box": [
+      2541,
+      68,
+      2652,
+      176
+    ]
+  },
+  {
+    "key": "gem-mana",
+    "file": "gem-mana.webp",
+    "source": "diamond-reference.png",
+    "box": [
+      2537,
+      302,
+      2655,
+      416
+    ]
+  },
+  {
+    "key": "gem-score",
+    "file": "gem-score.webp",
+    "source": "diamond-reference.png",
+    "box": [
+      2541,
+      182,
+      2652,
+      297
+    ]
+  },
+  {
+    "key": "gem-shield",
+    "file": "gem-shield.webp",
+    "source": "diamond-reference.png",
+    "box": [
+      2056,
+      228,
+      2174,
+      338
+    ]
+  },
+  {
+    "key": "gem-luck",
+    "file": "gem-luck.webp",
+    "source": "diamond-reference.png",
+    "box": [
+      1696,
+      68,
+      1809,
+      181
+    ]
+  }
+]

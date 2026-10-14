@@ -1,0 +1,56 @@
+{
+  "name": "@chibi-town/character-core",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./character-types": {
+      "types": "./dist/character-types.d.ts",
+      "default": "./dist/character-types.js"
+    },
+    "./animation-logic": {
+      "types": "./dist/animation-logic.d.ts",
+      "default": "./dist/animation-logic.js"
+    },
+    "./layout-logic": {
+      "types": "./dist/layout-logic.d.ts",
+      "default": "./dist/layout-logic.js"
+    },
+    "./outfit-logic": {
+      "types": "./dist/outfit-logic.d.ts",
+      "default": "./dist/outfit-logic.js"
+    },
+    "./item-loader": {
+      "types": "./dist/item-loader.d.ts",
+      "default": "./dist/item-loader.js"
+    },
+    "./random": {
+      "types": "./dist/random.d.ts",
+      "default": "./dist/random.js"
+    },
+    "./item-catalog": {
+      "types": "./dist/item-catalog.d.ts",
+      "default": "./dist/item-catalog.js"
+    },
+    "./sprite-types": {
+      "types": "./dist/sprite-types.d.ts",
+      "default": "./dist/sprite-types.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check . --formatter-enabled=false",
+    "test": "pnpm build && node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

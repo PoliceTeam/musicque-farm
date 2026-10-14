@@ -1,0 +1,42 @@
+{
+  "name": "@chibi-town/api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json --resolve-full-paths --resolve-full-extension .js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "biome check . --formatter-enabled=false",
+    "serve": "node --env-file-if-exists=.env dist/main.js",
+    "db:up": "docker compose up -d --wait",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@chibi-town/character-core": "workspace:*",
+    "@chibi-town/contracts": "workspace:*",
+    "@chibi-town/game-content": "workspace:*",
+    "@chibi-town/game-service": "workspace:*",
+    "@fastify/cookie": "^11.1.3",
+    "@fastify/websocket": "11.3.1",
+    "drizzle-orm": "^0.45.4",
+    "fastify": "5.12.5",
+    "pg": "^8.23.1",
+    "redis": "5.8.2"
+  },
+  "devDependencies": {
+    "@chibi-town/api-sdk": "workspace:*",
+    "@chibi-town/arcade-games": "workspace:*",
+    "@electric-sql/pglite": "^0.5.9",
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "@types/ws": "^8.18.2",
+    "drizzle-kit": "^0.31.11",
+    "tsc-alias": "^1.9.7",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

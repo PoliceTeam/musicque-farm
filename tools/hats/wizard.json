@@ -1,0 +1,31 @@
+{
+  "atlas": "docs/art/wizard-atlas-v1.png",
+  "cells": 3,
+  "width": 54,
+  "heights": [
+    38,
+    40,
+    42
+  ],
+  "alphaThreshold": 128,
+  "centerX": -2,
+  "bottomY": -44,
+  "levels": 5,
+  "higherLevels": {
+    "firstLevel": 4,
+    "atlas": "docs/art/wizard-high-atlas-v3.png",
+    "cells": 2,
+    "widths": [
+      56,
+      58
+    ],
+    "heights": [
+      43,
+      46
+    ],
+    "brimRows": [
+      39,
+      41
+    ]
+  }
+}

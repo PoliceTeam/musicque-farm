@@ -1,0 +1,35 @@
+[
+  {
+    "id": "life-girl",
+    "at": [795, 637],
+    "size": [15, 26],
+    "motion": "walk",
+    "frames": "girl-map",
+    "route": [[798, 635], [798, 616], [799, 602]],
+    "speed": 3
+  },
+  {
+    "id": "life-farmer",
+    "at": [425, 474],
+    "size": [22, 30],
+    "motion": "walk",
+    "frames": "farmer-map",
+    "route": [[425, 472], [425, 451], [440, 435]],
+    "speed": 3.2
+  },
+  {
+    "id": "life-cow",
+    "at": [483, 461],
+    "size": [40, 30],
+    "motion": "pasture",
+    "frames": "cow-map",
+    "route": [[481, 457], [499, 457]],
+    "speed": 1.5
+  },
+  {
+    "id": "life-gull",
+    "at": [408, 828],
+    "size": [48, 30],
+    "motion": "fly"
+  }
+]

@@ -1,0 +1,127 @@
+{
+  "parts": [
+    {
+      "id": "shirt.goku",
+      "label": "Gi Goku",
+      "template": "shirt.tank",
+      "detail": "gi"
+    },
+    {
+      "id": "pants.goku",
+      "label": "Quần Gi Goku",
+      "template": "pants",
+      "detail": "waist"
+    },
+    {
+      "id": "shoes.goku",
+      "label": "Giày Goku",
+      "template": "shoes",
+      "detail": "shoeTrim"
+    },
+    {
+      "id": "wrist.goku",
+      "label": "Băng tay Goku",
+      "template": "wrist.band"
+    }
+  ],
+  "palette": {
+    "": "#183b77",
+    "": "#2458a0",
+    "": "#3a6ee0",
+    "": "#a82f22",
+    "": "#eee9d8",
+    "": "#25242b",
+    "": "#df3828",
+    "": "#70171c",
+    "": "#d83129",
+    "": "#fa7853",
+    "": "#985c29",
+    "": "#efb455",
+    "": "#3b201b",
+    "": "#653827",
+    "": "#995b38",
+    "": "#c18250"
+  },
+  "overlays": {
+    "shirt.goku": [
+      {
+        "x": 10,
+        "y": 5,
+        "rows": [
+          ".bbb.",
+          "bwkwb",
+          "bkkkb",
+          "bwkwb",
+          ".bbb."
+        ],
+        "colors": {
+          "b": "",
+          "w": "",
+          "k": ""
+        }
+      },
+      {
+        "x": 7,
+        "y": 10,
+        "rows": [
+          ".ddddd.",
+          "dslllsd",
+          ".dslsd.",
+          ".ds.dsd",
+          "dsd.dsd",
+          "dsd..ds",
+          "dd...dd"
+        ],
+        "colors": {
+          "d": "",
+          "s": "",
+          "l": ""
+        }
+      }
+    ]
+  },
+  "staff": {
+    "id": "held.nyoibo",
+    "label": "Gậy Như Ý",
+    "slot": "held",
+    "layer": 35,
+    "top": -48,
+    "bottom": -3,
+    "grip": [
+      9,
+      -14
+    ],
+    "slope": 0.35,
+    "colors": [
+      "",
+      "",
+      ""
+    ],
+    "tip": [
+      "",
+      "",
+      ""
+    ]
+  },
+  "tail": {
+    "id": "tail.monkey",
+    "label": "Đuôi khỉ",
+    "slot": "tail",
+    "layer": 8,
+    "colors": {
+      "outline": "",
+      "shadow": "",
+      "base": "",
+      "light": ""
+    },
+    "atlas": "docs/art/monkey-tail-v2.png",
+    "size": [
+      26,
+      18
+    ],
+    "offset": [
+      -34,
+      -27
+    ]
+  }
+}

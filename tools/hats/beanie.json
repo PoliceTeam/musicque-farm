@@ -1,0 +1,14 @@
+{
+  "atlas": "docs/art/beanie-atlas-v1.png",
+  "cells": 3,
+  "width": 48,
+  "heights": [28, 28, 33],
+  "alphaThreshold": 128,
+  "centerX": -2,
+  "bottomY": -44,
+  "female": {
+    "width": 44,
+    "heights": [26, 26, 31],
+    "bottomY": -45
+  }
+}

@@ -1,0 +1,14 @@
+@piece shirt.tank
+.YtZ.............
+.YttV.......VtV..
+..YtYV......VtV..
+..YttVV....VttV..
+..YttttVVVVtTTV..
+..YtTTTttttTTTY..
+..ttTTTTTTTTTTt..
+.YtttTTTTTTTTTt..
+.ttttTTTTTTTTTtZ.
+YttttTTTTTTTTTtY.
+.ttttTTTTTTTTTtY.
+..ttttTTTTTTTYZZK
+.K..............K

@@ -1,0 +1,27 @@
+{
+  "name": "musicque-farm",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "turbo run dev --concurrency=16",
+    "build": "turbo run build",
+    "preview": "pnpm --filter @chibi-town/game preview",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format:check": "biome format . && node tools/format/function-spacing.mjs --check",
+    "format": "biome format --write . && node tools/format/function-spacing.mjs --write && biome format --write .",
+    "check": "pnpm format:check && pnpm format:test && turbo run lint typecheck test",
+    "format:test": "node --test tools/format/function-spacing.test.mjs"
+  },
+  "devDependencies": {
+    "turbo": "2.11.7",
+    "@biomejs/biome": "2.5.15",
+    "typescript": "^5.9.0"
+  }
+}

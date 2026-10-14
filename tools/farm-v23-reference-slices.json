@@ -1,0 +1,77 @@
+[
+  {
+    "source": "farm-dessert-reference-v1.png",
+    "frames": {
+      "food-v23-starfruitYogurt-0": [
+        10,
+        0,
+        308,
+        265
+      ],
+      "food-v23-fruitMilkTea-0": [
+        324,
+        0,
+        605,
+        281
+      ],
+      "food-v23-sweetSoup-0": [
+        617,
+        0,
+        929,
+        281
+      ],
+      "food-v23-peachTea-0": [
+        950,
+        0,
+        1210,
+        281
+      ],
+      "food-v23-friedIceCream-0": [
+        1213,
+        0,
+        1536,
+        281
+      ]
+    }
+  },
+  {
+    "source": "farm-starfruit-tree-reference-v1.png",
+    "frames": {
+      "crop-v23-starfruit-0": [
+        20,
+        445,
+        308,
+        755
+      ],
+      "crop-v23-starfruit-1": [
+        308,
+        270,
+        707,
+        755
+      ],
+      "crop-v23-starfruit-2": [
+        713,
+        142,
+        1200,
+        758
+      ],
+      "crop-v23-starfruit-3": [
+        1200,
+        90,
+        1774,
+        759
+      ]
+    }
+  },
+  {
+    "source": "farm-starfruit-reference-v1.png",
+    "frames": {
+      "crop-v23-starfruit-4": [
+        1250,
+        175,
+        1774,
+        721
+      ]
+    }
+  }
+]

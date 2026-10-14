@@ -1,0 +1,50 @@
+{
+  "name": "@chibi-town/arcade-games-react",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./theme.css": "./src/theme.css",
+    "./table-settings": {
+      "types": "./dist/_components/table-settings.d.ts",
+      "default": "./dist/_components/table-settings.js"
+    },
+    "./gem-replay": {
+      "types": "./dist/_utils/gem-replay.d.ts",
+      "default": "./dist/_utils/gem-replay.js"
+    },
+    "./locales/vi": {
+      "types": "./dist/locales/vi.d.ts",
+      "default": "./dist/locales/vi.js"
+    },
+    "./table-navigation": {
+      "types": "./dist/_utils/table-navigation.d.ts",
+      "default": "./dist/_utils/table-navigation.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check . --formatter-enabled=false"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "react": "^19.3.0",
+    "@chibi-town/arcade-games": "workspace:*",
+    "@chibi-town/contracts": "workspace:*",
+    "@chibi-town/ui": "workspace:*",
+    "@chibi-town/game-content": "workspace:*",
+    "@chibi-town/game-audio": "workspace:*",
+    "@chibi-town/character-core": "workspace:*",
+    "i18next": "^26.4.3",
+    "react-i18next": "^17.0.16"
+  }
+}

@@ -1,0 +1,174 @@
+import { createRealtimeClient } from '@chibi-town/api-sdk';
+import { Action } from '@chibi-town/character-core/animation-logic';
+import { defaultOutfit } from '@chibi-town/character-core/outfit-logic';
+import { decodeRealtimeCommand, decodeRealtimeEvent, type MapPlayer } from '@chibi-town/contracts/realtime';
+import { describe, expect, it } from 'vitest';
+import { createRemotePlayers } from '@/features/location/_utils/remote-players-logic';
+
+const player = (id: string, x = 0, y = 0): MapPlayer => ({
+  id,
+  name: id,
+  level: 1,
+  outfit: { ...defaultOutfit },
+  x,
+  y,
+});
+
+describe('remote players in a map channel', () => {
+  it('follows server events and never adds the local player', () => {
+    const others = createRemotePlayers('me');
+    others.apply({ type: 'map.state', mapId: 'street', channelId: 0, players: [player('a'), player('me')] });
+    others.apply({ type: 'map.join', player: player('b', 50, 50) });
+    others.apply({ type: 'map.join', player: player('me') });
+    expect([...others.players.keys()]).toEqual(['a', 'b']);
+    others.apply({ type: 'map.leave', id: 'a' });
+    others.apply({ type: 'map.move', id: 'gone', x: 1, y: 1 });
+    expect([...others.players.keys()]).toEqual(['b']);
+    others.apply({ type: 'map.state', mapId: 'street', channelId: 1, players: [] });
+    expect(others.players.size).toBe(0);
+  });
+
+  it('walks towards a reported position at walking speed and stops there', () => {
+    const others = createRemotePlayers('me');
+    others.apply({ type: 'map.join', player: player('a', 100, 100) });
+    others.apply({ type: 'map.move', id: 'a', x: 40, y: 100 });
+    others.step(0.25);
+    const walker = others.players.get('a')!;
+    expect([walker.x, walker.y]).toEqual([75, 100]);
+    expect([walker.avatar.action, walker.avatar.mirror]).toEqual([Action.Walk, true]);
+    others.step(1);
+    others.step(0.1);
+    expect([walker.x, walker.y, walker.avatar.action]).toEqual([40, 100, Action.Stand]);
+  });
+
+  it('places a far-away player directly instead of running across the map', () => {
+    const others = createRemotePlayers('me');
+    others.apply({ type: 'map.join', player: player('a', 0, 0) });
+    others.apply({ type: 'map.move', id: 'a', x: 900, y: 0 });
+    others.step(0.016);
+    expect(others.players.get('a')!.x).toBe(900);
+  });
+});
+
+describe('realtime messages', () => {
+  it('accepts well-formed commands and rejects everything else', () => {
+    expect(decodeRealtimeCommand({ type: 'map.move', x: 1, y: 2, extra: true })).toEqual({
+      type: 'map.move',
+      x: 1,
+      y: 2,
+    });
+    expect(decodeRealtimeCommand({ type: 'lobby.watch', gameId: 'tien-len' })).toEqual({
+      type: 'lobby.watch',
+      gameId: 'tien-len',
+    });
+    for (const bad of [
+      null,
+      'map.leave',
+      { type: 'map.move', x: Number.NaN, y: 0 },
+      { type: 'map.move', x: -1, y: 0 },
+      { type: 'map.enter', regionId: 'fun', mapId: '../etc', x: 0, y: 0 },
+      { type: 'lobby.watch', gameId: 'poker' },
+      { type: 'subscribe', topic: 'map:x:0' },
+    ])
+      expect(decodeRealtimeCommand(bad)).toBeUndefined();
+  });
+
+  it('drops malformed events before they reach listeners', () => {
+    expect(decodeRealtimeEvent({ type: 'map.join', player: { ...player('a'), outfit: null } })).toBeUndefined();
+    expect(decodeRealtimeEvent({ type: 'map.state', mapId: 'm', channelId: 0, players: [{}] })).toBeUndefined();
+    expect(decodeRealtimeEvent({ type: 'match', gameId: 'phom' })).toEqual({ type: 'match', gameId: 'phom' });
+  });
+});
+
+describe('realtime client', () => {
+  function harness() {
+    const sockets: {
+      sent: string[];
+      readyState: number;
+      onopen?: () => void;
+      onmessage?: (e: { data: unknown }) => void;
+      onclose?: () => void;
+      close(): void;
+    }[] = [];
+    const timers: { task: () => void; ms: number }[] = [];
+    const client = createRealtimeClient({
+      url: 'ws://api.test/api/ws',
+      retryMs: 100,
+
+      schedule: (task, ms) => timers.push({ task, ms }),
+
+      open: () => {
+        const socket = {
+          sent: [] as string[],
+          readyState: 0,
+
+          send(data: string) {
+            this.sent.push(data);
+          },
+
+          close() {
+            this.readyState = 3;
+          },
+        };
+        sockets.push(socket as never);
+        return socket as never;
+      },
+    });
+
+    const open = (index: number) => {
+      sockets[index].readyState = 1;
+      sockets[index].onopen?.();
+    };
+
+    const drop = (index: number) => {
+      sockets[index].readyState = 3;
+      sockets[index].onclose?.();
+    };
+
+    return { client, sockets, timers, open, drop };
+  }
+
+  it('re-enters the map at the latest position and re-watches the lobby after a reconnect', () => {
+    const { client, sockets, timers, open, drop } = harness();
+    client.send({ type: 'map.move', x: 1, y: 1 });
+    expect(sockets[0].sent).toEqual([]);
+    open(0);
+    client.send({ type: 'map.enter', regionId: 'fun', mapId: 'street', x: 10, y: 10 });
+    client.send({ type: 'map.move', x: 30, y: 40 });
+    client.send({ type: 'lobby.watch', gameId: 'chess' });
+    drop(0);
+    drop(0);
+    expect(timers.map((timer) => timer.ms)).toEqual([100]);
+    timers[0].task();
+    drop(1);
+    expect(timers[1].ms).toBe(200);
+    timers[1].task();
+    open(2);
+    expect(sockets[2].sent.map((data) => JSON.parse(data))).toEqual([
+      { type: 'map.enter', regionId: 'fun', mapId: 'street', x: 30, y: 40 },
+      { type: 'lobby.watch', gameId: 'chess' },
+    ]);
+    client.send({ type: 'map.leave' });
+    client.send({ type: 'lobby.unwatch' });
+    drop(2);
+    timers[2].task();
+    open(3);
+    expect(sockets[3].sent).toEqual([]);
+  });
+
+  it('delivers valid events to listeners until they unsubscribe or the client closes', () => {
+    const { client, sockets, timers, open, drop } = harness();
+    open(0);
+    const seen: string[] = [];
+    const off = client.subscribe((event) => seen.push(event.type));
+    sockets[0].onmessage?.({ data: '{"type":"lobby","gameId":"phom"}' });
+    sockets[0].onmessage?.({ data: 'garbage' });
+    sockets[0].onmessage?.({ data: '{"type":"unknown"}' });
+    off();
+    sockets[0].onmessage?.({ data: '{"type":"lobby","gameId":"phom"}' });
+    expect(seen).toEqual(['lobby']);
+    client.close();
+    drop(0);
+    expect(timers).toHaveLength(0);
+  });
+});

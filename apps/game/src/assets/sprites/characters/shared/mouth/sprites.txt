@@ -1,0 +1,45 @@
+@piece mouth.line
+K....K
+.KKKK.
+
+@piece mouth.smile
+K.....K
+.K676K.
+..KKK..
+
+@piece mouth.grin
+K.......K
+7KKKKKKK7
+.K57775K.
+..KKKKK..
+
+@piece mouth.small
+.KKK.
+K577K
+.KKK.
+
+@piece mouth.open
+.KKKKK.
+K55555K
+K57775K
+.K777K.
+..KKK..
+
+@piece mouth.o
+.KKK.
+K555K
+K767K
+.KKK.
+
+@piece mouth.sad
+..KKK..
+.K676K.
+K.....K
+
+@piece mouth.laugh
+K........K
+7KKKKKKKK7
+.K555555K.
+.K577775K.
+..K7777K..
+...KKKK...

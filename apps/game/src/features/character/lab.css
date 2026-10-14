@@ -1,0 +1,87 @@
+.character-lab {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ui-ink);
+  font-size: 14px;
+}
+.character-lab .wrap {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+.character-lab h1 {
+  font-size: 22px;
+  margin: 0 0 6px;
+}
+.character-lab h2 {
+  font-size: 16px;
+  margin: 20px 0 10px;
+  color: var(--ui-ink);
+}
+.character-lab .row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.character-lab .row > div {
+  background: var(--ui-paper);
+  border: 2px solid var(--ui-border);
+  border-radius: 16px;
+  padding: 14px;
+}
+.character-lab .fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(130px, 1fr));
+  gap: 8px 12px;
+  min-width: 280px;
+}
+.character-lab .fields label {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ui-muted);
+}
+.character-lab canvas {
+  image-rendering: pixelated;
+  border-radius: 10px;
+  max-width: 100%;
+  height: auto !important;
+}
+.character-lab .bar {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.character-lab .muted {
+  color: var(--ui-muted);
+  font-size: 12px;
+}
+.character-lab .lab-back {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: var(--ui-green-dark);
+  font-weight: 800;
+}
+
+@media (max-width: 600px) {
+  .character-lab .wrap {
+    padding: 12px;
+  }
+  .character-lab .row > div {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .character-lab .fields {
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .character-lab .fields select {
+    min-width: 0;
+    width: 100%;
+  }
+}

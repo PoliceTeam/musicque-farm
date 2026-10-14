@@ -1,0 +1,216 @@
+[
+  {
+    "id": "hair.messy",
+    "cell": [
+      0,
+      0
+    ],
+    "height": 37,
+    "scalp_until": -48
+  },
+  {
+    "id": "hair.fluffy",
+    "cell": [
+      1,
+      0
+    ],
+    "height": 38,
+    "scalp_until": -48
+  },
+  {
+    "id": "hair.spiky",
+    "cell": [
+      0,
+      1
+    ],
+    "height": 46,
+    "crown_shift_x": -2,
+    "crown_until": -48,
+    "scalp_until": -48
+  },
+  {
+    "id": "hair.slick",
+    "cell": [
+      1,
+      1
+    ],
+    "height": 36,
+    "crown_shift_x": -2,
+    "crown_until": -51,
+    "scalp_until": -51,
+    "temple_end_y": -44,
+    "temple_front_x": -14
+  },
+  {
+    "id": "hair.goku",
+    "atlas": "docs/art/goku-hair-atlas-v5.png",
+    "grid": [
+      2,
+      2
+    ],
+    "cell": [
+      0,
+      0
+    ],
+    "height": 38,
+    "scalp_until": -48,
+    "tones": [
+      [
+        22,
+        21,
+        27
+      ],
+      [
+        36,
+        34,
+        42
+      ],
+      [
+        52,
+        50,
+        60
+      ],
+      [
+        76,
+        74,
+        86
+      ],
+      [
+        104,
+        101,
+        116
+      ]
+    ],
+    "width": 50
+  },
+  {
+    "id": "hair.goku.2",
+    "atlas": "docs/art/goku-hair-lv23-v6.png",
+    "grid": [
+      2,
+      1
+    ],
+    "cell": [
+      0,
+      0
+    ],
+    "height": 40,
+    "scalp_until": -48,
+    "width": 50,
+    "tones": [
+      [
+        22,
+        21,
+        27
+      ],
+      [
+        36,
+        34,
+        42
+      ],
+      [
+        52,
+        50,
+        60
+      ],
+      [
+        76,
+        74,
+        86
+      ],
+      [
+        104,
+        101,
+        116
+      ]
+    ],
+    "cluster_sample": true
+  },
+  {
+    "id": "hair.goku.3",
+    "atlas": "docs/art/goku-hair-lv23-v6.png",
+    "grid": [
+      2,
+      1
+    ],
+    "cell": [
+      1,
+      0
+    ],
+    "height": 43,
+    "scalp_until": -48,
+    "width": 50,
+    "tones": [
+      [
+        22,
+        21,
+        27
+      ],
+      [
+        36,
+        34,
+        42
+      ],
+      [
+        52,
+        50,
+        60
+      ],
+      [
+        76,
+        74,
+        86
+      ],
+      [
+        104,
+        101,
+        116
+      ]
+    ],
+    "cluster_sample": true
+  },
+  {
+    "id": "hair.goku.4",
+    "atlas": "docs/art/goku-hair-atlas-v5.png",
+    "grid": [
+      2,
+      2
+    ],
+    "cell": [
+      1,
+      1
+    ],
+    "height": 62,
+    "scalp_until": -48,
+    "long_back": true,
+    "width": 58,
+    "tones": [
+      [
+        12,
+        6,
+        0
+      ],
+      [
+        155,
+        63,
+        0
+      ],
+      [
+        248,
+        168,
+        10
+      ],
+      [
+        250,
+        210,
+        62
+      ],
+      [
+        253,
+        242,
+        173
+      ]
+    ],
+    "cluster_sample": true
+  }
+]

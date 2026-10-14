@@ -1,0 +1,5 @@
+@palette
+ #e8bc61
+ #c9c3cc
+ #ef8d9f
+ #b84b65

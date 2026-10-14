@@ -1,0 +1,6 @@
+@piece sticker.star
+..K..
+.KyK.
+KyyyK
+.KyK.
+.K.K.

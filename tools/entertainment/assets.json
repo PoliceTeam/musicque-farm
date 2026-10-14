@@ -1,0 +1,332 @@
+[
+  {
+    "key": "atm",
+    "file": "atm.webp",
+    "source": 3,
+    "box": [
+      8,
+      303,
+      205,
+      492
+    ]
+  },
+  {
+    "key": "arcade",
+    "file": "arcade.webp",
+    "source": 3,
+    "box": [
+      205,
+      285,
+      401,
+      493
+    ]
+  },
+  {
+    "key": "hall",
+    "file": "hall.webp",
+    "source": 3,
+    "box": [
+      402,
+      262,
+      619,
+      496
+    ]
+  },
+  {
+    "key": "auction",
+    "file": "auction.webp",
+    "source": 3,
+    "box": [
+      700,
+      330,
+      918,
+      505
+    ]
+  },
+  {
+    "key": "prizes",
+    "file": "prizes.webp",
+    "source": 3,
+    "box": [
+      940,
+      349,
+      1168,
+      508
+    ]
+  },
+  {
+    "key": "wheel-base",
+    "file": "wheel-base.webp",
+    "source": 1,
+    "box": [
+      866,
+      242,
+      1047,
+      275
+    ]
+  },
+  {
+    "key": "racing",
+    "file": "racing.webp",
+    "source": 3,
+    "box": [
+      1180,
+      306,
+      1535,
+      509
+    ]
+  },
+  {
+    "key": "wheel-disc",
+    "file": "wheel-disc.webp",
+    "source": 1,
+    "box": [
+      869,
+      115,
+      991,
+      238
+    ]
+  },
+  {
+    "key": "wheel-pointer",
+    "file": "wheel-pointer.webp",
+    "source": 1,
+    "box": [
+      1008,
+      140,
+      1042,
+      190
+    ]
+  },
+  {
+    "key": "tree",
+    "file": "tree.webp",
+    "source": 3,
+    "box": [
+      924,
+      135,
+      1070,
+      268
+    ]
+  },
+  {
+    "key": "tree-alt",
+    "file": "tree-alt.webp",
+    "source": 3,
+    "box": [
+      1068,
+      144,
+      1168,
+      265
+    ]
+  },
+  {
+    "key": "evergreen",
+    "file": "evergreen.webp",
+    "source": 3,
+    "box": [
+      414,
+      691,
+      500,
+      817
+    ]
+  },
+  {
+    "key": "flower-patch",
+    "file": "flower-patch.webp",
+    "source": 3,
+    "box": [
+      758,
+      947,
+      842,
+      1008
+    ]
+  },
+  {
+    "key": "shrubs",
+    "file": "shrubs.webp",
+    "source": 3,
+    "box": [
+      1304,
+      260,
+      1355,
+      306
+    ]
+  },
+  {
+    "key": "cable-profile",
+    "file": "cable-profile.webp",
+    "source": 3,
+    "box": [
+      239,
+      955,
+      242,
+      964
+    ]
+  },
+  {
+    "key": "cable-clamp",
+    "file": "cable-clamp.webp",
+    "source": 3,
+    "box": [
+      315,
+      951,
+      331,
+      973
+    ]
+  },
+  {
+    "key": "utility-pole",
+    "file": "utility-pole.webp",
+    "source": 3,
+    "box": [
+      446,
+      820,
+      484,
+      933
+    ]
+  },
+  {
+    "key": "hydrant",
+    "file": "hydrant.webp",
+    "source": 3,
+    "box": [
+      683,
+      824,
+      744,
+      917
+    ]
+  },
+  {
+    "key": "drain",
+    "file": "drain.webp",
+    "source": 3,
+    "box": [
+      581,
+      657,
+      653,
+      693
+    ]
+  },
+  {
+    "key": "curb",
+    "file": "curb.webp",
+    "source": 3,
+    "box": [
+      663,
+      515,
+      746,
+      561
+    ]
+  },
+  {
+    "key": "road",
+    "file": "road.webp",
+    "source": 3,
+    "box": [
+      906,
+      518,
+      992,
+      554
+    ]
+  },
+  {
+    "key": "lamp",
+    "file": "lamp.webp",
+    "source": 3,
+    "box": [
+      16,
+      818,
+      68,
+      934
+    ]
+  },
+  {
+    "key": "bin",
+    "file": "bin.webp",
+    "source": 3,
+    "box": [
+      600,
+      820,
+      665,
+      923
+    ]
+  },
+  {
+    "key": "billboard",
+    "file": "billboard.webp",
+    "source": 3,
+    "box": [
+      801,
+      794,
+      1170,
+      946
+    ]
+  },
+  {
+    "key": "zone-sign",
+    "file": "zone-sign.webp",
+    "source": 3,
+    "box": [
+      1306,
+      811,
+      1370,
+      925
+    ]
+  },
+  {
+    "key": "cloud",
+    "file": "cloud.webp",
+    "source": 3,
+    "box": [
+      1360,
+      100,
+      1535,
+      172
+    ]
+  },
+  {
+    "key": "skyline",
+    "file": "skyline.webp",
+    "source": 3,
+    "box": [
+      1270,
+      155,
+      1535,
+      256
+    ]
+  },
+  {
+    "key": "paving-a",
+    "file": "paving-a.webp",
+    "source": 3,
+    "box": [
+      23,
+      516,
+      116,
+      598
+    ]
+  },
+  {
+    "key": "paving-b",
+    "file": "paving-b.webp",
+    "source": 3,
+    "box": [
+      135,
+      516,
+      235,
+      598
+    ]
+  },
+  {
+    "key": "paving-c",
+    "file": "paving-c.webp",
+    "source": 3,
+    "box": [
+      253,
+      516,
+      348,
+      598
+    ]
+  }
+]

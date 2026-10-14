@@ -1,0 +1,151 @@
+@piece eyes.big
+.EEEEE..........EEE.
+EEEEEEE........EEEEE
+..WWEEE........WWEEF
+.WWWEEE........WWEEW
+.WEEEEE........EEEEW
+.WBBBBB........CBBBW
+.WbBBBb........bBBbW
+.WAbbbA........bbAbW
+..WbbA..........bAW.
+
+@piece eyes.left
+.EEEEE..........EEE.
+EEEEEEE........EEEEE
+..WEEEW........WEEFW
+.WWEEEW........WEEWW
+.EEEEEW........EEEWW
+.BBBBBW........BBBWW
+.bBBBbW........BBbWW
+.AbbbAW........bAbWW
+..bbAW..........AWW.
+
+@piece eyes.right
+.EEEEE..........EEE.
+EEEEEEE........EEEEE
+..WWWEE........WWWEE
+.WWWWEE........WWWEE
+.WWEEEE........WEEEE
+.WWBBBB........WCBBB
+.WWbBBB........WbBBb
+.WWAbbb........WbbAb
+..WWbb..........WbA.
+
+@piece eyes.wink.near
+................EEE.
+...............EEEEE
+..EEE..........WWEEF
+.EEEEE.........WWEEW
+EE...EE........EEEEW
+...............CBBBW
+...............bBBbW
+...............bbAbW
+................bAW.
+
+@piece eyes.wink.far
+.EEEEE..............
+EEEEEEE.............
+..WWEEE.........EEE.
+.WWWEEE........EEEEE
+.WEEEEE........E...E
+.WBBBBB.............
+.WbBBBb.............
+.WAbbbA.............
+..WbbA..............
+
+@piece eyes.happy
+..EEE...........EEE.
+.EEEEE.........EEEEE
+EE...EE........E...E
+
+@piece eyes.squint
+EEEEEEE........EEEEE
+.WBBBb.........WBBbW
+..bbA...........bbA.
+
+@piece eyes.angry
+EE................EE
+EEEE.............EEE
+.WEEEE.........EEEEF
+.WWEEEE........WEEEW
+.WBBBBB........CBBBW
+.WbBBBb........bBBbW
+.WAbbbA........bbAbW
+..WbbA..........bAW.
+
+@piece eyes.cry
+E.....E........E...E
+.EEEEE..........EEE.
+..E.E...........E.E.
+....................
+...0.............0..
+..011...........011.
+..111...........111.
+...1.............1..
+
+@piece eyes.sparkle
+.EEEEE..........EEE.
+EEEEEEE........EEEEE
+..WWEEE........WWEEF
+.WWWEEE........WWEEW
+.WE2EEE........EE2EW
+.W222BB........C222W
+.Wb2BBb........bB2bW
+.WAbbbA........bbAbW
+..WbbA..........bAW.
+
+@piece eyes.sleep
+E.....E........E...E
+.EEEEE..........EEE.
+
+@piece eyes.blush
+.EEEEE..........EEE.
+EEEEEEE........EEEEE
+..WWEEE........WWEEF
+.WWWEEE........WWEEW
+.WEEEEE........EEEEW
+.WBBBBB........CBBBW
+.WbBBBb........bBBbW
+.WAbbbA........bbAbW
+..WbbA..........bAW.
+.8888..........8888.
+888888.........8888.
+
+@piece eyes.focus
+EEEEEEE........EEEEE
+.WBBBBB........CBBBW
+.WbBBBb........bBBbW
+..WbbA..........bAW.
+
+@piece eyes.tears
+.EEEEE..........EEE.
+EEEEEEE........EEEEE
+..WWEEE........WWEEF
+.WWWEEE........WWEEW
+.WEEEEE........EEEEW
+.WBBBBB........CBBBW
+.WbBBBb........bBBbW
+.WAbbbA........bbAbW
+.0WbbA..........bA0.
+.1................1.
+.1................0.
+.0..................
+
+@piece eyes.heart
+.33.33.........33.33
+3443333........34333
+3333333........33333
+.33333..........333.
+..333............3..
+...3................
+
+@piece eyes.blink
+....................
+....................
+....................
+....................
+....................
+E.....E........E...E
+.EEEEE..........EEE.
+....................
+....................

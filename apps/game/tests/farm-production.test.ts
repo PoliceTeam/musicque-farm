@@ -1,0 +1,161 @@
+import { applyFarmBatch, collectFarmHerd, feedFarmHerd } from '@chibi-town/gameplay/farm-batch-logic';
+import { createFarmProgress, parseFarmProgress } from '@chibi-town/gameplay/farm-crop-logic';
+import { feedFarmUnit } from '@chibi-town/gameplay/farm-feeding-logic';
+import { advanceFarmAnimals, collectFarmProducts, sellFarmItem } from '@chibi-town/gameplay/farm-product-logic';
+import { buyFarmAnimal, farmRecordStage } from '@chibi-town/gameplay/farm-unit-logic';
+import { describe, expect, it } from 'vitest';
+
+const minute = 60000;
+const hour = 3600000;
+describe('care, production, inventory and explicit sales', () => {
+  it('grows a chick only while fed, continues offline, and never sells its eggs automatically', () => {
+    let state = createFarmProgress();
+    state.gems = 100;
+    buyFarmAnimal(state, 'poultry', 'hen', 0);
+    advanceFarmAnimals(state, 12 * hour);
+    expect(farmRecordStage(state.poultry[0], 12 * hour)).toBe(0);
+    feedFarmUnit(state, 'poultry', 12 * hour);
+    advanceFarmAnimals(state, 24 * hour);
+    expect(farmRecordStage(state.poultry[0], 24 * hour)).toBe(1);
+    feedFarmUnit(state, 'poultry', 24 * hour);
+    state = parseFarmProgress(JSON.parse(JSON.stringify(state)));
+    advanceFarmAnimals(state, 36 * hour);
+    expect(farmRecordStage(state.poultry[0], 36 * hour)).toBe(2);
+    expect(collectFarmProducts(state, 'poultry', 36 * hour)).toBe(0);
+    feedFarmUnit(state, 'poultry', 36 * hour);
+    advanceFarmAnimals(state, 42 * hour);
+    const balance = state.coins;
+    expect(collectFarmProducts(state, 'poultry', 42 * hour)).toBe(1);
+    expect(state.inventory.egg).toBe(20);
+    expect(state.coins).toBe(balance);
+    expect(state.poultry).toHaveLength(1);
+    expect(collectFarmProducts(state, 'poultry', 42 * hour)).toBe(0);
+    expect(sellFarmItem(state, 'egg', 1)).toBe(true);
+    expect(state.coins).toBe(balance + 10);
+    expect(state.inventory.egg).toBe(19);
+    expect(sellFarmItem(state, 'egg', 20)).toBe(false);
+  });
+  it('preserves care accrued before refreshing food and caps offline output to one ready product', () => {
+    const state = createFarmProgress();
+    state.gems = 100;
+    buyFarmAnimal(state, 'livestock', 'cow', 0);
+    state.animals[0].ageMs = 72 * hour;
+    feedFarmUnit(state, 'livestock', 0);
+    expect(feedFarmUnit(state, 'livestock', 9 * hour)).toBe(true);
+    expect(state.animals[0].productionMs).toBe(6 * hour);
+    advanceFarmAnimals(state, 1000 * minute);
+    expect(collectFarmProducts(state, 'livestock', 1000 * minute)).toBe(1);
+    expect(collectFarmProducts(state, 'livestock', 2000 * minute)).toBe(0);
+    expect(state.inventory.milk).toBe(30);
+    expect(state.animals).toHaveLength(1);
+  });
+  it('harvests mature pigs and fish once and frees purchased capacity for the next batch', () => {
+    const state = createFarmProgress();
+    state.gems = 100;
+    buyFarmAnimal(state, 'livestock', 'pig', 0);
+    buyFarmAnimal(state, 'pond', 'fish', 0);
+    state.animals[0].ageMs = 48 * hour;
+    state.fish[0].ageMs = 72 * hour;
+    expect(feedFarmHerd(state, 0)).toBe(2);
+    const balance = state.coins;
+    expect(collectFarmHerd(state, 9 * hour)).toBe(2);
+    expect(state.animals).toHaveLength(0);
+    expect(state.fish).toHaveLength(0);
+    expect(state.inventory.pork).toBe(1);
+    expect(state.inventory.fish).toBe(1);
+    expect(state.coins).toBe(balance);
+    expect(state.capacity).toEqual({ livestock: 10, poultry: 6, pond: 2 });
+    expect(collectFarmHerd(state, 9 * hour)).toBe(0);
+    expect(buyFarmAnimal(state, 'pond', 'fish', 9 * hour)).toBe(true);
+    expect(sellFarmItem(state, 'fish', 1)).toBe(true);
+  });
+  it('keeps feeding all herds atomic when funds are insufficient', () => {
+    const state = createFarmProgress();
+    state.gems = 100;
+    buyFarmAnimal(state, 'livestock', 'cow', 0);
+    buyFarmAnimal(state, 'pond', 'fish', 0);
+    state.coins = 60;
+    const previous = structuredClone(state);
+    expect(feedFarmHerd(state, 0)).toBe(0);
+    expect(state).toEqual(previous);
+    state.coins = 75;
+    expect(feedFarmHerd(state, 0)).toBe(2);
+    expect(state.coins).toBe(0);
+  });
+  it('resumes saved production and sanitizes invalid product quantities', () => {
+    const state = createFarmProgress();
+    state.gems = 100;
+    buyFarmAnimal(state, 'poultry', 'duck', 0);
+    state.poultry[0].ageMs = 48 * hour;
+    feedFarmUnit(state, 'poultry', 0);
+    advanceFarmAnimals(state, hour);
+    state.inventory.milk = 4;
+    const restored = parseFarmProgress(JSON.parse(JSON.stringify(state)));
+    expect(collectFarmProducts(restored, 'poultry', 6 * hour)).toBe(1);
+    expect(restored.inventory).toMatchObject({ milk: 4, duckEgg: 20 });
+    expect(parseFarmProgress({ ...state, inventory: { ...state.inventory, wool: -5 } }).inventory.wool).toBe(0);
+    expect(parseFarmProgress({ ...state, animals: [{ species: 'cow', boughtAt: 0, ageMs: -1 }] })).toEqual(
+      createFarmProgress(),
+    );
+  });
+  it('rejects invalid clocks and unsafe sales without crediting coins', () => {
+    const state = createFarmProgress();
+    state.gems = 100;
+    buyFarmAnimal(state, 'poultry', 'hen', 0);
+    const previous = structuredClone(state);
+    expect(advanceFarmAnimals(state, NaN)).toBe(false);
+    expect(collectFarmProducts(state, 'poultry', -1)).toBe(0);
+    expect(state).toEqual(previous);
+    state.inventory.egg = 1;
+    expect(sellFarmItem(state, 'egg', 0.5)).toBe(false);
+    state.coins = Number.MAX_SAFE_INTEGER;
+    expect(sellFarmItem(state, 'egg', 1)).toBe(false);
+    expect(state.inventory.egg).toBe(1);
+  });
+  it('batches only owned eligible plots, reports insufficient funds, and stores all crops', () => {
+    const state = createFarmProgress();
+    state.gems = 100;
+    expect(applyFarmBatch(state, 'till', 0)).toEqual({ completed: 6, eligible: 6 });
+    state.inventory.seed = 1;
+    state.coins = 10;
+    expect(applyFarmBatch(state, 'sow', 0)).toEqual({ completed: 2, eligible: 6 });
+    expect(state.coins).toBe(0);
+    expect(state.plots[6].stage).toBe('dry');
+    expect(state.plots.slice(0, 2).map((plot) => plot.stage)).toEqual(['growing', 'growing']);
+    expect(applyFarmBatch(state, 'water', 0).completed).toBe(0);
+    expect(applyFarmBatch(state, 'harvest', minute)).toEqual({ completed: 2, eligible: 2 });
+    expect(state.inventory.strawberry).toBe(2);
+    expect(state.coins).toBe(0);
+    expect(applyFarmBatch(state, 'harvest', minute).completed).toBe(0);
+    expect(sellFarmItem(state, 'strawberry', 2)).toBe(true);
+    expect(state.coins).toBe(70);
+  });
+});
+
+describe('one-step batch planting', () => {
+  it('tills and waters only affordable empty owned plots, preserving existing crops', () => {
+    const state = createFarmProgress();
+    state.coins = 10;
+    state.seeds.tomato = 1;
+    state.plots[1] = { stage: 'tilled', wateredAt: null };
+    state.plots[2] = { stage: 'growing', wateredAt: 10, cropId: 'carrot' };
+    state.plots[3] = { stage: 'seeded', wateredAt: null, cropId: 'rose' };
+    const before = structuredClone(state.plots);
+    expect(applyFarmBatch(state, 'sow', 100, 'tomato')).toEqual({ completed: 2, eligible: 4 });
+    expect(state.plots[0]).toEqual({ stage: 'growing', wateredAt: 100, cropId: 'tomato' });
+    expect(state.plots[1]).toEqual(state.plots[0]);
+    expect(state.plots.slice(2)).toEqual(before.slice(2));
+    expect(state.seeds.tomato).toBe(0);
+    expect(state.coins).toBe(0);
+    expect(applyFarmBatch(state, 'sow', 100, 'tomato')).toEqual({ completed: 0, eligible: 2 });
+  });
+  it('charges Gem for premium seeds, uses stored seeds first and leaves unaffordable land dry', () => {
+    const state = createFarmProgress();
+    state.gems = 1;
+    state.seeds.aloe = 1;
+    expect(applyFarmBatch(state, 'sow', 100, 'aloe')).toEqual({ completed: 2, eligible: 6 });
+    expect(state.gems).toBe(0);
+    expect(state.coins).toBe(20000);
+    expect(state.plots[2].stage).toBe('dry');
+  });
+});
