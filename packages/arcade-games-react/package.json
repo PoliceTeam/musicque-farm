@@ -28,6 +28,10 @@
     "./table-updates": {
       "types": "./dist/_utils/table-updates.d.ts",
       "default": "./dist/_utils/table-updates.js"
+    },
+    "./table-session": {
+      "types": "./dist/_utils/use-table-session.d.ts",
+      "default": "./dist/_utils/use-table-session.js"
     }
   },
   "scripts": {

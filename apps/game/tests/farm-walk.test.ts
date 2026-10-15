@@ -1,7 +1,7 @@
 import { Action } from '@chibi-town/character-core/animation-logic';
 import { defaultOutfit } from '@chibi-town/character-core/outfit-logic';
 import { describe, expect, it } from 'vitest';
-import { FARM_FEATURES, FARM_PLOTS } from '@/features/farm/_utils/farm-map-data';
+import { FARM_FEATURES, FARM_PLOTS } from '@/features/farm/_utils/farm-layout';
 import { farmWalkable } from '@/features/farm/_utils/farm-path-logic';
 import {
   cancelFarmWalk,

@@ -10,7 +10,7 @@ import {
   farmUnitPrice,
 } from '@chibi-town/gameplay/farm-unit-logic';
 import { describe, expect, it } from 'vitest';
-import { farmFeatureAt, farmFeaturesFor, farmUnitArea } from '@/features/farm/_utils/farm-map-data';
+import { farmFeatureAt, farmFeaturesFor, farmUnitArea } from '@/features/farm/_utils/farm-layout';
 import { farmFishGroup } from '@/features/farm/_utils/farm-pond-logic';
 
 describe('individual capacity and animal purchases', () => {

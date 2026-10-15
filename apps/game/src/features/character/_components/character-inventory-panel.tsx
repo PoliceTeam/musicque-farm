@@ -17,7 +17,7 @@ import { CosmeticThumbnail } from '@/features/character/_components/cosmetic-thu
 type Props = { onOutfit: (outfit: Outfit) => void; disabled?: boolean };
 
 export function CharacterInventoryPanel({ onOutfit, disabled }: Props) {
-  const { t } = useTranslation('inventory');
+  const { t, i18n } = useTranslation('inventory');
   const [query, setQuery] = useState<CharacterInventoryQuery>({ view: 'equipped' });
   const [page, setPage] = useState<CharacterInventoryPage>();
   const [pending, setPending] = useState(true);
@@ -144,8 +144,8 @@ export function CharacterInventoryPanel({ onOutfit, disabled }: Props) {
         <p>
           {t('character.capacity', { used: page.bagUsed, slots: page.bagSlots })} ·{' '}
           {t('character.wallet', {
-            coins: page.coins.toLocaleString('vi-VN'),
-            gems: page.gems.toLocaleString('vi-VN'),
+            coins: page.coins.toLocaleString(i18n.language),
+            gems: page.gems.toLocaleString(i18n.language),
           })}
         </p>
       )}
@@ -176,7 +176,7 @@ export function CharacterInventoryPanel({ onOutfit, disabled }: Props) {
                   disabled={locked || !row.canBuy}
                   onClick={() => void execute({ type: 'buy-cosmetic', offerId: row.offer!.id })}
                 >
-                  {t('character.buy', { price: row.offer.price.amount.toLocaleString('vi-VN') })}
+                  {t('character.buy', { price: row.offer.price.amount.toLocaleString(i18n.language) })}
                 </Button>
               )}
               {query.view === 'shop' && row.definition.kind === 'item-color' && !row.owned && !row.canBuy && (

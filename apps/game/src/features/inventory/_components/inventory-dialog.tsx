@@ -73,7 +73,7 @@ export function InventoryDialog({
         <div className="warehouse-footer">
           {item && <p id="warehouse-detail">{t('detail', { name: item.label, count: item.count })}</p>}
           {item && (
-            <div className="warehouse-actions">
+            <div className="ui-actions">
               {item &&
                 tab === 'goods' &&
                 FARM_PRODUCTS[item.id as FarmProduct].price !== null &&

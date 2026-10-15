@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 describe('shared inventory slots', () => {
   it('never displays absent stock and keeps the grid when empty', () => {
     const empty = inventorySlotsMarkup([{ label: 'Dâu', icon: '🍓', count: 0 }]);
-    expect(empty.match(/class="stock-slot"/g)).toHaveLength(12);
+    expect(empty.match(/class="ui-inventory-slot"/g)).toHaveLength(12);
     expect(empty).not.toContain('Dâu');
     expect(empty).not.toContain('🍓');
     expect(empty).not.toContain('active');

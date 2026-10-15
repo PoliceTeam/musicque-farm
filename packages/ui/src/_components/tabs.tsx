@@ -15,11 +15,7 @@ export function Tabs({
   onChange: (id: string) => void;
 }) {
   return (
-    <div
-      className={`warehouse-tabs ${appearance === 'folder' ? 'ui-folder-tabs' : ''}`}
-      role="tablist"
-      aria-label={label}
-    >
+    <div className={`ui-tabs ${appearance === 'folder' ? 'ui-folder-tabs' : ''}`} role="tablist" aria-label={label}>
       {items.map((item) => (
         <Button
           key={item.id}

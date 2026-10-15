@@ -25,7 +25,10 @@ type ScreenModule = {
 const loaders: Record<string, () => Promise<ScreenModule>> = {
   '/map': () => import('@/features/world-map/main'),
 
-  '/farm': () => import('@/features/farm/main'),
+  '/farm': () =>
+    process.env.NODE_ENV === 'development'
+      ? import('@/devtools/farm-art-review/farm-review-screen')
+      : import('@/features/farm/main'),
 
   '/character': () => import('@/features/character/main'),
 
@@ -33,15 +36,18 @@ const loaders: Record<string, () => Promise<ScreenModule>> = {
 
   '/location': () => import('@/features/location/main'),
 
-  '/farm-art-review': () => import('@/devtools/farm-art-review/art-review-screen'),
+  ...(process.env.NODE_ENV !== 'production'
+    ? {
+        '/farm-art-review': () => import('@/devtools/farm-art-review/art-review-screen'),
 
-  '/ui': () => import('@/devtools/ui/showcase'),
+        '/ui': () => import('@/devtools/ui/showcase'),
 
-  '/town': () => import('@/devtools/town/screen'),
+        '/town': () => import('@/devtools/town/screen'),
+      }
+    : {}),
 };
 
 function resolveRoute(path: string) {
-  if (path === '/farm-art-review' || path === '/farm-art-review.html') return '/farm-art-review';
   const route = gameRoute(path === '/' ? '/map' : path);
   if (route && route in loaders) return route;
   const parts = path.split('/');
@@ -63,6 +69,8 @@ export function GameApplication() {
 
 function GameApplicationContent() {
   const { t } = useTranslation('common');
+  const translate = useRef(t);
+  translate.current = t;
   const pathname = usePathname();
   const navigation = useRouter();
   const search = useSearchParams().toString();
@@ -84,11 +92,12 @@ function GameApplicationContent() {
     google: false,
   }));
   const [authOpen, setAuthOpen] = useState(false);
+  const [entryRequest] = useState(() => ({ pathname, search }));
   useEffect(() => {
     const client = getAuthClient();
     if (!client) return;
     let disposed = false;
-    void client[pathname === '/' ? 'session' : 'start']()
+    void client[entryRequest.pathname === '/' ? 'session' : 'start']()
       .then(
         ({ player, providers }) => {
           const current = player;
@@ -103,25 +112,20 @@ function GameApplicationContent() {
             !current.guest &&
             (current.username === null ||
               current.characterSetupRequired ||
-              new URLSearchParams(search).get('auth') === 'registered')
+              new URLSearchParams(entryRequest.search).get('auth') === 'registered')
           )
             setAuthOpen(true);
           if (current.guest) {
-            let show = true;
-            try {
-              show = shouldShowGuestPrompt(window.sessionStorage);
-            } catch {
-              /* Storage may be unavailable. */
-            }
-            setAuthOpen(show || new URLSearchParams(search).get('auth') === 'failed');
+            const show = shouldShowGuestPrompt(() => window.sessionStorage);
+            setAuthOpen(show || new URLSearchParams(entryRequest.search).get('auth') === 'failed');
           }
         },
         () => {
-          if (!disposed) setError(t('locationLoadFailed'));
+          if (!disposed) setError(translate.current('locationLoadFailed'));
         },
       )
       .catch(() => {
-        if (!disposed) setError(t('locationLoadFailed'));
+        if (!disposed) setError(translate.current('locationLoadFailed'));
       });
 
     /** Reloading drops cached snapshots before a fresh session is established. */
@@ -132,7 +136,7 @@ function GameApplicationContent() {
       disposed = true;
       window.removeEventListener(AUTH_REQUIRED_EVENT, expired);
     };
-  }, [t, search, pathname]);
+  }, [entryRequest]);
   const screenStyle = useRef<HTMLStyleElement>(undefined);
   useEffect(() => {
     const style = document.createElement('style');
@@ -194,7 +198,7 @@ function GameApplicationContent() {
     setError('');
     if (!route) {
       setScreen(undefined);
-      setError(t('locationClosed'));
+      setError(translate.current('locationClosed'));
       return;
     }
 
@@ -228,16 +232,18 @@ function GameApplicationContent() {
         if (disposed) return;
         if (screenStyle.current) screenStyle.current.textContent = module.styles;
         window.scrollTo(0, 0);
-        audio?.setMusic(locationMusic(route, definition));
         setScreen({ module, path: `${pathname}?${search}`, definition });
       })
       .catch(() => {
-        if (!disposed) setError(t('locationLoadFailed'));
+        if (!disposed) setError(translate.current('locationLoadFailed'));
       });
     return () => {
       disposed = true;
     };
-  }, [pathname, search, t, audio, canLoadScreen]);
+  }, [pathname, search, canLoadScreen]);
+  useEffect(() => {
+    if (screen) audio?.setMusic(locationMusic(resolveRoute(screen.path.split('?')[0]) ?? '/map', screen.definition));
+  }, [audio, screen]);
   const Screen = screen?.module.Screen;
   const authClient = getAuthClient();
   const entry = pathname === '/' && !!authClient && auth.status !== 'signed-in';
@@ -269,7 +275,7 @@ function GameApplicationContent() {
                 entry
                   ? async () => {
                       const player = auth.player ?? (await authClient.guest());
-                      shouldShowGuestPrompt(window.sessionStorage);
+                      shouldShowGuestPrompt(() => window.sessionStorage);
                       setAuthOpen(false);
                       setAuth({ status: 'signed-in', player, google: auth.google });
                       navigation.replace('/');

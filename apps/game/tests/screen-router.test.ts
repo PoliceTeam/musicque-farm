@@ -84,3 +84,11 @@ describe('screen routing lifecycle', () => {
     expect(error).not.toHaveBeenCalled();
   });
 });
+
+it('blocks all devtool routes and legacy aliases in production', () => {
+  for (const path of ['/ui', '/ui.html', '/ui/', '/town', '/town.html', '/farm-art-review', '/farm-art-review.html']) {
+    expect(gameRoute(path, true)).toBeUndefined();
+    expect(gameRoute(path, false)).toBeDefined();
+  }
+  expect(gameRoute('/farm.html', true)).toBe('/farm');
+});

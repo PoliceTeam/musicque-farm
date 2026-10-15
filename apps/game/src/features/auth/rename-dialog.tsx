@@ -14,7 +14,7 @@ export function RenameDialog({
   onClose: () => void;
   onSaved: (player: AuthPlayer) => void;
 }) {
-  const { t } = useTranslation('auth');
+  const { t, i18n } = useTranslation('auth');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<AuthError>();
 
@@ -41,7 +41,7 @@ export function RenameDialog({
           <p role="alert">
             {t(`errors.${error.code}`)}{' '}
             {error.nextAllowedAt !== undefined &&
-              t('renameNext', { date: new Date(error.nextAllowedAt).toLocaleString('vi-VN') })}
+              t('renameNext', { date: new Date(error.nextAllowedAt).toLocaleString(i18n.language) })}
           </p>
         )}
         <Button type="submit" busy={busy} busyLabel={t('busy')}>

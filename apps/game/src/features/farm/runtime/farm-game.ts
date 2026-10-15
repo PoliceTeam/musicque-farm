@@ -1,8 +1,6 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import type { FarmProgress } from '@chibi-town/gameplay/farm-crop-logic';
 import { blocksGameInput } from '@chibi-town/ui';
-import { tickTown } from '@/devtools/town/_utils/town-logic';
-import { TownView } from '@/devtools/town/rendering/town-view';
 import {
   FARM_CHARACTER_SCALE,
   FARM_WORLD,
@@ -10,7 +8,7 @@ import {
   type FarmUnitLevels,
   farmFeaturesFor,
   farmObstaclesFor,
-} from '@/features/farm/_utils/farm-map-data';
+} from '@/features/farm/_utils/farm-layout';
 import {
   cancelFarmWalk,
   createFarmWalkState,
@@ -20,7 +18,9 @@ import {
 import { createFarmCursor } from '@/features/farm/rendering/farm-cursor-view';
 import { drawFarmProgress } from '@/features/farm/rendering/farm-progress-view';
 import { farmStyleScenery } from '@/features/farm/rendering/farm-style-view';
+import { tickTown } from '@/game/movement/town-logic';
 import { createPreviewProviders } from '@/game/rendering/renderer-providers';
+import { TownView } from '@/game/rendering/town-view';
 import { TICK_MS } from '@/game/runtime/game-config';
 
 export async function createFarmGame(
@@ -30,13 +30,23 @@ export async function createFarmGame(
   levels: FarmUnitLevels = { livestock: 0, pond: 0 },
   progress: FarmProgress,
   clock: () => number = Date.now,
-  progressLabels: { ready: string; paused: string; eggLabel?: (species: 'hen' | 'duck', count: number) => string } = {
+  progressLabels: {
+    enter?: string;
+    exit?: string;
+    avatarLabel?: (level: number, name: string) => string;
+    ready: string;
+    paused: string;
+    eggLabel?: (species: 'hen' | 'duck', count: number) => string;
+  } = {
     ready: '✓',
     paused: 'Ⅱ',
   },
   identity?: { name: string; level: number },
 ) {
-  const [providers, style] = await Promise.all([createPreviewProviders('phaser'), farmStyleScenery(progress, levels)]);
+  const [providers, style] = await Promise.all([
+    createPreviewProviders('phaser'),
+    farmStyleScenery(progress, levels, { enter: progressLabels.enter ?? '', exit: progressLabels.exit ?? '' }),
+  ]);
   const farm = createFarmWalkState(outfit, levels, identity);
   const state = farm.town;
   const player = state.player;
@@ -44,10 +54,16 @@ export async function createFarmGame(
   const cursor = createFarmCursor();
   farm.obstacles = farmObstaclesFor(farmFeaturesFor(levels));
   const scenery = style.surfaces;
-  const view = new TownView(state, scenery, FARM_CHARACTER_SCALE, (renderer) => {
-    cursor(renderer, selection?.area);
-    drawFarmProgress(renderer, progress, style.animalAnchors(), clock(), progressLabels);
-  });
+  const view = new TownView(
+    state,
+    scenery,
+    FARM_CHARACTER_SCALE,
+    (renderer) => {
+      cursor(renderer, selection?.area);
+      drawFarmProgress(renderer, progress, style.animalAnchors(), clock(), progressLabels);
+    },
+    progressLabels.avatarLabel,
+  );
   let running = true;
   const renderer = providers.create('phaser', {
     parent,

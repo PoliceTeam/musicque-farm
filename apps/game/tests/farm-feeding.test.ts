@@ -1,7 +1,7 @@
 import { createFarmProgress, parseFarmProgress } from '@chibi-town/gameplay/farm-crop-logic';
 import { farmFeedingBlend, farmFoodPercent, feedFarmUnit } from '@chibi-town/gameplay/farm-feeding-logic';
 import { describe, expect, it } from 'vitest';
-import { FARM_SPAWN, farmFeatureAt, farmFeaturesFor, farmObstaclesFor } from '@/features/farm/_utils/farm-map-data';
+import { FARM_SPAWN, farmFeatureAt, farmFeaturesFor, farmObstaclesFor } from '@/features/farm/_utils/farm-layout';
 import { farmRoute, farmSegmentClear, farmWalkable } from '@/features/farm/_utils/farm-path-logic';
 
 describe('feeding and enclosure access', () => {

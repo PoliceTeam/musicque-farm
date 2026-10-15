@@ -13,7 +13,7 @@ import {
   farmObstaclesFor,
   farmPlotAt,
   farmUnitArea,
-} from '@/features/farm/_utils/farm-map-data';
+} from '@/features/farm/_utils/farm-layout';
 import { farmRoute, farmSegmentClear, farmWalkable } from '@/features/farm/_utils/farm-path-logic';
 
 describe('farm layout and safe routes', () => {

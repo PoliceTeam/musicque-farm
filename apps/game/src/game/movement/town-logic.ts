@@ -4,7 +4,6 @@ import { items, type PetDef } from '@chibi-town/character-core/item-catalog';
 import { equippedPose } from '@chibi-town/character-core/layout-logic';
 import { randomOutfit, toEquip, wornPet } from '@chibi-town/character-core/outfit-logic';
 import { petSheet, sheet } from '@/assets/asset-catalog';
-import { WALK_AREA } from '@/devtools/town/_utils/town-map';
 import {
   type Area,
   type Aura,
@@ -17,6 +16,7 @@ import {
 } from '@/features/character/_utils/effect-logic';
 import { clampTo, stepWalker, type Walker } from '@/game/movement/movement-logic';
 import { layoutPet, makePet, type Pet, stepPet, TRAIL, type Trail } from '@/game/movement/pet-follow-logic';
+import { WALK_AREA } from '@/game/movement/town-map';
 import { PLAYER_SPEED } from '@/game/runtime/game-config';
 
 /** Special effects of a resident's top-rank gear and pet: specks around the wings / pet and a ring. */

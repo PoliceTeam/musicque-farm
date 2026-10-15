@@ -26,7 +26,7 @@ vi.mock('@/game/rendering/renderer-providers', () => ({
     };
   },
 }));
-vi.mock('@/devtools/town/rendering/town-view', () => ({
+vi.mock('@/game/rendering/town-view', () => ({
   TownView: class {
     pieces = {};
     draw = fixture.draw;

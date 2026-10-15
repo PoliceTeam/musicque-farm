@@ -1,5 +1,9 @@
 import { arcadeVi } from '@chibi-town/arcade-games-react/locales/vi';
 export default {
+  gameTitle: 'Chibi Town',
+  gameDescription: 'Thế giới nông trại Chibi Town',
+  loadingGame: 'Đang tải game…',
+  avatarName: 'LV {{level}} {{name}}',
   mapChangeTime: 'Đổi thời gian',
   mapTimeOfDay: 'Giờ trong ngày',
   mapCurrentPhase: 'Cảnh hiện tại: {{phase}}',

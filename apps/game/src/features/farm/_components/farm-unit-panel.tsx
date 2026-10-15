@@ -10,11 +10,13 @@ export type ExecuteFarm = (
 
 export function FarmUnitPanel({
   snapshot,
+  now = snapshot.serverTime,
   unit,
   pending,
   execute,
 }: {
   snapshot: Snapshot;
+  now?: number;
   unit: FarmUnit;
   pending: boolean;
   execute: ExecuteFarm;
@@ -22,7 +24,7 @@ export function FarmUnitPanel({
   const { t } = useTranslation('farm');
   const state = snapshot.farm;
   const animals = farmUnitAnimals(state, unit);
-  const food = farmFoodPercent(state, unit, snapshot.serverTime);
+  const food = farmFoodPercent(state, unit, now);
   const ready = readyFarmAnimals(state, unit).length;
   return (
     <div className="ui-stack">
@@ -30,7 +32,7 @@ export function FarmUnitPanel({
         <section className="ui-section">
           <p>{t('capacity', { count: animals.length, capacity: state.capacity[unit], ready })}</p>
           <Meter label={t('food')} value={food} />
-          <div className="warehouse-actions">
+          <div className="ui-actions">
             <Button
               disabled={pending || !animals.length || food > 25 || state.coins < farmFeedPrice(unit)}
               onClick={() => void execute({ type: 'feed', unit })}

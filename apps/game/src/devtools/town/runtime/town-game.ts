@@ -1,9 +1,9 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import { blocksGameInput } from '@chibi-town/ui';
-import { createTownState, moveTownTo, setTownOutfit, tickTown, updateTown } from '@/devtools/town/_utils/town-logic';
-import { SCREEN, TOWN_ZOOM, WORLD } from '@/devtools/town/_utils/town-map';
-import { TownView } from '@/devtools/town/rendering/town-view';
+import { createTownState, moveTownTo, setTownOutfit, tickTown, updateTown } from '@/game/movement/town-logic';
+import { SCREEN, TOWN_ZOOM, WORLD } from '@/game/movement/town-map';
 import { createPreviewProviders } from '@/game/rendering/renderer-providers';
+import { TownView } from '@/game/rendering/town-view';
 import { TICK_MS } from '@/game/runtime/game-config';
 
 /** Composition root; simulation state is separate from this runtime's lifecycle. */

@@ -3,13 +3,13 @@ import { items } from '@chibi-town/character-core/item-catalog';
 import { equippedPose, layoutAvatar, nameplateTop } from '@chibi-town/character-core/layout-logic';
 import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-types';
 import { petSheet, sheet } from '@/assets/asset-catalog';
-import type { TownState } from '@/devtools/town/_utils/town-logic';
-import { TOWN_CHARACTER_SCALE } from '@/devtools/town/_utils/town-map';
-import { paintEmitter, paintHatLights } from '@/devtools/town/rendering/town-effects-view';
 import { auraTagColor, hatLights } from '@/features/character/_utils/effect-logic';
 import { Farm } from '@/features/farm/rendering/farm-view';
 import { layoutPet } from '@/game/movement/pet-follow-logic';
+import type { TownState } from '@/game/movement/town-logic';
+import { TOWN_CHARACTER_SCALE } from '@/game/movement/town-map';
 import { PieceCache } from '@/game/rendering/canvas-renderer';
+import { paintEmitter, paintHatLights } from '@/game/rendering/town-effects-view';
 
 /** World view submits native sprites, scenery and effects to the selected engine. */
 export class TownView {
@@ -22,6 +22,7 @@ export class TownView {
     scenery?: ReturnType<Farm['surfaces']>,
     private readonly characterScale = TOWN_CHARACTER_SCALE,
     private readonly overlay?: (renderer: CharacterRenderer) => void,
+    private readonly avatarLabel = (level: number, name: string) => `LV ${level} ${name}`,
   ) {
     this.scenery = scenery ?? new Farm().surfaces();
   }
@@ -102,7 +103,7 @@ export class TownView {
     if (this.state.marker) renderer.marker('destination', this.state.marker[0], this.state.marker[1]);
     for (const w of [...this.state.residents].sort((a, b) => a.y - b.y))
       renderer.label(
-        `LV${w.level} ${w.name}`,
+        this.avatarLabel(w.level, w.name),
         Math.round(w.x),
         labelAnchors.get(w)!,
         w.player ? '#ffe066' : '#ffffff',

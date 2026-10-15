@@ -6,11 +6,11 @@ import {
   animalArtFrameName,
   animalArtStage,
 } from '@/features/farm/_utils/animal-art';
-import { separateFarmHerd } from '@/features/farm/_utils/farm-animal-logic';
+import { separateFarmHerd } from '@/features/farm/_utils/farm-herd-logic';
 import { farmFishGroup } from '@/features/farm/_utils/farm-pond-logic';
 import { drawAnimalGait } from '@/features/farm/rendering/animal-gait-view';
+import { cachedFarmFrames } from '@/features/farm/rendering/farm-frame-cache';
 import type { Area } from '@/game/movement/movement-logic';
-import { cachedFarmFrames } from './farm-frame-cache';
 
 function canvas(w: number, h: number) {
   const c = document.createElement('canvas');

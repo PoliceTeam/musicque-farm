@@ -1,8 +1,5 @@
 import type { Area } from '@/game/movement/movement-logic';
 
-export type { FarmSpecies } from '@chibi-town/game-content/farm-animal-logic';
-export { ANIMAL_STAGE_NAMES, FARM_ANIMALS, farmAnimalStage } from '@chibi-town/game-content/farm-animal-logic';
-
 function random(index: number, segment: number, axis: number) {
   const n = Math.sin(index * 127.1 + segment * 311.7 + axis * 74.7) * 43758.5453;
   return n - Math.floor(n);

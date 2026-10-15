@@ -1,7 +1,7 @@
 import { CROP_IDS, type CropId, FARM_CROPS } from '@chibi-town/game-content/farm-catalog';
 import { useTranslation } from 'react-i18next';
+import { FarmPictureSelect } from '@/features/farm/_components/farm-picture-select';
 import { cropIconUrl } from '@/features/farm/_utils/crop-growth-frames';
-import { FarmPictureSelect } from './farm-picture-select';
 
 export function FarmCropSelector({ value, onChange }: { value: CropId; onChange: (id: CropId) => void }) {
   const { t } = useTranslation('farm');

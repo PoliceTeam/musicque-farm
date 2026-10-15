@@ -4,10 +4,10 @@ import { canStoreFarmGoods } from '@chibi-town/gameplay/farm-storage-logic';
 import { Button, Dialog, UiImage } from '@chibi-town/ui/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FarmPictureSelect } from '@/features/farm/_components/farm-picture-select';
+import type { ExecuteFarm } from '@/features/farm/_components/farm-unit-panel';
+import { foodIconUrl } from '@/features/farm/_utils/food-art';
 import { ProductIcon } from '@/features/inventory/_components/product-icon';
-import { foodIconUrl } from '../_utils/food-art';
-import { FarmPictureSelect } from './farm-picture-select';
-import type { ExecuteFarm } from './farm-unit-panel';
 
 function DishIcon({ id }: { id: RecipeId }) {
   return <UiImage className="kitchen-dish-icon" asset={`farm:food-${id}`} alt="" width={44} height={44} />;

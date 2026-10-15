@@ -8,16 +8,17 @@ import { FARM_UNIT_LIMITS } from '@chibi-town/gameplay/farm-unit-logic';
 import { CROP_GROWTH_FRAMES, cropAssetName, cropGrowthFrame } from '@/features/farm/_utils/crop-growth-frames';
 import {
   FARM_EGG_BASKET_SPOTS,
+  FARM_EXIT,
   FARM_LAWNS,
   FARM_PLOTS,
   FARM_WORLD,
   type FarmUnitLevels,
   farmFeaturesFor,
-} from '@/features/farm/_utils/farm-map-data';
-import { farmSceneAssetLoader, loadFarmSceneAssets } from '@/features/farm/_utils/farm-scene-assets';
+} from '@/features/farm/_utils/farm-layout';
 import { createFarmAnimalMotion } from '@/features/farm/rendering/farm-animal-view';
 import { createFarmCropFrames, createFarmPlantFrame } from '@/features/farm/rendering/farm-crop-view';
 import { createFarmPondMotion } from '@/features/farm/rendering/farm-pond-view';
+import { farmSceneAssetLoader, loadFarmSceneAssets } from '@/features/farm/rendering/farm-scene-assets';
 import { createEntranceHint } from '@/game/rendering/entrance-hint';
 
 function canvas(w: number, h: number) {
@@ -27,7 +28,11 @@ function canvas(w: number, h: number) {
   return c;
 }
 
-export async function farmStyleScenery(progress: FarmProgress, levels: FarmUnitLevels) {
+export async function farmStyleScenery(
+  progress: FarmProgress,
+  levels: FarmUnitLevels,
+  labels = { enter: '→', exit: '←' },
+) {
   const images = await loadFarmSceneAssets();
 
   const asset = farmSceneAssetLoader(images);
@@ -278,9 +283,17 @@ export async function farmStyleScenery(progress: FarmProgress, levels: FarmUnitL
     }
     for (const [phase, id] of ['kitchen', 'store', 'exit'].entries()) {
       const f = features.find((f) => f.id === id);
-      const x = f ? f.stand[0] : 639,
-        y = f ? f.area.y1 - 7 : 674;
-      put(`${id}-entrance-v17`, createEntranceHint(id === 'exit' ? 'Thoát' : 'Vào'), x - 21, y, 42, 32, 1000);
+      const x = f ? f.stand[0] : FARM_EXIT.hint[0],
+        y = f ? f.area.y1 - 7 : FARM_EXIT.hint[1];
+      put(
+        `${id}-entrance-v17`,
+        createEntranceHint(id === 'exit' ? labels.exit : labels.enter),
+        x - 21,
+        y,
+        42,
+        32,
+        1000,
+      );
       entranceMarkers.push({ surface: surfaces.at(-1)!, y, phase });
     }
     object('store-supplies', 'hay', 499, 271, 35);

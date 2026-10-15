@@ -1,6 +1,7 @@
+import { FARM_ANIMALS } from '@chibi-town/game-content/farm-animal-logic';
 import { expect, it } from 'vitest';
-import { FARM_ANIMALS, farmRoamPose, separateFarmHerd } from '@/features/farm/_utils/farm-animal-logic';
-import { farmUnitArea } from '@/features/farm/_utils/farm-map-data';
+import { farmRoamPose, separateFarmHerd } from '@/features/farm/_utils/farm-herd-logic';
+import { farmUnitArea } from '@/features/farm/_utils/farm-layout';
 
 it('spaces a moving adult herd and feeding groups without pushing bodies through the enclosure', () => {
   for (const level of [0, 1, 2] as const) {

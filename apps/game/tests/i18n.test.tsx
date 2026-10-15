@@ -33,3 +33,13 @@ describe('game locale', () => {
     expect(html).not.toContain('Dâu thu hoạch');
   });
 });
+
+it('interpolates prices, avatar nameplates, entrance labels and the server layout fallback', () => {
+  const i18n = createGameI18n();
+  expect(i18n.t('farm:price', { amount: '1.000', currency: i18n.t('common:coins') })).toBe('1.000 Xu');
+  expect(i18n.t('common:avatarName', { level: 5, name: 'An' })).toBe('LV 5 An');
+  expect(i18n.t('common:enterLocation')).toBe('Vào');
+  expect(i18n.t('common:exitLocation')).toBe('Thoát');
+  expect(i18n.t('common:gameDescription')).toBe('Thế giới nông trại Chibi Town');
+  expect(i18n.t('common:loadingGame')).toBe('Đang tải game…');
+});

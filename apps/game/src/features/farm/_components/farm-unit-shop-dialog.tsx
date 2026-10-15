@@ -5,9 +5,9 @@ import { FARM_UNIT_LIMITS, type FarmUnit, farmUnitAnimals, farmUnitPrice } from 
 import { Button, Dialog, Tabs } from '@chibi-town/ui/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { farmAssetUrl } from '../_utils/farm-assets';
-import { FarmPictureSelect } from './farm-picture-select';
-import type { ExecuteFarm } from './farm-unit-panel';
+import { FarmPictureSelect } from '@/features/farm/_components/farm-picture-select';
+import type { ExecuteFarm } from '@/features/farm/_components/farm-unit-panel';
+import { farmAssetUrl } from '@/features/farm/_utils/farm-assets';
 
 const SPECIES: Record<FarmUnit, FarmSpecies[]> = {
   livestock: ['pig', 'cow', 'sheep', 'buffalo', 'dog'],

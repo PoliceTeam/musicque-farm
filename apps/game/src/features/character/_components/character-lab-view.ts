@@ -3,10 +3,10 @@ import { layoutAvatar } from '@chibi-town/character-core/layout-logic';
 import { toEquip, wornPet } from '@chibi-town/character-core/outfit-logic';
 import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-types';
 import { petSheet, sheet } from '@/assets/asset-catalog';
-import { paintEmitter, paintHatLights } from '@/devtools/town/rendering/town-effects-view';
 import { type CharacterLabState, equippedHat } from '@/features/character/_utils/character-lab-logic';
 import { hatAreas, hatLights, isEffect } from '@/features/character/_utils/effect-logic';
 import { layoutPet, type Pet, TRAIL } from '@/game/movement/pet-follow-logic';
+import { paintEmitter, paintHatLights } from '@/game/rendering/town-effects-view';
 
 export function createCharacterLabView(app: HTMLElement, state: CharacterLabState) {
   const shadow = (renderer: CharacterRenderer, x: number, y: number, width = 26) =>

@@ -97,3 +97,34 @@ it('starts the farm snapshot request while player identity is still loading', as
   expect(model.store.getState().snapshot).toBeDefined();
   expect(model.store.getState().player).toBeDefined();
 });
+
+it('ignores equal revision polling snapshots without notifying subscribers', async () => {
+  const local = createGameSdk({ adapter: 'local', repository: createMemoryRepository() });
+  const snapshot = await local.getMap({ regionId: 'farm', mapId: 'farm-home', instanceId: 'home' });
+  const model = createFarmStore({
+    ...local,
+
+    getMap: async () => structuredClone(snapshot),
+  });
+  await model.refresh();
+  const previous = model.store.getState().snapshot;
+  let notifications = 0;
+  model.store.subscribe(() => notifications++);
+  await model.refresh();
+  expect(model.store.getState().snapshot).toBe(previous);
+  expect(notifications).toBe(0);
+});
+
+it('keeps unknown command failures language-neutral for the localized screen', async () => {
+  const local = createGameSdk({ adapter: 'local', repository: createMemoryRepository() });
+  const model = createFarmStore({
+    ...local,
+
+    execute: async () => {
+      throw 'offline';
+    },
+  });
+  await expect(model.execute({ type: 'plot', index: 0, action: 'till' })).rejects.toBe('offline');
+  expect(model.store.getState().error).toBe('ACTION_FAILED');
+  expect(model.store.getState().pending).toBe(false);
+});

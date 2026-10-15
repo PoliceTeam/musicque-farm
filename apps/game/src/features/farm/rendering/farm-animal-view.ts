@@ -9,10 +9,10 @@ import {
   animalArtStage,
   animalArtWidth,
 } from '@/features/farm/_utils/animal-art';
-import { farmRoamPose, separateFarmHerd } from '@/features/farm/_utils/farm-animal-logic';
+import { farmRoamPose, separateFarmHerd } from '@/features/farm/_utils/farm-herd-logic';
 import { drawAnimalGait } from '@/features/farm/rendering/animal-gait-view';
+import { cachedFarmFrames } from '@/features/farm/rendering/farm-frame-cache';
 import type { Area } from '@/game/movement/movement-logic';
-import { cachedFarmFrames } from './farm-frame-cache';
 
 export function createFarmAnimalFrames(asset: (name: string) => HTMLCanvasElement) {
   const species: FarmSpecies[] = ['cow', 'pig', 'sheep', 'hen', 'duck', 'buffalo', 'dog'];

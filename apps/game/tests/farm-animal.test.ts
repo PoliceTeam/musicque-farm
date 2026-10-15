@@ -1,8 +1,9 @@
 import { FARM_ANIMAL_CATALOG } from '@chibi-town/game-content/farm-animal-catalog';
+import { FARM_ANIMALS, farmAnimalStage } from '@chibi-town/game-content/farm-animal-logic';
 import { createFarmProgress, parseFarmProgress } from '@chibi-town/gameplay/farm-crop-logic';
 import { describe, expect, it } from 'vitest';
-import { FARM_ANIMALS, farmAnimalStage, farmRoamPose } from '@/features/farm/_utils/farm-animal-logic';
-import { farmUnitArea } from '@/features/farm/_utils/farm-map-data';
+import { farmRoamPose } from '@/features/farm/_utils/farm-herd-logic';
+import { farmUnitArea } from '@/features/farm/_utils/farm-layout';
 
 describe('animal life and roaming', () => {
   it('grows once through three stages and retains age across saved sessions', () => {

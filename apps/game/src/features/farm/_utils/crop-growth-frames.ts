@@ -1,5 +1,5 @@
 import type { CropId } from '@chibi-town/game-content/farm-catalog';
-import { farmAssetUrl } from './farm-assets';
+import { farmAssetUrl } from '@/features/farm/_utils/farm-assets';
 
 /** Reference v21: numbered plant growth frames followed by a produce icon where available.
  * Dragon fruit keeps the v9 cactus sequence because its new row contains roses.

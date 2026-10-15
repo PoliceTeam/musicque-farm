@@ -1,6 +1,6 @@
 import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-types';
-import type { EffectSource } from '@/devtools/town/_utils/town-logic';
 import { type HatLight, STYLES } from '@/features/character/_utils/effect-logic';
+import type { EffectSource } from '@/game/movement/town-logic';
 
 export function colorNumber(color: string) {
   return Number.parseInt(color.slice(1), 16);

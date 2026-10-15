@@ -1,7 +1,5 @@
 import { FARM_CLUSTERS } from '@chibi-town/game-content/farm-land-config';
 
-export { FARM_CLUSTERS } from '@chibi-town/game-content/farm-land-config';
-
 import { FARM_UNIT_LIMITS } from '@chibi-town/gameplay/farm-unit-logic';
 import type { Area } from '@/game/movement/movement-logic';
 
@@ -164,3 +162,9 @@ export function farmUnitPurchaseAt(
         inside({ x0: area.x0 + 4, x1: area.x0 + 38, y0: area.y1 - 55, y1: area.y1 - 15 }, x, y),
   );
 }
+
+export const FARM_EXIT = {
+  area: { x0: 590, x1: 690, y0: 658 },
+  stand: [640, 680] as FarmPoint,
+  hint: [639, 674] as FarmPoint,
+};

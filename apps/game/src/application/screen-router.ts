@@ -33,7 +33,13 @@ export function createScreenRouter(options: {
   };
 }
 
-export function gameRoute(path: string) {
+export function gameRoute(path: string, production = process.env.NODE_ENV === 'production') {
+  const normalized = path.replace(/\/$/, '') || '/';
+  if (
+    production &&
+    ['/ui', '/ui.html', '/town', '/town.html', '/farm-art-review', '/farm-art-review.html'].includes(normalized)
+  )
+    return undefined;
   const routes: Record<string, string> = {
     '/': '/map',
     '/index.html': '/map',
@@ -43,9 +49,12 @@ export function gameRoute(path: string) {
     '/farm.html': '/farm',
     '/character': '/character',
     '/character.html': '/character',
+    '/farm-art-review': '/farm-art-review',
+    '/farm-art-review.html': '/farm-art-review',
     '/town': '/town',
+    '/town.html': '/town',
     '/ui': '/ui',
     '/ui.html': '/ui',
   };
-  return routes[path.replace(/\/$/, '') || '/'];
+  return routes[normalized];
 }

@@ -1,11 +1,6 @@
 import type { createGameAudio } from '@chibi-town/game-audio';
 import type { MapDefinition } from '@chibi-town/game-content';
-import {
-  createWorldMapView,
-  type WorldMapLife,
-  type WorldMapSprite,
-  type WorldMapView,
-} from '@chibi-town/renderer-phaser/world-map-view';
+import type { WorldMapLife, WorldMapSprite, WorldMapView } from '@chibi-town/renderer-phaser/world-map-view';
 
 import { publicAssetUrls } from '@/assets/generated-assets';
 import { mapDeliveryAssets, mapSpriteAtlas } from '@/assets/generated-map-assets';
@@ -64,7 +59,7 @@ import { useTranslation } from 'react-i18next';
 import { getApiSdk } from '@/application/api-sdk';
 import { createGameUi } from '@/application/game-ui-handler';
 import { AudioSettings } from '@/features/settings/_components/audio-settings';
-import { createPreviewProviders } from '@/game/rendering/renderer-providers';
+import { createPreviewProviders, createWorldMapRenderer } from '@/game/rendering/renderer-providers';
 
 const PRESETS = { real: undefined, dawn: 6.1, day: 11, evening: 16.8, sunset: 18, night: 22 } as const;
 type Mode = keyof typeof PRESETS | 'manual';
@@ -120,7 +115,8 @@ export function MapScreen({
         .catch(() => {
           if (!disposed) setError(t('mapLoadFailed'));
         });
-    const view: WorldMapView = createWorldMapView({
+    let view: WorldMapView | undefined;
+    void createWorldMapRenderer({
       parent: host.current!,
       size: WORLD_MAP_SIZE,
       images: {
@@ -153,14 +149,23 @@ export function MapScreen({
         if (zone.id === 'farm') {
           void Promise.all([
             import('@/features/farm/main'),
-            import('@/features/farm/_utils/farm-scene-assets').then(({ loadFarmSceneAssets }) => loadFarmSceneAssets()),
+            import('@/features/farm/rendering/farm-scene-assets').then(({ loadFarmSceneAssets }) =>
+              loadFarmSceneAssets(),
+            ),
             createPreviewProviders('phaser'),
           ]).catch(() => {});
         }
         setSelected(WORLD_ZONES.find((item) => item.id === zone.id));
         audio.play('select', zone.id);
       },
-    });
+    })
+      .then((next) => {
+        if (disposed) next.destroy();
+        else view = next;
+      })
+      .catch(() => {
+        if (!disposed) setError(t('mapLoadFailed'));
+      });
     let frame = 0,
       previous = performance.now(),
       rendered = 0;
@@ -194,7 +199,7 @@ export function MapScreen({
       disposed = true;
       cancelAnimationFrame(frame);
       window.removeEventListener('keydown', key);
-      view.destroy();
+      view?.destroy();
       ui.destroy();
       document.body.classList.remove('world-map-page');
     };

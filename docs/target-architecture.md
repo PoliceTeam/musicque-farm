@@ -29,14 +29,14 @@ apps/game/
     features/
       farm/                        # Screen, store, CSS, _components, _utils, runtime, rendering
       world-map/                   # Overview, audio, world zone data
-      location/                    # Location screen and movement constraints
+      location/                    # Screen, pure input/movement, runtime và rendering
       character/                   # Lab screen và React outfit controls
       inventory/                   # Warehouse UI
       settings/                    # Audio settings UI
     game/
       runtime/                     # Shared runtime configuration
-      movement/                    # Shared walking and pet following
-      rendering/                   # Shared renderer providers/assets/portrait
+      movement/                    # Shared walking, town state/layout và pet following
+      rendering/                   # Shared renderer providers/assets/portrait, town view/effects
     assets/                        # Source artwork and generated catalogs
     devtools/                      # Town sandbox, UI showcase, farm art review
   tests/
@@ -66,6 +66,7 @@ CSS được chia theo thành phần/màn sở hữu, dùng cùng skin của UI 
 | Đăng nhập, đăng ký và chọn nhân vật lần đầu | `apps/game/src/features/auth/auth.css` |
 | Bản đồ chung | `apps/game/src/features/world-map/map.css` |
 | Màn khu vực và chọn kênh | `apps/game/src/features/location/location.css` |
+| Kho nông sản | `apps/game/src/features/inventory/inventory.css` (nạp cùng farm và showcase) |
 | Nông trại | `apps/game/src/features/farm/farm.css` |
 | Lab nhân vật | `apps/game/src/features/character/character-base.css`, `lab.css` |
 | Các game trong package arcade | `packages/arcade-games-react/src/theme.css` |
@@ -91,7 +92,8 @@ Giữ nguyên 8 ID đang có trong `apps/game/src/features/world-map/_utils/worl
 
 | regionId | Tên |
 | --- | --- |
-| farm | Nông trại |
+| farm | Kho nông sản | `apps/game/src/features/inventory/inventory.css` (nạp cùng farm và showcase) |
+| Nông trại |
 | forest | Rừng già |
 | school | Trường học |
 | center | Trung tâm |
@@ -190,3 +192,15 @@ Các helper vẽ canvas và công cụ art/sandbox còn dùng DOM cho rendering 
 Component nội bộ đặt trong `_components/`, tiện ích nội bộ trong `_utils/`; chỉ tạo thư mục khi có code. Farm store nằm cạnh farm feature. Imports gameplay/content dùng public package exports trực tiếp, không qua file chuyển tiếp trong app. Không tạo thư mục rỗng cho các khu/map chưa triển khai.
 
 Arcade dùng `packages/arcade-games` cho luật/bot/session thuần TypeScript và `packages/arcade-games-react` cho module UI, metadata, locale và SDK adapter. `features/arcade/_utils/registered-games.ts` đăng ký module Kim cương/Tiến lên; màn chính lấy danh mục và màn chơi từ registry. App inject SDK, assets, renderer avatar và navigation qua host provider. `api-sdk` sở hữu session chủ bàn, kiểm tra cược, giữ khả năng chi trả và thanh toán idempotent bằng xu. Package arcade không phụ thuộc SDK/React/app, tránh vòng dependency.
+
+## Phase 5: vòng đời màn game
+
+- Production chặn `/ui`, `/town`, `/farm-art-review` và alias `.html` ngay tại resolver; loader devtools chỉ được khai báo ngoài production. Fixture `?review=` thuộc `devtools/farm-art-review`, chỉ loader development ghép SDK review vào FarmScreen.
+- Town state/layout ở `game/movement/town-*`; view/effects ở `game/rendering/town-*`. Farm và Lab không import devtools. Farm layout/herd giữ logic riêng trong `farm/_utils/farm-layout.ts` và `farm-herd-logic.ts`; metadata nhập trực tiếp qua public package exports. Loader dùng DOM ở `farm/rendering/farm-scene-assets.ts`.
+- Location tách `_utils/location-input-logic.ts` (hit-test và state movement), `runtime/location-game.ts` (SDK, input, room subscription và cleanup), `rendering/location-view.ts` (draw entries và cache layout). Nhãn đọc qua callback cập nhật; đổi locale không dựng lại renderer hoặc gửi lại enter/leave. Runtime giữ consumer `map.moves` theo batch và `reconnected` của Phase 4; reconnect xóa remote cache chờ snapshot. Portal bắt lỗi SDK và bỏ kết quả sau unmount.
+- Farm store chỉ thay snapshot khi revision tăng; polling cùng revision không thông báo subscriber hoặc clone presentation state. Đồng hồ scene và đồng hồ panel đang mở vẫn chạy riêng để cây chín/food thay đổi theo thời gian. Hit-test nằm trong `farm-input-logic.ts`; vị trí exit dùng chung từ layout. Menu dùng ref, execute dùng callback ổn định.
+- Auth bootstrap dùng URL lúc mount; chuyển route/locale không khởi tạo lại auth. Tải screen độc lập với audio; effect nhạc chạy khi audio/screen sẵn sàng. Storage lời nhắc khách được bảo vệ khi trình duyệt từ chối truy cập.
+- World map được lazy-load qua `game/rendering/renderer-providers.ts`. Phaser dùng lại texture tuples, chỉ đổi texture khi frame đổi, vẽ fountain bằng path và tái dùng uniform buffers. Bò dùng ảnh `cow.png` có sẵn, giữ nhóm `life-cow`; không đổi art/data. Dữ liệu fish/lighthouse thiếu không gây đọc vị trí không tồn tại.
+- `useTableSession` trong arcade React giữ lock/alive/stale/loading, replay counter và timer có cleanup; nội dung replay và nhịp từng game vẫn ở component. Shared UI dùng class `ui-*` cho header/menu/tab/inventory controls; selector riêng farm/kho/world map nằm trong stylesheet feature.
+
+Kiểm chứng Phase 5: test store/revision, clock crop, input farm/location, runtime/portal lifecycle, routing production, world renderer và table session. Chưa kiểm tra trực quan farm, location, world map, arcade trong môi trường này: dev server bị `listen EPERM 127.0.0.1:5173`, browser tích hợp không khả dụng và Computer Use chưa được phép dùng Chrome. Test/mock không thay thế kiểm tra trực quan.

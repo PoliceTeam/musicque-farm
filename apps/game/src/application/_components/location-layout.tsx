@@ -4,7 +4,7 @@ import type { GameSdk } from '@chibi-town/contracts';
 import type { createGameAudio } from '@chibi-town/game-audio';
 import { CurrencyCounter, CurrencyIcon, GameHeader, ProfileMenu } from '@chibi-town/ui/react';
 import Link from 'next/link';
-import { type ReactNode, useContext, useEffect, useRef, useState } from 'react';
+import { type ReactNode, type RefObject, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getAuthClient } from '@/application/auth-client';
 import { AuthContext } from '@/application/auth-context';
@@ -25,6 +25,7 @@ export function LocationLayout({
   gems,
   audio,
   menuActions,
+  menuRef,
   counters,
   children,
 }: {
@@ -37,6 +38,7 @@ export function LocationLayout({
   gems?: number;
   audio: ReturnType<typeof createGameAudio>;
   menuActions?: ReactNode;
+  menuRef?: RefObject<HTMLDetailsElement | null>;
   counters?: ReactNode;
   children: ReactNode;
 }) {
@@ -59,6 +61,7 @@ export function LocationLayout({
         title={title}
         profile={
           <ProfileMenu
+            menuRef={menuRef}
             name={`${auth.player?.name ?? player?.name ?? '…'}${(auth.player?.username ?? player?.username) ? ` @${auth.player?.username ?? player?.username}` : ''}`}
             subtitle={
               auth.player?.guest

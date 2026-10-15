@@ -4,8 +4,8 @@ import { femaleOutfit } from '@chibi-town/character-core/outfit-logic';
 import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-types';
 import { describe, expect, it, vi } from 'vitest';
 import { sheet } from '@/assets/asset-catalog';
-import { createTownState } from '@/devtools/town/_utils/town-logic';
-import { TownView } from '@/devtools/town/rendering/town-view';
+import { createTownState } from '@/game/movement/town-logic';
+import { TownView } from '@/game/rendering/town-view';
 
 vi.mock('@/features/farm/rendering/farm-view', () => ({
   Farm: class {

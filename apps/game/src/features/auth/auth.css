@@ -58,7 +58,7 @@
   min-width: 0;
 }
 
-.game-ui .auth-character > .warehouse-tabs {
+.game-ui .auth-character > .ui-tabs {
   gap: 12px;
   margin-bottom: 16px;
   padding: 6px;
@@ -97,7 +97,7 @@
   overflow: hidden;
 }
 
-.game-ui .auth-character-dialog .auth-character > .warehouse-tabs {
+.game-ui .auth-character-dialog .auth-character > .ui-tabs {
   flex-shrink: 0;
 }
 
