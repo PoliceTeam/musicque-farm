@@ -18,11 +18,12 @@
     "@chibi-town/game-content": "workspace:*",
     "@chibi-town/game-service": "workspace:*",
     "@fastify/cookie": "^11.1.3",
-    "@fastify/websocket": "11.3.1",
     "drizzle-orm": "^0.45.4",
     "fastify": "5.12.5",
     "pg": "^8.23.1",
-    "redis": "5.8.2"
+    "@chibi-town/realtime-core": "workspace:*",
+    "@chibi-town/realtime-redis": "workspace:*",
+    "@chibi-town/realtime-fastify-ws": "workspace:*"
   },
   "devDependencies": {
     "@chibi-town/api-sdk": "workspace:*",

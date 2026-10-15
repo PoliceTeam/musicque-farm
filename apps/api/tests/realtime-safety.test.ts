@@ -1,12 +1,12 @@
 import { once } from 'node:events';
 import { Writable } from 'node:stream';
 import { defaultOutfit } from '@chibi-town/character-core/outfit-logic';
+import { createMemoryAdapters } from '@chibi-town/realtime-core';
 import { afterEach, expect, it, vi } from 'vitest';
 import { deleteSession } from '@/_utils/session-auth';
 import { createApp } from '@/app';
-import { createRealtimeHub } from '@/infrastructure/realtime/realtime-hub';
-import { createMemorySharedState } from '@/infrastructure/realtime/shared-state';
 import { createMapRooms } from '@/modules/world';
+import { createRealtimeDriver } from './realtime-test-driver.js';
 import { createTestApp, testConfig } from './test-app.js';
 
 const cleanup: (() => Promise<unknown>)[] = [];
@@ -18,9 +18,15 @@ afterEach(async () => {
 });
 
 it('logout closes the revoked session on another API instance', async () => {
-  const shared = createMemorySharedState();
-  const first = await createTestApp({ shared });
-  const second = await createApp({ db: first.db, shared, config: testConfig, clock: first.clock, sweepMs: 0 });
+  const shared = createMemoryAdapters();
+  const first = await createTestApp({ adapters: shared });
+  const second = await createApp({
+    db: first.db,
+    adapters: shared,
+    config: testConfig,
+    clock: first.clock,
+    sweepMs: 0,
+  });
   await second.app.ready();
   cleanup.push(first.close, () => second.app.close());
   const { cookie } = await first.register('logout-ws');
@@ -46,13 +52,13 @@ it('logout closes the revoked session on another API instance', async () => {
 });
 
 it('rejects teleport moves and repeated enter in the same map', async () => {
-  const shared = createMemorySharedState();
-  const hub = createRealtimeHub(shared);
-  const rooms = createMapRooms(hub, shared);
+  const shared = createMemoryAdapters();
+  const hub = createRealtimeDriver(shared);
+  const rooms = createMapRooms(hub.realtime);
   const events: unknown[] = [];
   const client = hub.connect('walker', () => {});
   const observer = hub.connect('observer', (event) => events.push(event));
-  hub.subscribe(observer, 'map:street:1');
+  await hub.realtime.subscribe(observer, 'map:street:1');
   const player = { id: 'walker', name: 'Walker', level: 1, outfit: defaultOutfit, x: 0, y: 0 };
   await rooms.enter(client, 'street', 1, [1000, 1000], player);
   events.length = 0;
@@ -64,12 +70,12 @@ it('rejects teleport moves and repeated enter in the same map', async () => {
   const reconnected = hub.connect('walker', () => {});
   await rooms.enter(reconnected, 'street', 1, [1000, 1000], { ...player, x: 900 });
   expect(events).toContainEqual({ type: 'map.join', player: { ...player, x: 900 } });
-  hub.close();
+  await hub.realtime.close();
 });
 
 it('bounds a blocked connection queue while another player can still enter a map', async () => {
-  const shared = createMemorySharedState();
-  const test = await createTestApp({ shared });
+  const shared = createMemoryAdapters();
+  const test = await createTestApp({ adapters: shared });
   cleanup.push(test.close);
   const a = await test.register('spam-a');
   const b = await test.register('spam-b');
@@ -77,14 +83,14 @@ it('bounds a blocked connection queue while another player can still enter a map
   const blocked = new Promise<void>((resolve) => {
     release = resolve;
   });
-  const original = shared.set;
+  const original = shared.store.lease;
   let held = false;
-  vi.spyOn(shared, 'set').mockImplementation(async (key, value, ttl) => {
-    if (key.startsWith(`connection:${a.player.id}:`)) {
+  vi.spyOn(shared.store, 'lease').mockImplementation(async (key, owner, until) => {
+    if (key === a.player.id) {
       held = true;
       await blocked;
     }
-    await original(key, value, ttl);
+    await original(key, owner, until);
   });
   cleanup.push(async () => release());
   const one = await test.app.injectWS('/api/ws', { headers: { cookie: a.cookie, origin: testConfig.webOrigin } });
@@ -92,7 +98,7 @@ it('bounds a blocked connection queue while another player can still enter a map
   await vi.waitFor(() => expect(held).toBe(true));
   const server = [...test.app.websocketServer.clients][0];
   const close = vi.spyOn(server, 'close');
-  const exclusive = vi.spyOn(shared, 'exclusive');
+  const exclusive = vi.spyOn(shared.coordination, 'exclusive');
   for (let i = 0; i < 10_000; i++) server.emit('message', Buffer.from('{"type":"map.leave"}'));
   expect(close).toHaveBeenCalledWith(4008);
   expect(exclusive).not.toHaveBeenCalled();
@@ -105,15 +111,15 @@ it('bounds a blocked connection queue while another player can still enter a map
 });
 
 it('drops all command types at the common limit, with a stricter shared enter/watch limit and no per-message touch', async () => {
-  const shared = createMemorySharedState();
-  const test = await createTestApp({ shared });
+  const shared = createMemoryAdapters();
+  const test = await createTestApp({ adapters: shared });
   cleanup.push(test.close);
   const { cookie } = await test.register('rate-ws');
   const socket = await test.app.injectWS('/api/ws', { headers: { cookie, origin: testConfig.webOrigin } });
   cleanup.push(async () => socket.terminate());
   const server = [...test.app.websocketServer.clients][0];
-  const exclusive = vi.spyOn(shared, 'exclusive');
-  const get = vi.spyOn(shared, 'get');
+  const exclusive = vi.spyOn(shared.coordination, 'exclusive');
+  const get = vi.spyOn(shared.store, 'touch');
   const transactions = vi.spyOn(test.db, 'transaction');
   for (let i = 0; i < 100; i++) {
     server.emit('message', Buffer.from('{"type":"lobby.watch","gameId":"chess"}'));
@@ -121,7 +127,7 @@ it('drops all command types at the common limit, with a stricter shared enter/wa
   }
   await vi.waitFor(() => expect(transactions).toHaveBeenCalledTimes(2));
   // Presence.touch reads this key; lobby.watch itself only queries PostgreSQL.
-  expect(get.mock.calls.filter(([key]) => key.startsWith('presence:'))).toHaveLength(0);
+  expect(get).not.toHaveBeenCalled();
   expect(exclusive).not.toHaveBeenCalled();
   // The expensive-command bucket is independent of the common budget, which is now exhausted.
   server.emit('message', Buffer.from('{"type":"map.leave"}'));
@@ -182,4 +188,28 @@ it('warns in production without Redis and still starts successfully', async () =
   cleanup.push(test.close);
   await test.app.ready();
   expect(logs).toContainEqual(expect.objectContaining({ level: 40, msg: expect.stringContaining('REDIS_URL') }));
+});
+
+it('updates a move without a coordination lock or room enumeration', async () => {
+  const adapters = createMemoryAdapters();
+  const driver = createRealtimeDriver(adapters);
+  const rooms = createMapRooms(driver.realtime);
+  const client = driver.connect('walker', () => {});
+  await rooms.enter(client, 'street', 1, [100, 100], {
+    id: 'walker',
+    name: 'Walker',
+    level: 1,
+    outfit: defaultOutfit,
+    x: 0,
+    y: 0,
+  });
+  const lock = vi.spyOn(adapters.coordination, 'exclusive');
+  const members = vi.spyOn(adapters.store, 'members');
+  const update = vi.spyOn(adapters.store, 'update');
+  await rooms.move(client, 10, 0);
+  expect(lock).not.toHaveBeenCalled();
+  expect(members).not.toHaveBeenCalled();
+  expect(update).toHaveBeenCalledTimes(1);
+  rooms.close();
+  await driver.realtime.close();
 });

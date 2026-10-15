@@ -15,7 +15,8 @@ const OPEN = 1;
 
 /**
  * One socket to `apps/api`, reopened with backoff. The server forgets a connection's map room and lobby watch
- * when it drops, so the latest of each is sent again after every reconnect.
+ * when it drops, so the latest of each is sent again after every reconnect. Batched `map.moves` events
+ * pass through the shared decoder as one notification; consumers apply every position in the batch.
  */
 export function createRealtimeClient(options: {
   url: string;

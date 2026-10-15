@@ -1,6 +1,6 @@
 import { once } from 'node:events';
+import { createMemoryAdapters } from '@chibi-town/realtime-core';
 import { afterEach, expect, it, vi } from 'vitest';
-import { createMemorySharedState } from '@/infrastructure/realtime/shared-state';
 import { createTestApp, testConfig } from './test-app.js';
 
 const cleanup: (() => Promise<unknown>)[] = [];
@@ -11,8 +11,8 @@ afterEach(async () => {
 });
 
 async function connection() {
-  const shared = createMemorySharedState();
-  const test = await createTestApp({ shared });
+  const shared = createMemoryAdapters();
+  const test = await createTestApp({ adapters: shared });
   cleanup.push(test.close);
   const { cookie, player } = await test.register('review-ws');
   const interval = globalThis.setInterval;
@@ -24,7 +24,7 @@ async function connection() {
   const socket = await test.app.injectWS('/api/ws', { headers: { cookie, origin: testConfig.webOrigin } });
   cleanup.push(async () => socket.terminate());
   const server = [...test.app.websocketServer.clients][0];
-  await vi.waitFor(async () => expect(await shared.entries(`connection:${player.id}:`)).toHaveLength(1));
+  await vi.waitFor(async () => expect(await shared.store.connected(player.id, test.clock())).toBe(true));
   return {
     test,
     shared,
@@ -45,8 +45,8 @@ it.each(['redis', 'database'] as const)(
   async (source) => {
     const { test, shared, socket, server, heartbeat } = await connection();
     const close = vi.spyOn(server, 'close');
-    const set = vi.spyOn(shared, 'set');
-    const get = vi.spyOn(shared, 'get');
+    const set = vi.spyOn(shared.store, 'lease');
+    const get = vi.spyOn(shared.store, 'lease');
     if (source === 'redis') set.mockRejectedValueOnce(new Error('temporary Redis failure'));
     else
       vi.spyOn(test.db, 'select').mockImplementationOnce(() => {
@@ -57,7 +57,7 @@ it.each(['redis', 'database'] as const)(
     expect(close).not.toHaveBeenCalled();
     expect(socket.readyState).toBe(socket.OPEN);
     heartbeat();
-    await vi.waitFor(() => expect(get).toHaveBeenCalledWith(expect.stringMatching(/^presence:/)));
+    await vi.waitFor(() => expect(get).toHaveBeenCalledTimes(source === 'redis' ? 2 : 1));
     expect(close).not.toHaveBeenCalled();
   },
 );
@@ -66,10 +66,10 @@ it('only reads session once every four heartbeats and never writes player lastSe
   const { test, shared, heartbeat } = await connection();
   const select = vi.spyOn(test.db, 'select');
   const update = vi.spyOn(test.db, 'update');
-  const get = vi.spyOn(shared, 'get');
+  const get = vi.spyOn(shared.store, 'lease');
   for (let i = 1; i <= 4; i++) {
     heartbeat();
-    await vi.waitFor(() => expect(get.mock.calls.filter(([key]) => key.startsWith('presence:'))).toHaveLength(i));
+    await vi.waitFor(() => expect(get).toHaveBeenCalledTimes(i));
     expect(select).toHaveBeenCalledTimes(i < 4 ? 0 : 1);
   }
   expect(update).not.toHaveBeenCalled();
@@ -91,17 +91,17 @@ it('coalesces 100 moves behind a slow enter lock and applies only the last posit
     release = resolve;
   });
   cleanup.push(async () => release());
-  const exclusive = shared.exclusive;
+  const claim = shared.store.claim;
   let held = false;
-  vi.spyOn(shared, 'exclusive').mockImplementation(async (key, task) => {
-    if (key === 'map-rooms' && !held) {
+  vi.spyOn(shared.store, 'claim').mockImplementation(async (...args) => {
+    if (!held) {
       held = true;
       await blocked;
     }
-    return exclusive(key, task);
+    return claim(...args);
   });
   const close = vi.spyOn(server, 'close');
-  const set = vi.spyOn(shared, 'set');
+  const claimWrites = vi.spyOn(shared.store, 'update');
   server.emit(
     'message',
     Buffer.from(JSON.stringify({ type: 'map.enter', regionId: 'fun', mapId: 'entertainment-street', x: 10, y: 20 })),
@@ -114,8 +114,8 @@ it('coalesces 100 moves behind a slow enter lock and applies only the last posit
   expect(close).not.toHaveBeenCalled();
   release();
   await vi.waitFor(() => {
-    const writes = set.mock.calls.filter(([key]) => key.startsWith('room:map:') && key.endsWith(`:${player.id}`));
-    expect(writes.map(([, entry]) => (entry as { player: { x: number } }).player.x)).toEqual([10, 20]);
+    const writes = claimWrites.mock.calls.filter(([, id]) => id === player.id);
+    expect(writes.map(([, , entry]) => (entry.player as { player: { x: number } }).player.x)).toEqual([20]);
   });
   expect(socket.readyState).toBe(socket.OPEN);
 });

@@ -30,6 +30,10 @@ export async function readSessionState(
   now: number,
 ): Promise<SessionState | undefined> {
   if (!token || token.length > 200) return undefined;
+  return readSessionHash(db, hashSessionToken(token), now);
+}
+
+export async function readSessionHash(db: Database, tokenHash: string, now: number): Promise<SessionState | undefined> {
   const [session] = await db
     .select({
       player: {
@@ -43,7 +47,7 @@ export async function readSessionState(
     })
     .from(sessions)
     .innerJoin(players, eq(players.id, sessions.playerId))
-    .where(and(eq(sessions.tokenHash, hashSessionToken(token)), gt(sessions.expiresAt, new Date(now))));
+    .where(and(eq(sessions.tokenHash, tokenHash), gt(sessions.expiresAt, new Date(now))));
   return session && { player: session.player, expiresAt: session.expiresAt.getTime() };
 }
 

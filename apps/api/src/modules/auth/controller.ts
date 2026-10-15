@@ -1,3 +1,4 @@
+import type { Coordination } from '@chibi-town/realtime-core';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { createAttemptLimiter } from '@/_utils/attempt-limiter';
 import { HttpError } from '@/_utils/http-errors';
@@ -13,7 +14,6 @@ import {
 } from '@/_utils/session-auth';
 import type { ApiConfig } from '@/config';
 import type { Database } from '@/infrastructure/database/database';
-import type { SharedState } from '@/infrastructure/realtime/shared-state';
 import { type GoogleClient, readGoogleProfile, startGoogleSignIn } from '@/modules/auth/google-oauth';
 import {
   accountWithSetup,
@@ -33,7 +33,7 @@ export function createAuthController(deps: {
   config: ApiConfig;
   clock: () => number;
   fetch: typeof fetch;
-  shared: SharedState;
+  shared: Coordination;
   revokeSession: (sessionId: string) => Promise<void>;
 }) {
   const { db, config, clock } = deps;

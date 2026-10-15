@@ -1,4 +1,3 @@
-import { expect, it } from 'vitest';
 import {
   backpressureCloseCode,
   CONNECTION_POLICY,
@@ -8,7 +7,8 @@ import {
   queueCloseCode,
   queueConnectionWork,
   sessionCheckDue,
-} from '@/application/_utils/connection-policy';
+} from '@chibi-town/realtime-core/connection-policy';
+import { expect, it } from 'vitest';
 import { acceptMovement, startMovement } from '@/modules/world/movement-policy';
 
 it('refills rate budgets by time without mutating state or giving credit for clock rollback', () => {

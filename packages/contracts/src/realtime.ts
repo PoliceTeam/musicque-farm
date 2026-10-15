@@ -21,7 +21,7 @@ export type RealtimeEvent =
   | { type: 'match'; gameId: ArcadeGameId }
   | { type: 'map.state'; mapId: string; channelId: number; players: MapPlayer[] }
   | { type: 'map.join'; player: MapPlayer }
-  | { type: 'map.move'; id: string; x: number; y: number }
+  | { type: 'map.moves'; moves: { id: string; x: number; y: number }[] }
   | { type: 'map.leave'; id: string };
 export type RealtimeCommand =
   | { type: 'lobby.watch'; gameId: ArcadeGameId }
@@ -99,8 +99,12 @@ export function decodeRealtimeEvent(value: unknown): RealtimeEvent | undefined {
       const player = mapPlayer(event.player);
       return player ? { type: event.type, player } : undefined;
     }
-    case 'map.move':
-      return id(event.id) && point(event) ? { type: event.type, id: event.id, x: event.x, y: event.y } : undefined;
+    case 'map.moves':
+      return Array.isArray(event.moves) &&
+        event.moves.length <= 1000 &&
+        event.moves.every((move) => move && id(move.id) && point(move))
+        ? { type: event.type, moves: event.moves.map(({ id, x, y }) => ({ id, x, y })) }
+        : undefined;
     case 'map.leave':
       return id(event.id) ? { type: event.type, id: event.id } : undefined;
     default:

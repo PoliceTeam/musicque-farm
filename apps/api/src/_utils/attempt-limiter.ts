@@ -1,15 +1,10 @@
-import { createMemorySharedState, type SharedState } from '@/infrastructure/realtime/shared-state';
+import type { Coordination } from '@chibi-town/realtime-core';
 
 /**
  * Counts failed attempts per key in a sliding window using the configured shared store (memory or Redis).
  * Callers must hold an attempt lock around checking and recording an authentication attempt.
  */
-export function createAttemptLimiter(
-  limit: number,
-  windowMs: number,
-  shared: SharedState = createMemorySharedState(),
-  namespace = 'attempts',
-) {
+export function createAttemptLimiter(limit: number, windowMs: number, shared: Coordination, namespace = 'attempts') {
   const keyOf = (key: string) => `${namespace}:${encodeURIComponent(key)}`;
 
   const recent = async (key: string, now: number) =>

@@ -16,12 +16,12 @@ import {
   updateTableMember,
   viewTable,
 } from '@chibi-town/game-service';
+import type { RealtimeService } from '@chibi-town/realtime-core';
 import { and, eq } from 'drizzle-orm';
 import type { FastifyBaseLogger } from 'fastify';
 import type { PlayerAccount } from '@/_utils/session-auth';
 import type { Database } from '@/infrastructure/database/database';
 import { arcadeSeats, arcadeTables } from '@/infrastructure/database/schema';
-import type { RealtimeHub } from '@/infrastructure/realtime/realtime-hub';
 import { randomSeed } from '@/modules/arcade/random-seed';
 import { createTableMaintenance } from '@/modules/arcade/tables/maintenance';
 import { createTableRepository } from '@/modules/arcade/tables/repository';
@@ -39,10 +39,10 @@ export const lobbyTopic = (gameId: string, channel: number) => `lobby:${gameId}:
 export function createTableService(deps: {
   db: Database;
   clock: () => number;
-  hub: RealtimeHub;
+  realtime: RealtimeService;
   logger: Pick<FastifyBaseLogger, 'error'>;
 }) {
-  const { db, clock, hub } = deps;
+  const { db, clock, realtime } = deps;
   const { lockWallets, refreshNames, store, seatedTable } = createTableRepository(clock);
 
   const adapter = (gameId: string): TableGame => tableGames[gameId as ArcadeGameId] ?? fail('INVALID_COMMAND');
@@ -52,8 +52,10 @@ export function createTableService(deps: {
   }
 
   function announce(gameId: ArcadeGameId, channel: number, playerIds: string[]) {
-    hub.publishToPlayers(playerIds, { type: 'match', gameId });
-    hub.publish(lobbyTopic(gameId, channel), { type: 'lobby', gameId });
+    void Promise.all([
+      realtime.notifyPlayers(playerIds, { type: 'match', gameId }),
+      realtime.publish(lobbyTopic(gameId, channel), { type: 'lobby', gameId }),
+    ]).catch((error) => deps.logger.error(error));
   }
 
   /** Runs one table rule for a seated player inside a transaction that holds the table and every seat's save. */

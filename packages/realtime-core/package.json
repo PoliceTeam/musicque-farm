@@ -1,0 +1,41 @@
+{
+  "name": "@chibi-town/realtime-core",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./connection-policy": {
+      "types": "./dist/_utils/connection-policy.d.ts",
+      "default": "./dist/_utils/connection-policy.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/adapter-contract.d.ts",
+      "default": "./dist/testing/adapter-contract.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "biome check . --formatter-enabled=false"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "peerDependencies": {
+    "vitest": "^3.2.0"
+  },
+  "peerDependenciesMeta": {
+    "vitest": {
+      "optional": true
+    }
+  }
+}

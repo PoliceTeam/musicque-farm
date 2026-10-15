@@ -76,6 +76,18 @@
         "src/assets/generated-styles.ts",
         "public/chibi-assets/**"
       ]
+    },
+    "@chibi-town/api#test": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "passThroughEnv": ["REDIS_URL"],
+      "cache": false
+    },
+    "@chibi-town/realtime-redis#test": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "passThroughEnv": ["REDIS_URL"],
+      "cache": false
     }
   }
 }

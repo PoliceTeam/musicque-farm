@@ -1,4 +1,4 @@
-/** Pure connection policy; the transport owns clocks, timers, queues and socket operations. */
+/** Pure connection policy; the service owns clocks, timers and queues; transport adapters own socket operations. */
 export const CONNECTION_POLICY = {
   messagesPerSecond: 30,
   burst: 40,

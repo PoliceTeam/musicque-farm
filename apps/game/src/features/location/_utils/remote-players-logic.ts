@@ -42,9 +42,11 @@ export function createRemotePlayers(selfId: string) {
         event.players.forEach(add);
       } else if (event.type === 'map.join') add(event.player);
       else if (event.type === 'map.leave') players.delete(event.id);
-      else if (event.type === 'map.move') {
-        const player = players.get(event.id);
-        if (player) player.target = [event.x, event.y];
+      else if (event.type === 'map.moves') {
+        for (const move of event.moves) {
+          const player = players.get(move.id);
+          if (player) player.target = [move.x, move.y];
+        }
       }
     },
 
