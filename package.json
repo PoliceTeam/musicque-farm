@@ -16,8 +16,9 @@
     "lint": "turbo run lint",
     "format:check": "biome format . && node tools/format/function-spacing.mjs --check",
     "format": "biome format --write . && node tools/format/function-spacing.mjs --write && biome format --write .",
-    "check": "pnpm format:check && pnpm format:test && turbo run lint typecheck test",
-    "format:test": "node --test tools/format/function-spacing.test.mjs"
+    "check": "pnpm format:check && pnpm format:test && turbo run lint typecheck test && pnpm tooling:test",
+    "format:test": "node --test tools/format/function-spacing.test.mjs",
+    "tooling:test": "node --test tools/tooling/*.test.mjs"
   },
   "devDependencies": {
     "turbo": "2.11.7",

@@ -172,9 +172,11 @@ Test `auth.test.ts` bao phủ tạo/giới hạn khách đồng thời, cookie 3
 
 Test API dùng PGlite: `tables.test.ts` cho Tiến lên; `tables-phom.test.ts`, `tables-chess.test.ts`, `tables-chinese-chess.test.ts`, `tables-diamonds.test.ts`, `tables-bau-cua.test.ts`, `tables-slots.test.ts` cho sáu trò còn lại. Bao phủ ván đầy đủ, payout chính xác, snapshot kín, lỗi lượt/nước đi, receipt, giữ cược, bỏ cuộc, sweep timeout và phòng luyện tập. Các trò cờ kiểm tra hòa lặp thế; Cờ vua thêm chiếu hết bởi quân đen.
 
+Test hồi quy được nhóm theo chức năng: `auth-google-linking.test.ts`, `login-rate-limit.test.ts`, `arcade-random.test.ts`, `arcade-start-concurrency.test.ts`, `tables-sweep.test.ts`, `player-document-clock.test.ts`; test ghi nhận thắng Kim cương nằm trong `tables-diamonds.test.ts`. Không còn file `phase-one.test.ts`.
+
 ## Chạy
 
-Import nội bộ API dùng `@/` trỏ tới `apps/api/src/`, không thêm đuôi `.js` trong source; import package dùng public exports như trước. TypeScript và Vitest cùng cấu hình alias này. Build chạy `tsc` rồi `tsc-alias` để đổi alias thành đường dẫn tương đối có đuôi `.js` trong `dist/`; production tiếp tục chạy bằng Node ESM, không cần loader alias lúc runtime. Sau khi sửa source, dùng lệnh build của workspace thay vì gọi riêng `tsc` để bản xuất có đầy đủ đường dẫn.
+Import nội bộ API dùng `@/` trỏ tới `apps/api/src/`, không thêm đuôi `.js` trong source; import package dùng public exports như trước. TypeScript và Vitest cùng cấu hình alias này. Build xóa toàn bộ `dist/` trước khi chạy `tsc` rồi `tsc-alias` để đổi alias thành đường dẫn tương đối có đuôi `.js` trong `dist/`; production tiếp tục chạy bằng Node ESM, không cần loader alias lúc runtime. Sau khi sửa source, dùng lệnh build của workspace thay vì gọi riêng `tsc` để bản xuất có đầy đủ đường dẫn.
 
 ```bash
 cp apps/api/.env.example apps/api/.env

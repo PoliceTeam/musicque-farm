@@ -1,6 +1,6 @@
 import { bestGemMove, type GemAction } from '@chibi-town/arcade-games/gem-battle-logic';
 import { ApiSdkError, type GameSdk } from '@chibi-town/contracts';
-import { tableGames } from '@chibi-town/game-service';
+import { createPlayerDocument, tableGames } from '@chibi-town/game-service';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TURN_LIMIT_MS } from '@/modules/arcade/tables';
 import { createTestApp } from './test-app.js';
@@ -154,4 +154,10 @@ describe('Diamonds tables of people', () => {
     expect(m.session?.mode).toBe('practice');
     expect((await seats[0].getArcadeLobby()).activeBattle).toBeUndefined();
   });
+});
+
+it('records diamond wins', () => {
+  const document = createPlayerDocument();
+  tableGames.diamonds!.recordWin(document);
+  expect(document.arcade).toMatchObject({ wins: 1 });
 });

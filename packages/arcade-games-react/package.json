@@ -24,6 +24,10 @@
     "./table-navigation": {
       "types": "./dist/_utils/table-navigation.d.ts",
       "default": "./dist/_utils/table-navigation.js"
+    },
+    "./table-updates": {
+      "types": "./dist/_utils/table-updates.d.ts",
+      "default": "./dist/_utils/table-updates.js"
     }
   },
   "scripts": {

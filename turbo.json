@@ -12,7 +12,7 @@
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "typecheck": {
-      "dependsOn": ["^build", "^typecheck"],
+      "dependsOn": ["^build"],
       "outputs": []
     },
     "test": {
@@ -20,8 +20,62 @@
       "outputs": []
     },
     "lint": {
+      "outputs": []
+    },
+    "@chibi-town/character-core#test": {
+      "dependsOn": ["build"],
+      "outputs": []
+    },
+    "@chibi-town/renderer-phaser#test": {
+      "dependsOn": ["build"],
+      "outputs": []
+    },
+    "@chibi-town/game#dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build", "prepare-assets"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tools/runtime/run-game-task.mjs"]
+    },
+    "@chibi-town/game#build": {
+      "dependsOn": ["^build", "prepare-assets"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tools/runtime/run-game-task.mjs"]
+    },
+    "@chibi-town/game#typecheck": {
+      "dependsOn": ["^build", "prepare-assets"],
       "outputs": [],
-      "dependsOn": ["^build"]
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tools/runtime/run-game-task.mjs"]
+    },
+    "@chibi-town/game#test": {
+      "dependsOn": ["^build", "prepare-assets"],
+      "outputs": [],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tools/runtime/run-game-task.mjs",
+        "$TURBO_ROOT$/tools/runtime/map-assets.test.mjs"
+      ]
+    },
+    "@chibi-town/game#prepare-assets": {
+      "inputs": [
+        "package.json",
+        "src/assets/**",
+        "!src/assets/generated-*.ts",
+        "src/**/*.css",
+        "$TURBO_ROOT$/packages/ui/src/theme.css",
+        "$TURBO_ROOT$/packages/arcade-games-react/src/theme.css",
+        "$TURBO_ROOT$/tools/runtime/prepare-assets.mjs",
+        "$TURBO_ROOT$/tools/runtime/build-map-assets.mjs",
+        "$TURBO_ROOT$/tools/farm-runtime-assets.json",
+        "$TURBO_ROOT$/tools/entertainment/assets.json",
+        "$TURBO_ROOT$/tools/arcade/assets.json"
+      ],
+      "outputs": [
+        "src/assets/generated-assets.ts",
+        "src/assets/generated-map-assets.ts",
+        "src/assets/generated-sprite-sources.ts",
+        "src/assets/generated-styles.ts",
+        "public/chibi-assets/**"
+      ]
     }
   }
 }

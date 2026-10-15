@@ -11,6 +11,10 @@
     "./world-map-view": {
       "types": "./dist/world-map-view.d.ts",
       "default": "./dist/world-map-view.js"
+    },
+    "./character-view": {
+      "types": "./dist/character-view.d.ts",
+      "default": "./dist/character-view.js"
     }
   },
   "scripts": {
@@ -18,7 +22,7 @@
     "dev": "tsc --watch --preserveWatchOutput",
     "typecheck": "tsc --noEmit",
     "lint": "biome check . --formatter-enabled=false",
-    "test": "pnpm build && node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@chibi-town/character-core": "workspace:*",

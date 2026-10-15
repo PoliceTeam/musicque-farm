@@ -73,6 +73,18 @@ CSS được chia theo thành phần/màn sở hữu, dùng cùng skin của UI 
 
 `tools/runtime/prepare-assets.mjs` khai báo các stylesheet và tạo module CSS dạng chuỗi cho shell. Shell nạp theme dùng chung và style tài khoản; khi chuyển màn, nó thay stylesheet riêng của màn hiện tại. CSS riêng của app không đưa vào UI package.
 
+## Tooling và build
+
+Turbo mặc định điều phối `test` sau `^build`; chỉ character-core và renderer-phaser chờ `build` của chính package vì test đọc `dist` của nó. Script test của hai package này không tự build. Khi chạy riêng test của hai package bằng `pnpm --filter`, cần build trước hoặc dùng `pnpm turbo run test --filter=<package>` để Turbo dựng đủ dependency. `build` tiếp tục phụ thuộc `^build`; `lint` không chờ build; `typecheck` chờ `^build`, không chờ typecheck của dependency. `pnpm check` không chạy Next build.
+
+App có task `prepare-assets` dùng chung trước `typecheck`, `test`, `build`, `dev`. Inputs gồm source assets (loại các module generated), CSS của app/UI/arcade React, hai script sinh assets và ba manifest farm/entertainment/arcade; outputs gồm bốn module `generated-*.ts` và `public/chibi-assets/**`. Task được cache và chỉ xuất hiện một lần trong mỗi graph, nên typecheck/test không cùng ghi file sinh ra. Thay CSS hoặc art nguồn sẽ làm mất hiệu lực cache mà không đưa output vào inputs.
+
+Các script app gọi `tools/runtime/run-game-task.mjs`: lệnh trực tiếp `pnpm --filter @chibi-town/game dev/build/test/typecheck` đi qua Turbo; bên trong task (có `TURBO_HASH` do Turbo cấp), wrapper chạy Next/TypeScript/Vitest trực tiếp. Cách này dùng chung một graph cho cả hai cách gọi, không sinh assets inline và vẫn buộc test thực thi khi dùng `--force`. Các tham số bổ sung được chuyển đến lệnh cuối của task. Wrapper và test runtime map assets cũng được khai báo trong inputs của task sử dụng chúng.
+
+`pnpm check` chạy kiểm tra format, test formatter, lint/typecheck/test qua Turbo, rồi `pnpm tooling:test`. Suite tooling kiểm tra graph không có Next build, test cần dist chờ đúng build, lint không chờ build và task chuẩn bị assets được dùng chung; test build API thêm module thừa rồi xác nhận output trở về đúng danh sách của một build bình thường. Chạy suite tooling riêng cần build các dependency API trước. Kiểm tra lạnh bằng cách xóa `.turbo/cache/` rồi chạy `pnpm check`; dùng `pnpm turbo run lint typecheck test --force` để buộc thực thi lại, không đọc cache.
+
+App test dùng public exports `@chibi-town/renderer-phaser/character-view` và `@chibi-town/arcade-games-react/table-updates`, không import thẳng source package. App khai báo Phaser trong devDependencies cho Vitest; runtime Phaser vẫn do renderer provider sở hữu. `@chibi-town/arcade-games` chỉ dùng trực tiếp trong test app, nên cũng thuộc devDependencies.
+
 ## World → region → map → instance
 
 Giữ nguyên 8 ID đang có trong `apps/game/src/features/world-map/_utils/world-zones.json`:

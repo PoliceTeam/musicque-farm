@@ -3,7 +3,10 @@ import { createMiniMatch, isMiniMatch } from '@chibi-town/arcade-games/mini-game
 import { createPhomMatch, isPhomMatch } from '@chibi-town/arcade-games/phom-logic';
 import { isRandomSeed, type RandomSeed, random } from '@chibi-town/arcade-games/random';
 import { createTienMatch, isTienMatch, playTienSeatAction } from '@chibi-town/arcade-games/tien-len-logic';
-import { expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
+import { afterAll, beforeAll, expect, it } from 'vitest';
+import { playerDocuments } from '@/infrastructure/database/schema';
+import { createTestApp } from './test-app.js';
 
 it('uses all 128 bits of seeded state deterministically without mutating caller seeds', () => {
   const seed: RandomSeed = [12, 34, 56, 78];
@@ -37,4 +40,39 @@ it('accepts numeric legacy saves and new tuple seeds in all match validators', (
     expect(isGemBattle({ ...gem, seed })).toBe(true);
   }
   for (const seed of [[1, 2, 3], [1, 2, 3, -1], [1, 2, 3, 2 ** 32], NaN]) expect(isRandomSeed(seed)).toBe(false);
+});
+
+let t: Awaited<ReturnType<typeof createTestApp>>;
+beforeAll(async () => {
+  t = await createTestApp();
+});
+afterAll(() => t.close());
+
+it('stores 128-bit entropy and refreshes it before dealing', async () => {
+  const host = await t.register('entropy');
+  const sdk = t.sdkFor(host.cookie);
+  const match = await sdk.startTienRoom({ roomId: 3, requestId: 'entropy' });
+
+  const read = async () =>
+    (await t.db.select().from(playerDocuments).where(eq(playerDocuments.playerId, host.player.id)))[0].document.tien!
+      .activeMatch!.seed;
+
+  const waiting = await read();
+  expect(Array.isArray(waiting) && waiting.length).toBe(4);
+  await sdk.configureArcadeTable({
+    gameId: 'tien-len',
+    matchId: match.id,
+    revision: match.revision,
+    requestId: 'config',
+    stake: 0,
+    difficulty: 'medium',
+  });
+  const ready = (await sdk.getTienLobby()).activeMatch!;
+  await sdk.playTien({ matchId: ready.id, revision: ready.revision, requestId: 'deal', action: { type: 'start' } });
+  expect(await read()).not.toEqual(waiting);
+});
+
+it('keeps seeded engines deterministic and accepts legacy numeric saves', () => {
+  const match = createTienMatch('same', 0, 42);
+  expect(playTienSeatAction(match, 0, { type: 'start' })).toEqual(playTienSeatAction(match, 0, { type: 'start' }));
 });
