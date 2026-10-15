@@ -29,6 +29,13 @@
       "when": 1791956519032,
       "tag": "0003_bizarre_boomer",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792041318278,
+      "tag": "0004_slim_morgan_stark",
+      "breakpoints": true
     }
   ]
 }

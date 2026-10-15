@@ -6,13 +6,14 @@ import {
   SERVER_STARTING_COINS,
   SERVER_STARTING_GEMS,
 } from '@chibi-town/game-content';
-import { createPlayerDocument } from '@chibi-town/game-service';
+import { createPlayerDocument, grantStarterSelection } from '@chibi-town/game-service';
 import { and, eq, or } from 'drizzle-orm';
 import { HttpError } from '@/_utils/http-errors';
 import { hashPassword, verifyPassword } from '@/_utils/password';
 import type { PlayerAccount } from '@/_utils/session-auth';
 import type { Database } from '@/db/database';
 import { identities, playerDocuments, players } from '@/db/schema';
+import { loadCharacterInventory, saveCharacterInventory } from '@/modules/game/character-inventory-repository';
 
 export type ExternalProfile = {
   provider: 'google';
@@ -120,6 +121,7 @@ async function upgradeGuest(tx: Transaction, id: string, values: NewAccount, now
 async function saveStarterOutfit(tx: Transaction, id: string, value: unknown, now = Date.now()) {
   if (value === undefined) return;
   const [row] = await tx.select().from(playerDocuments).where(eq(playerDocuments.playerId, id)).for('update');
+  const characterBefore = await loadCharacterInventory(tx, id, row.document, now);
   const selected = starterOutfit(value);
   if (row.document.characterSetupPending === undefined && row.document.outfit) {
     const existing = sanitizeOutfit(row.document.outfit);
@@ -137,6 +139,9 @@ async function saveStarterOutfit(tx: Transaction, id: string, value: unknown, no
     }
     row.document.outfit = sanitizeOutfit(next);
   } else row.document.outfit = selected;
+  grantStarterSelection(row.document, row.document.outfit!, now);
+  await saveCharacterInventory(tx, id, row.document.characterInventory!, characterBefore);
+  delete row.document.characterInventory;
   row.document.characterSetupPending = false;
   row.document.revision++;
   await tx

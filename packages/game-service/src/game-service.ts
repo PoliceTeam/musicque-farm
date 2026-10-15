@@ -17,7 +17,7 @@ import { createPhomMatch, phomSnapshot, playPhomAction } from '@chibi-town/arcad
 import { type ArcadeSession, arcadeAllReady, arcadeMembers } from '@chibi-town/arcade-games/session';
 import { topTwoPayout } from '@chibi-town/arcade-games/table-payout';
 import { createTienMatch, playTienAction, tienSnapshot } from '@chibi-town/arcade-games/tien-len-logic';
-import { defaultOutfit, sanitizeOutfit } from '@chibi-town/character-core/outfit-logic';
+import { defaultOutfit } from '@chibi-town/character-core/outfit-logic';
 import {
   ApiSdkError,
   type ChannelDirectory,
@@ -33,6 +33,7 @@ import {
   validArcadeSettings,
   validArcadeTableCommand,
 } from '@chibi-town/contracts/arcade-table';
+import { validateCharacterInventoryQuery } from '@chibi-town/contracts/character-inventory';
 import { validMiniCommand, validMiniStart } from '@chibi-town/contracts/mini-games';
 import { validPhomCommand } from '@chibi-town/contracts/phom';
 import { validTienCommand, validTienStart } from '@chibi-town/contracts/tien-len';
@@ -66,6 +67,7 @@ import {
   upgradeFarmChest,
 } from '@chibi-town/gameplay';
 import { farmUnitAnimals } from '@chibi-town/gameplay/farm-unit-logic';
+import { characterInventoryPage, equipOwnedOutfit, executeCharacterInventory } from './character-inventory.js';
 
 import { type PlayerDocument, reservedArcadeCoins } from './player-document.js';
 import { pruneReceipts } from './receipt-order.js';
@@ -892,6 +894,11 @@ export function createGameService(options: GameServiceOptions): GameService {
 
     getInventory: read,
 
+    getCharacterInventory(query) {
+      validateCharacterInventoryQuery(query);
+      return (document) => characterInventoryPage(document, query, clock());
+    },
+
     execute(command) {
       validateCommand(command);
       return (document) => {
@@ -911,7 +918,16 @@ export function createGameService(options: GameServiceOptions): GameService {
           eligible = 1;
         switch (command.type) {
           case 'equip-outfit':
-            document.outfit = sanitizeOutfit(command.outfit);
+            equipOwnedOutfit(document, command.outfit, now);
+            completed = 1;
+            break;
+          case 'buy-cosmetic':
+          case 'move-character-item':
+          case 'equip-character-item':
+          case 'unequip-character-item':
+          case 'apply-cosmetic-color':
+            executeCharacterInventory(document, command, command.requestId, now);
+            state.coins = document.farm.coins;
             completed = 1;
             break;
           case 'plot':

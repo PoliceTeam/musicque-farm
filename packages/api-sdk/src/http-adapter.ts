@@ -24,6 +24,10 @@ import {
   validArcadeTableCommand,
 } from '@chibi-town/contracts/arcade-table';
 import {
+  decodeCharacterInventoryPage,
+  validateCharacterInventoryQuery,
+} from '@chibi-town/contracts/character-inventory';
+import {
   decodeMiniLobby,
   decodeMiniResult,
   decodeMiniSnapshot,
@@ -225,6 +229,11 @@ export function createHttpSdk(options: {
     getMap: async (input) => decodeSnapshot(await request('/maps/snapshot', input)),
 
     getInventory: async () => decodeSnapshot(await request('/inventory')),
+
+    getCharacterInventory: async (query) => {
+      validateCharacterInventoryQuery(query);
+      return decodeCharacterInventoryPage(await request('/character-inventory', query));
+    },
 
     execute: async (command) => {
       validateCommand(command);

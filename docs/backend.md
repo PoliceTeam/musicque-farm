@@ -183,3 +183,8 @@ cp deploy/.env.prod.example deploy/.env.prod   # điền PUBLIC_URL, DATABASE_PA
 - **Sổ ghi biến động xu** (`coin_ledger`) và tách `coins`/`gems` thành cột nếu cần thống kê: chưa thuộc đợt triển khai này.
 - Redis thật cần được kiểm chứng ở môi trường có `REDIS_URL`; test bus trong bộ nhớ không thay thế test triển khai Redis/Postgres nhiều máy.
 
+
+
+### Túi đồ, trang bị và Pet
+
+Migration `0004` thêm bốn bảng character inventory/unlock/instance/grant, có owner là player + character `main`. Các request inventory/equip hydrate trạng thái riêng và lưu delta cùng transaction ví; `PlayerDocument` không lưu collection trên server. `POST /character-inventory` trả danh sách phân trang; `/commands` xử lý mua, di chuyển, trang bị và màu. `equip-outfit` bị chặn nếu đồ/màu chưa sở hữu hoặc món còn trong kho. Đăng ký chọn starter cấp đúng đồ/màu một lần; save cũ migrate từ outfit đã lưu. Xem [cosmetic-economy.md](cosmetic-economy.md) để biết giá, container và phạm vi quest/event.

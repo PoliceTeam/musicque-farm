@@ -34,6 +34,8 @@ const readers: Record<string, Prepare> = {
   '/inventory': (service) => service.getInventory(),
 };
 const commands: Record<string, Prepare> = {
+  '/character-inventory': (service, body) => service.getCharacterInventory(body),
+
   '/commands': (service, body) => service.execute(body),
 
   '/maps/snapshot': (service, body) => service.getMap(body),
@@ -140,6 +142,16 @@ export function registerGameRoutes(
       db,
       player.id,
       prepare(await serviceFor(player), input(request), request.params as Record<string, string>),
+      request.routeOptions.url === '/api/character-inventory' ||
+        [
+          'buy-cosmetic',
+          'move-character-item',
+          'equip-character-item',
+          'unequip-character-item',
+          'apply-cosmetic-color',
+          'equip-outfit',
+        ].includes((request.body as { type?: string })?.type ?? ''),
+      clock(),
     );
   }
 

@@ -35,6 +35,10 @@
     "./sprite-types": {
       "types": "./dist/sprite-types.d.ts",
       "default": "./dist/sprite-types.js"
+    },
+    "./cosmetic-catalog": {
+      "types": "./dist/cosmetic-catalog.d.ts",
+      "default": "./dist/cosmetic-catalog.js"
     }
   },
   "files": [

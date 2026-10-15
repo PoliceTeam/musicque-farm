@@ -25,6 +25,7 @@ import { decodeMiniResult, decodeMiniSnapshot } from '@chibi-town/contracts/mini
 import { decodePhomResult, decodePhomSnapshot } from '@chibi-town/contracts/phom';
 import { decodeTienResult, decodeTienSnapshot } from '@chibi-town/contracts/tien-len';
 import { parseFarmProgress } from '@chibi-town/gameplay';
+import type { CharacterInventoryState } from './character-inventory.js';
 import { pruneReceipts } from './receipt-order.js';
 export type PlayerDocument = {
   version: 1;
@@ -68,6 +69,7 @@ export type PlayerDocument = {
   revision: number;
   farm: Snapshot['farm'];
   outfit?: Snapshot['outfit'];
+  characterInventory?: CharacterInventoryState;
   characterSetupPending?: boolean;
   instances?: Record<string, Snapshot['farm']>;
   requests: Record<string, { fingerprint: string; result: { completed: number; eligible: number } }>;

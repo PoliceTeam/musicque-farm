@@ -1,5 +1,23 @@
+import type {
+  CharacterCosmeticInstance,
+  CosmeticGrant,
+  CosmeticOwnership,
+} from '@chibi-town/game-content/cosmetic-economy';
 import type { PlayerDocument, TableRecord } from '@chibi-town/game-service';
-import { boolean, integer, json, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import {
+  boolean,
+  check,
+  foreignKey,
+  integer,
+  json,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 export const players = pgTable('players', {
   id: uuid('id').primaryKey(),
@@ -75,4 +93,79 @@ export const arcadeSeats = pgTable(
       .references(() => arcadeTables.id, { onDelete: 'cascade' }),
   },
   (table) => [primaryKey({ columns: [table.playerId, table.gameId] })],
+);
+
+export const characterInventories = pgTable(
+  'character_inventories',
+  {
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    characterId: text('character_id').notNull(),
+    bagSlots: integer('bag_slots').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.playerId, table.characterId] }),
+    check('character_bag_slots_positive', sql`${table.bagSlots} > 0`),
+  ],
+);
+
+export const characterUnlocks = pgTable(
+  'character_cosmetic_unlocks',
+  {
+    playerId: uuid('player_id').notNull(),
+    characterId: text('character_id').notNull(),
+    cosmeticId: text('cosmetic_id').notNull(),
+    data: json('data').$type<CosmeticOwnership>().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.playerId, table.characterId, table.cosmeticId] }),
+    foreignKey({
+      columns: [table.playerId, table.characterId],
+      foreignColumns: [characterInventories.playerId, characterInventories.characterId],
+    }).onDelete('cascade'),
+  ],
+);
+
+export const characterInstances = pgTable(
+  'character_item_instances',
+  {
+    playerId: uuid('player_id').notNull(),
+    characterId: text('character_id').notNull(),
+    instanceId: text('instance_id').notNull(),
+    container: text('container').notNull(),
+    bagSlot: integer('bag_slot'),
+    equippedSlot: text('equipped_slot'),
+    data: json('data').$type<CharacterCosmeticInstance>().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.playerId, table.characterId, table.instanceId] }),
+    foreignKey({
+      columns: [table.playerId, table.characterId],
+      foreignColumns: [characterInventories.playerId, characterInventories.characterId],
+    }).onDelete('cascade'),
+    uniqueIndex('character_one_bag_slot').on(table.playerId, table.characterId, table.bagSlot),
+    uniqueIndex('character_one_equipped_slot').on(table.playerId, table.characterId, table.equippedSlot),
+    check(
+      'character_item_location',
+      sql`(${table.container} = 'bag' AND ${table.bagSlot} >= 0 AND ${table.bagSlot} IS NOT NULL AND ${table.equippedSlot} IS NULL) OR (${table.container} = 'equipped' AND ${table.equippedSlot} IS NOT NULL AND ${table.bagSlot} IS NULL) OR (${table.container} = 'warehouse' AND ${table.bagSlot} IS NULL AND ${table.equippedSlot} IS NULL)`,
+    ),
+  ],
+);
+
+export const characterGrants = pgTable(
+  'character_cosmetic_grants',
+  {
+    playerId: uuid('player_id').notNull(),
+    characterId: text('character_id').notNull(),
+    grantId: text('grant_id').notNull(),
+    data: json('data').$type<CosmeticGrant>().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.playerId, table.characterId, table.grantId] }),
+    foreignKey({
+      columns: [table.playerId, table.characterId],
+      foreignColumns: [characterInventories.playerId, characterInventories.characterId],
+    }).onDelete('cascade'),
+  ],
 );

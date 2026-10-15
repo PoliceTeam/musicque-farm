@@ -7,6 +7,11 @@ import type {
   ArcadeTableSettings,
   ArcadeTableStart,
 } from './arcade-table.js';
+import type {
+  CharacterInventoryCommand,
+  CharacterInventoryPage,
+  CharacterInventoryQuery,
+} from './character-inventory.js';
 import type { MiniCommand, MiniLobby, MiniStart } from './mini-games.js';
 import type { PhomCommand, PhomLobby } from './phom.js';
 
@@ -40,6 +45,7 @@ export type Snapshot = {
   outfit: Outfit;
 };
 export type Command = { requestId: string; mapInstanceId: string } & (
+  | CharacterInventoryCommand
   | { type: 'plot'; index: number; action: FarmAction; cropId?: CropId }
   | { type: 'batch'; action: FarmAction; cropId?: CropId }
   | { type: 'expand' | 'feed' | 'collect'; unit: FarmUnit }
@@ -153,6 +159,7 @@ export interface GameSdk {
   getWorld(): Promise<{ regions: readonly RegionDefinition[]; maps: readonly MapDefinition[] }>;
   getMap(input: { regionId: string; mapId: string; instanceId: string }): Promise<Snapshot>;
   getInventory(): Promise<Snapshot>;
+  getCharacterInventory(query: CharacterInventoryQuery): Promise<CharacterInventoryPage>;
   execute(command: Command): Promise<CommandResult>;
 }
 
@@ -224,6 +231,24 @@ export function validateCommand(command: Command) {
         typeof command.animalId !== 'string' ||
         !command.animalId
       )
+        throw new ApiSdkError('INVALID_COMMAND');
+      break;
+    case 'buy-cosmetic':
+      if (typeof command.offerId !== 'string' || !command.offerId || command.offerId.length > 256)
+        throw new ApiSdkError('INVALID_COMMAND');
+      break;
+    case 'move-character-item':
+      if (!['bag', 'warehouse'].includes(command.to)) throw new ApiSdkError('INVALID_COMMAND');
+      if (typeof command.instanceId !== 'string' || !command.instanceId || command.instanceId.length > 512)
+        throw new ApiSdkError('INVALID_COMMAND');
+      break;
+    case 'equip-character-item':
+    case 'unequip-character-item':
+      if (typeof command.instanceId !== 'string' || !command.instanceId || command.instanceId.length > 512)
+        throw new ApiSdkError('INVALID_COMMAND');
+      break;
+    case 'apply-cosmetic-color':
+      if (typeof command.cosmeticId !== 'string' || !command.cosmeticId || command.cosmeticId.length > 256)
         throw new ApiSdkError('INVALID_COMMAND');
       break;
     case 'equip-outfit':

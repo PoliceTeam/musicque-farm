@@ -16,6 +16,7 @@
     "prepare:assets": "node ../../tools/runtime/prepare-assets.mjs"
   },
   "devDependencies": {
+    "@chibi-town/game-service": "workspace:*",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
