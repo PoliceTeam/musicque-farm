@@ -24,6 +24,8 @@ describe('remote players in a map channel', () => {
     others.apply({ type: 'map.leave', id: 'a' });
     others.apply({ type: 'map.move', id: 'gone', x: 1, y: 1 });
     expect([...others.players.keys()]).toEqual(['b']);
+    others.apply({ type: 'reconnected' });
+    expect(others.players.size).toBe(0);
     others.apply({ type: 'map.state', mapId: 'street', channelId: 1, players: [] });
     expect(others.players.size).toBe(0);
   });
@@ -76,12 +78,13 @@ describe('realtime messages', () => {
   it('drops malformed events before they reach listeners', () => {
     expect(decodeRealtimeEvent({ type: 'map.join', player: { ...player('a'), outfit: null } })).toBeUndefined();
     expect(decodeRealtimeEvent({ type: 'map.state', mapId: 'm', channelId: 0, players: [{}] })).toBeUndefined();
+    expect(decodeRealtimeEvent({ type: 'reconnected' })).toBeUndefined();
     expect(decodeRealtimeEvent({ type: 'match', gameId: 'phom' })).toEqual({ type: 'match', gameId: 'phom' });
   });
 });
 
 describe('realtime client', () => {
-  function harness() {
+  function harness(random = () => 0.5) {
     const sockets: {
       sent: string[];
       readyState: number;
@@ -94,6 +97,7 @@ describe('realtime client', () => {
     const client = createRealtimeClient({
       url: 'ws://api.test/api/ws',
       retryMs: 100,
+      random,
 
       schedule: (task, ms) => timers.push({ task, ms }),
 
@@ -154,6 +158,24 @@ describe('realtime client', () => {
     timers[2].task();
     open(3);
     expect(sockets[3].sent).toEqual([]);
+  });
+
+  it('emits reconnected once after reopening and adds jitter to retry delays', () => {
+    const { client, sockets, timers, open, drop } = harness(() => 0.25);
+    const seen: string[] = [];
+    client.subscribe((event) => seen.push(event.type));
+    open(0);
+    expect(seen).toEqual([]);
+    drop(0);
+    expect(timers[0].ms).toBe(75);
+    timers[0].task();
+    open(1);
+    expect(seen).toEqual(['reconnected']);
+    sockets[0].onmessage?.({ data: '{"type":"match","gameId":"chess"}' });
+    expect(seen).toEqual(['reconnected']);
+    client.close();
+    sockets[1].onopen?.();
+    expect(seen).toEqual(['reconnected']);
   });
 
   it('delivers valid events to listeners until they unsubscribe or the client closes', () => {

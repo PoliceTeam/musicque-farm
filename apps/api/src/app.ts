@@ -85,6 +85,11 @@ export async function createApp(deps: AppDependencies) {
   });
   app.setNotFoundHandler((_request, reply) => reply.code(404).send({ code: 'NOT_FOUND' }));
 
+  if (process.env.NODE_ENV === 'production' && !config.redisUrl)
+    app.log.warn(
+      'REDIS_URL is unset: realtime/presence coordination is limited to this API instance; configure Redis before running multiple instances.',
+    );
+
   const shared =
     deps.shared ?? (config.redisUrl ? await createRedisSharedState(config.redisUrl) : createMemorySharedState(clock));
   const presence = createChannelPresence(undefined, shared);
@@ -111,7 +116,14 @@ export async function createApp(deps: AppDependencies) {
   }
   await app.register(
     async (api) => {
-      await api.register(authModule, { db, config, clock, fetch: deps.fetch ?? fetch, shared });
+      await api.register(authModule, {
+        db,
+        config,
+        clock,
+        fetch: deps.fetch ?? fetch,
+        shared,
+        revokeSession: hub.revokeSession,
+      });
       await api.register(async (protectedApi) => {
         protectedApi.decorateRequest('player', null);
         protectedApi.addHook('preHandler', createSessionHook({ db, clock, presence }));

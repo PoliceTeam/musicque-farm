@@ -14,7 +14,11 @@ export function useArcadeLive(gameId: ArcadeGameId, refresh: () => void) {
     if (!realtime) return;
     realtime.send({ type: 'lobby.watch', gameId });
     const unsubscribe = realtime.subscribe((event) => {
-      if ((event.type === 'match' || event.type === 'lobby') && event.gameId === gameId) latest.current();
+      if (
+        event.type === 'reconnected' ||
+        ((event.type === 'match' || event.type === 'lobby') && event.gameId === gameId)
+      )
+        latest.current();
     });
     return () => {
       unsubscribe();

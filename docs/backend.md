@@ -133,7 +133,7 @@ Lobby arcade và danh sách khu trả `source: 'live'`. Presence đếm người
 | Client gửi | Server làm |
 | --- | --- |
 | `map.enter {regionId, mapId, x, y}` | Đưa người chơi vào phòng `map:<mapId>:<khu đã lưu>`, trả `map.state`, báo `map.join` cho người khác |
-| `map.move {x, y}` | Báo `map.move` cho người cùng khu, tối đa một lần mỗi 80 ms |
+| `map.move {x, y}` | Báo `map.move` cho người cùng khu, lọc trước queue tối đa một lần mỗi 80 ms, kiểm tra ngân sách quãng đường phía server |
 | `map.leave` hoặc đóng socket | Báo `map.leave` |
 | `lobby.watch {gameId}` | Nhận `lobby` khi bàn của game đó trong khu của mình thay đổi |
 
@@ -141,8 +141,16 @@ Server đẩy `match {gameId}` cho mọi người ngồi trong bàn khi bàn đ�
 
 `infrastructure/realtime/shared-state.ts` là ranh giới phối hợp (`get/set/entries`, lease, claim presence nguyên tử, khóa và pub/sub). `createApp({shared})` cho phép inject một bus trong bộ nhớ dùng chung khi test. Không đặt `REDIS_URL` thì mỗi app tự tạo bộ nhớ riêng; có URL thì dùng npm client `redis` ghim 5.8.2, với một kết nối lệnh và một kết nối subscribe. Hub chỉ giữ socket/topic cục bộ; envelope pub/sub có id process để không phát trùng ở nguồn. Không đưa snapshot bài vào Redis pub/sub.
 
+Policy thuần nằm trong `application/_utils/connection-policy.ts`, không import Fastify/ws/Redis; transport giữ state và thực hiện quyết định. Mọi frame (kể cả JSON sai) dùng chung token bucket 30 message/giây, burst 40, trước khi parse/queue/chạm shared-state. `map.enter` và `lobby.watch` dùng thêm bucket chung 2/giây, burst 2; `map.move` cách nhau tối thiểu 80 ms. Frame quá tốc độ bị bỏ ngay. Mỗi socket có tối đa 16 lệnh không phải move đang chạy/chờ; vượt mức đóng code `4008`. Move được gộp last-write-wins: tối đa một move đang chờ ngoài move đang chạy, thay move chờ bằng vị trí mới nhất và đưa về cuối queue để không vượt enter/leave đứng trước nó. Move vượt rate-limit vẫn bị bỏ ngay như các frame khác. Heartbeat/lease là tác vụ bảo trì, không tính vào giới hạn lệnh; chỉ một heartbeat được chờ/chạy tại một thời điểm. Queue giữ tác vụ thực, không tích lũy Promise placeholder của move cũ. Khi đóng, tác vụ chưa chạy bị bỏ, cleanup chờ tác vụ đang chạy kết thúc. `bufferedAmount` quá 256 KiB đóng code `4009`, kiểm tra trước/sau send và mỗi heartbeat.
+
+`modules/world/movement-policy.ts` giữ luật thuần: tối đa 120 pixel native/giây, ngân sách quãng đường tích lũy tối đa 40 pixel để chịu jitter mạng (client đi 100 pixel/giây). Cả khoảng cách chéo và các bước liên tiếp đều trừ cùng ngân sách; đứng yên lâu không tích lũy khả năng teleport. Map room lưu ngân sách trong lease dùng chung; gọi lại enter trên cùng socket khi vẫn ở cùng phòng không reset ngân sách. Socket mới vẫn được nhận vị trí enter mới nhất của client khi reconnect, theo contract hiện tại.
+
+Presence không touch theo từng message; socket chỉ gia hạn theo heartbeat (enter vẫn phải claim sức chứa, HTTP giữ cơ chế touch hiện tại). Handshake dùng `readSessionState` chỉ đọc, ghi nhớ `expiresAt`; mỗi heartbeat kiểm tra hạn đã biết và đóng `4001` khi hết hạn mà không query DB. Kiểm tra thu hồi bằng lookup chỉ đọc mỗi 4 heartbeat (60 giây, `CONNECTION_POLICY.sessionCheckEveryHeartbeats`), không cập nhật `players.lastSeenAt`. Session thực sự không hợp lệ mới đóng `4001`; lỗi DB/Redis được log, giữ socket và thử lại ở heartbeat sau. Request HTTP vẫn cập nhật lastSeenAt theo cơ chế hiện tại. Logout xóa session rồi publish hash phiên qua hub để mọi tab của đúng phiên trên mọi instance đóng ngay; phiên khác của cùng tài khoản vẫn được giữ. Chuyển tài khoản Google cũng revoke cookie cũ qua hub. Pub/sub bị mất sự kiện thì lookup định kỳ phát hiện ở lần kiểm tra session tiếp theo (bình thường tối đa khoảng 60 giây). Client backoff lũy thừa có jitter 0,5–1,5 lần, trần 30 giây; sau khi mở lại và gửi enter/watch, phát notification cục bộ `reconnected` qua `GameRealtime.subscribe`. Arcade reload snapshot riêng/lobby, shell arcade reload thông tin người chơi/ví và location xóa remote cache chờ `map.state` mới. Notification này không được decode từ wire.
+
 Map room lưu outfit/vị trí và token chủ sở hữu theo socket, lease 45 giây. Heartbeat 15 giây gia hạn lease, kiểm tra pong và gửi lại `map.state` để loại người đã hết hạn. Tab cũ đóng hoặc di chuyển không xóa/ghi đè người đang do tab mới giữ. Socket lease dùng chung cũng giúp một API không gỡ ghế chờ của người còn kết nối ở API khác. Redis pub/sub không lưu lịch sử; snapshot trong Postgres vẫn là nguồn chính.
 
+
+Test an toàn realtime: `realtime-safety.test.ts` bao phủ logout xuyên instance, spam/queue nghẽn không chặn kết nối khác, hạn mức chung/enter-watch, không touch mỗi message, heartbeat hết hạn/thu hồi, backpressure và teleport/re-enter. `realtime-review.test.ts` kiểm tra lỗi DB/Redis tạm thời không ngắt socket, lookup session thưa/chỉ đọc, hết hạn không query và 100 move khi lock chậm chỉ áp dụng vị trí cuối. `connection-policy.test.ts` kiểm tra biên policy thuần, thứ tự enter/leave khi thay move chờ, giới hạn chỉ tính command và ngân sách di chuyển; `apps/game/tests/remote-players.test.ts` kiểm tra jitter, replay enter/watch và notification reconnect. Phase 3 giữ cấu trúc hiện tại; package ports/adapters, thay Redis data model và batch move vẫn thuộc Phase 4.
 
 ## Bàn người với người
 
@@ -194,6 +202,8 @@ Server tự chạy migration khi khởi động. Sau khi đổi `src/infrastruct
 ## Nhiều process và Redis
 
 Cài dependencies bằng `pnpm install`, dùng cùng `DATABASE_URL` Postgres và cùng `REDIS_URL=redis://127.0.0.1:6379` cho mọi API. Ví dụ chạy Redis cho dev: `docker run --rm -p 6379:6379 redis:7-alpine`. `apps/api/.env.example` có cấu hình này. Production dùng URL có mật khẩu/TLS (`rediss://`) và mạng riêng. Không chia sẻ thư mục PGlite giữa các process; PGlite chỉ phục vụ test/dev một process.
+
+Production (`NODE_ENV=production`) không có `REDIS_URL` log cảnh báo rõ khi khởi tạo app, vẫn chạy một instance. Compose có Redis profile tùy chọn `realtime`: đặt `REDIS_URL=redis://redis:6379` và chạy với `--profile realtime` khi cần dùng chung.
 
 Không có Redis thì không đặt URL; không tự hạ về bộ nhớ khi đã cấu hình Redis mà Redis lỗi. Presence/map-room/connection leases tự hết hạn; save, receipt và thanh toán vẫn ở Postgres. Khóa Redis giữ thứ tự cập nhật trạng thái tạm, còn Lua `claimPresence` kiểm tra sức chứa và ghi lease trong một thao tác nguyên tử. Không cần sticky session cho fan-out bàn/map. Redis pub/sub không bảo đảm giao lại sự kiện bị lỡ khi mất kết nối.
 

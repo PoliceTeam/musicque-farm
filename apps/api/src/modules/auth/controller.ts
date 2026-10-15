@@ -5,6 +5,7 @@ import {
   createSession,
   deleteSession,
   GUEST_SESSION_SECONDS,
+  hashSessionToken,
   type PlayerAccount,
   readSession,
   SESSION_COOKIE,
@@ -33,6 +34,7 @@ export function createAuthController(deps: {
   clock: () => number;
   fetch: typeof fetch;
   shared: SharedState;
+  revokeSession: (sessionId: string) => Promise<void>;
 }) {
   const { db, config, clock } = deps;
   const cookie = { path: '/', httpOnly: true, sameSite: 'lax', secure: config.secureCookies } as const;
@@ -124,8 +126,14 @@ export function createAuthController(deps: {
     return { player: await completeCharacterSetup(db, current, request.body, clock()) };
   };
 
+  async function revokeCookie(request: FastifyRequest) {
+    const token = request.cookies[SESSION_COOKIE];
+    await deleteSession(db, token);
+    if (token) await deps.revokeSession(hashSessionToken(token));
+  }
+
   const logout = async (request: FastifyRequest, reply: FastifyReply) => {
-    await deleteSession(db, request.cookies[SESSION_COOKIE]);
+    await revokeCookie(request);
     reply.clearCookie(SESSION_COOKIE, cookie);
     return { ok: true };
   };
@@ -157,7 +165,7 @@ export function createAuthController(deps: {
         current,
         clock(),
       );
-      if (player.id !== current?.id) await deleteSession(db, request.cookies[SESSION_COOKIE]);
+      if (player.id !== current?.id) await revokeCookie(request);
       if (player.id !== current?.id || !(await readSession(db, request.cookies[SESSION_COOKIE], clock())))
         await signIn(reply, player);
       return reply.redirect(`${config.webOrigin}/${player.registrationBonusGranted ? '?auth=registered' : ''}`);

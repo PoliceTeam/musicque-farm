@@ -18,6 +18,16 @@ services:
     networks:
       - internal
 
+  # Optional coordination for multiple API instances:
+  # start with `docker compose --profile realtime up -d`, set REDIS_URL=redis://redis:6379.
+  # A single API instance may leave REDIS_URL empty and omit this profile.
+  redis:
+    image: redis:7-alpine
+    profiles: ['realtime']
+    restart: unless-stopped
+    networks:
+      - internal
+
   api:
     image: chibi-town-api:latest
     pull_policy: never
@@ -28,6 +38,7 @@ services:
       DATABASE_URL: postgres://${DATABASE_USERNAME:-chibi}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME:-chibi_town}
       WEB_ORIGIN: ${PUBLIC_URL:?PUBLIC_URL is required}
       PUBLIC_API_URL: ${PUBLIC_URL}/api
+      REDIS_URL: ${REDIS_URL:-}
       TRUST_PROXY: 'true'
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}

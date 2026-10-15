@@ -29,10 +29,12 @@ export type RealtimeCommand =
   | { type: 'map.enter'; regionId: string; mapId: string; x: number; y: number }
   | { type: 'map.move'; x: number; y: number }
   | { type: 'map.leave' };
+/** Local lifecycle notification; never decoded from a server message. Reload snapshots after reconnect. */
+export type RealtimeNotification = RealtimeEvent | { type: 'reconnected' };
 export interface GameRealtime {
   /** Commands sent while disconnected are dropped; `map.enter` and `lobby.watch` are replayed on reconnect. */
   send(command: RealtimeCommand): void;
-  subscribe(listener: (event: RealtimeEvent) => void): () => void;
+  subscribe(listener: (event: RealtimeNotification) => void): () => void;
   close(): void;
 }
 

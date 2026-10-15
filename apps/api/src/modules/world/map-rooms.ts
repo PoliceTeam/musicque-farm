@@ -2,12 +2,17 @@ import { randomUUID } from 'node:crypto';
 import type { MapPlayer } from '@chibi-town/contracts/realtime';
 import type { RealtimeClient, RealtimeHub } from '@/infrastructure/realtime/realtime-hub';
 import { createMemorySharedState, type SharedState } from '@/infrastructure/realtime/shared-state';
+import { acceptMovement, type MovementState, startMovement } from '@/modules/world/movement-policy';
 
-type Entry = { owner: string; player: MapPlayer; size: readonly [number, number] };
+type Entry = { owner: string; player: MapPlayer; size: readonly [number, number]; movement?: MovementState };
 export const MAP_LEASE_MS = 45_000;
 
 /** Shared leases with per-connection ownership: closing an old tab cannot remove a new tab's player. */
-export function createMapRooms(hub: RealtimeHub, shared: SharedState = createMemorySharedState()) {
+export function createMapRooms(
+  hub: RealtimeHub,
+  shared: SharedState = createMemorySharedState(),
+  clock: () => number = Date.now,
+) {
   const current = new Map<RealtimeClient, { topic: string; owner: string }>();
 
   const key = (topic: string, id: string) => `room:${topic}:${id}`;
@@ -39,11 +44,23 @@ export function createMapRooms(hub: RealtimeHub, shared: SharedState = createMem
       size: readonly [number, number],
       player: MapPlayer,
     ) {
-      await rooms.leave(client);
       await shared.exclusive('map-rooms', async () => {
         const topic = `map:${mapId}:${channelId}`,
           owner = randomUUID();
         const previous = await shared.get<Ownership>(ownerKey(player.id));
+        const previousEntry = previous ? await shared.get<Entry>(previous.key) : undefined;
+        const movement =
+          previous?.topic === topic && previousEntry && current.get(client)?.owner === previous.owner
+            ? acceptMovement(
+                previousEntry.movement ?? startMovement(previousEntry.player.x, previousEntry.player.y, clock()),
+                player.x,
+                player.y,
+                clock(),
+              )
+            : startMovement(player.x, player.y, clock());
+        if (!movement) return;
+        const mine = current.get(client);
+        if (mine) hub.unsubscribe(client, mine.topic);
         if (previous) {
           await shared.delete(previous.key);
           if (previous.topic !== topic) hub.publish(previous.topic, { type: 'map.leave', id: player.id });
@@ -55,7 +72,7 @@ export function createMapRooms(hub: RealtimeHub, shared: SharedState = createMem
           channelId,
           players: entries.map(([, entry]) => entry.player).filter((entry) => entry.id !== player.id),
         });
-        await shared.set(key(topic, player.id), { owner, player, size }, MAP_LEASE_MS);
+        await shared.set(key(topic, player.id), { owner, player, size, movement }, MAP_LEASE_MS);
         await shared.set(ownerKey(player.id), { key: key(topic, player.id), topic, owner }, MAP_LEASE_MS);
         current.set(client, { topic, owner });
         hub.publish(topic, { type: 'map.join', player });
@@ -69,6 +86,14 @@ export function createMapRooms(hub: RealtimeHub, shared: SharedState = createMem
       await shared.exclusive('map-rooms', async () => {
         const entry = await shared.get<Entry>(key(mine.topic, client.playerId));
         if (entry?.owner !== mine.owner || x > entry.size[0] || y > entry.size[1]) return;
+        const movement = acceptMovement(
+          entry.movement ?? startMovement(entry.player.x, entry.player.y, clock()),
+          x,
+          y,
+          clock(),
+        );
+        if (!movement) return;
+        entry.movement = movement;
         entry.player = { ...entry.player, x, y };
         await shared.set(key(mine.topic, client.playerId), entry, MAP_LEASE_MS);
         await shared.set(ownerKey(client.playerId), { key: key(mine.topic, client.playerId), ...mine }, MAP_LEASE_MS);

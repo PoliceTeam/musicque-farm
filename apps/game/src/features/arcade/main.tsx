@@ -86,6 +86,13 @@ export function Screen({
       alive = false;
     };
   }, [reload, t, host]);
+  useEffect(
+    () =>
+      host.realtime?.subscribe((event) => {
+        if (event.type === 'reconnected') setReload((n) => n + 1);
+      }),
+    [host],
+  );
   const activeGame = selectedGame ? arcadeGames.get(selectedGame) : undefined;
   return (
     <ArcadeHostProvider host={host}>
