@@ -86,6 +86,8 @@ export class ApiSdkError extends Error {
   constructor(
     public readonly code: SdkErrorCode,
     message: string = code,
+    /** Internal diagnostic detail; HTTP responses continue to expose only code. */
+    public readonly reason?: string,
   ) {
     super(message);
     this.name = 'ApiSdkError';

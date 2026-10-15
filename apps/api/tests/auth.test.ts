@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { GUEST_SESSION_SECONDS, SESSION_SECONDS } from '@/_utils/session-auth';
-import { playerDocuments, players, sessions } from '@/db/schema';
+import { playerDocuments, players, sessions } from '@/infrastructure/database/schema';
 import { createTestApp } from './test-app.js';
 
 describe('accounts and sessions', () => {

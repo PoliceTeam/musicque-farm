@@ -2,8 +2,8 @@ import type { PhomMatch, PhomSnapshot } from '@chibi-town/arcade-games/phom-logi
 import { ApiSdkError, type GameSdk } from '@chibi-town/contracts';
 import { eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { arcadeTables } from '@/db/schema';
-import { IDLE_LIMIT_MS, TURN_LIMIT_MS } from '@/modules/tables/table-service';
+import { arcadeTables } from '@/infrastructure/database/schema';
+import { IDLE_LIMIT_MS, TURN_LIMIT_MS } from '@/modules/arcade/tables';
 import { createTestApp } from './test-app.js';
 
 type Seat = { sdk: GameSdk; id: string; name: string; cookie: string };

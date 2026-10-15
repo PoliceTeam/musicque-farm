@@ -1,4 +1,4 @@
-import { createMemorySharedState, type SharedState } from '@/modules/realtime/shared-state';
+import { createMemorySharedState, type SharedState } from '@/infrastructure/realtime/shared-state';
 
 /**
  * Counts failed attempts per key in a sliding window, in memory. Enough to stop password guessing against one

@@ -7,8 +7,8 @@ import {
 import { createPlayerDocument } from '@chibi-town/game-service';
 import { eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { playerDocuments, players } from '@/db/schema';
-import { signInWithProvider } from '@/modules/auth/auth-service';
+import { playerDocuments, players } from '@/infrastructure/database/schema';
+import { signInWithProvider } from '@/modules/auth/service';
 import { createTestApp } from './test-app.js';
 
 describe('server account policy', () => {

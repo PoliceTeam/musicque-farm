@@ -2,10 +2,10 @@ import { defaultOutfit } from '@chibi-town/character-core/outfit-logic';
 import type { RealtimeEvent } from '@chibi-town/contracts/realtime';
 import { expect, it } from 'vitest';
 import { createAttemptLimiter } from '@/_utils/attempt-limiter';
-import { createChannelPresence } from '@/modules/game/channel-presence';
-import { createMapRooms, MAP_LEASE_MS } from '@/modules/realtime/map-rooms';
-import { createRealtimeHub } from '@/modules/realtime/realtime-hub';
-import { createMemorySharedState } from '@/modules/realtime/shared-state';
+import { createRealtimeHub } from '@/infrastructure/realtime/realtime-hub';
+import { createMemorySharedState } from '@/infrastructure/realtime/shared-state';
+import { createChannelPresence } from '@/modules/world/channel-presence';
+import { createMapRooms, MAP_LEASE_MS } from '@/modules/world/map-rooms';
 
 it('expires shared presence and sign-in failures consistently for both instances', async () => {
   let now = 0;

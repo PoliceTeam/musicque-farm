@@ -5,7 +5,7 @@ import { defaultOutfit, sanitizeOutfit } from '@chibi-town/character-core/outfit
 import type { ArcadeGameId } from '@chibi-town/game-content/arcade-catalog';
 import { eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { arcadeTables, playerDocuments } from '@/db/schema';
+import { arcadeTables, playerDocuments } from '@/infrastructure/database/schema';
 import { createTestApp } from './test-app.js';
 
 type Snapshot = {

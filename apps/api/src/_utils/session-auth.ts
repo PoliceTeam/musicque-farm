@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, gt, lt } from 'drizzle-orm';
-import type { Database } from '@/db/database';
-import { players, sessions } from '@/db/schema';
+import type { Database } from '@/infrastructure/database/database';
+import { players, sessions } from '@/infrastructure/database/schema';
 
 export type PlayerAccount = { id: string; name: string; level: number; guest: boolean; username: string | null };
 

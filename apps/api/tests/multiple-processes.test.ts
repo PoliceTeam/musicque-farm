@@ -1,8 +1,8 @@
 import { sql } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '@/app';
-import { type Database, openDatabase } from '@/db/database';
-import { createMemorySharedState, createRedisSharedState } from '@/modules/realtime/shared-state';
+import { type Database, openDatabase } from '@/infrastructure/database/database';
+import { createMemorySharedState, createRedisSharedState } from '@/infrastructure/realtime/shared-state';
 import { createTestApp, testConfig } from './test-app.js';
 
 const cleanup: (() => Promise<unknown>)[] = [];

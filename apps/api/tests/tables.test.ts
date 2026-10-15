@@ -1,7 +1,7 @@
 import { legalTienPlays, type TienSnapshot } from '@chibi-town/arcade-games/tien-len-logic';
 import { ApiSdkError, type GameSdk } from '@chibi-town/contracts';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { IDLE_LIMIT_MS, TURN_LIMIT_MS } from '@/modules/tables/table-service';
+import { IDLE_LIMIT_MS, TURN_LIMIT_MS } from '@/modules/arcade/tables';
 import { createTestApp } from './test-app.js';
 
 type Seat = { sdk: GameSdk; id: string; name: string; cookie: string };

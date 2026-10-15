@@ -1,6 +1,11 @@
 import { and, eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { characterInstances, characterInventories, characterUnlocks, playerDocuments } from '@/db/schema';
+import {
+  characterInstances,
+  characterInventories,
+  characterUnlocks,
+  playerDocuments,
+} from '@/infrastructure/database/schema';
 import { createTestApp } from './test-app.js';
 
 describe('server character inventory transactions', () => {

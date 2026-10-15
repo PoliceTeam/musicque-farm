@@ -1,7 +1,7 @@
 import { bestGemMove, type GemAction } from '@chibi-town/arcade-games/gem-battle-logic';
 import { ApiSdkError, type GameSdk } from '@chibi-town/contracts';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { TURN_LIMIT_MS } from '@/modules/tables/table-service';
+import { TURN_LIMIT_MS } from '@/modules/arcade/tables';
 import { createTestApp } from './test-app.js';
 
 describe('Diamonds tables of people', () => {

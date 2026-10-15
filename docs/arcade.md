@@ -90,7 +90,7 @@ Ba xúc xắc/cuộn độc lập, sáu biểu tượng đồng xác suất. `se
 
 ## SDK và kiểm tra
 
-Engine thuần nằm ở `@chibi-town/arcade-games`, luật bàn ở `@chibi-town/game-service`, UI/locale ở `@chibi-town/arcade-games-react`. App chỉ đăng ký module và inject SDK/realtime/assets/avatar/navigation. Storage bàn và transaction ở `apps/api/src/modules/tables/table-service.ts`.
+Engine thuần nằm ở `@chibi-town/arcade-games`, luật bàn ở `@chibi-town/game-service`, UI/locale ở `@chibi-town/arcade-games-react`. App chỉ đăng ký module và inject SDK/realtime/assets/avatar/navigation. Storage bàn và transaction ở `apps/api/src/modules/arcade/tables/service.ts`.
 
 HTTP: GET `/arcade` cho Kim cương, `/arcade/tien-len`, `/arcade/phom`, `/arcade/mini/:gameId` cho các trò khác. POST start/play giữ các đường dẫn hiện có. Play Kim cương dùng `battleId`, còn lại `matchId`; mọi lệnh có revision và requestId. Configure/member/leave dùng `/arcade/table/*`. Một requestId thử lại trả đúng kết quả cũ; cùng ID khác nội dung hoặc revision cũ bị từ chối. WebSocket chỉ đẩy thông báo thay đổi, client đọc snapshot riêng qua SDK.
 

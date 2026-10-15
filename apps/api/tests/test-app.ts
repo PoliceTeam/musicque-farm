@@ -1,8 +1,8 @@
 import { createHttpSdk } from '@chibi-town/api-sdk';
-import { createApp } from '@/app';
+import { type AppDependencies, createApp } from '@/app';
 import type { ApiConfig } from '@/config';
-import { openDatabase } from '@/db/database';
-import type { SharedState } from '@/modules/realtime/shared-state';
+import { openDatabase } from '@/infrastructure/database/database';
+import type { SharedState } from '@/infrastructure/realtime/shared-state';
 
 export const testConfig: ApiConfig = {
   databaseUrl: '',
@@ -17,6 +17,7 @@ export const testConfig: ApiConfig = {
 /** Real migrations on an in-process Postgres, so the suite needs no running database. */
 export async function createTestApp(
   options: {
+    logger?: AppDependencies['logger'];
     config?: Partial<ApiConfig>;
     fetch?: typeof fetch;
     shared?: SharedState;
@@ -28,6 +29,7 @@ export async function createTestApp(
   let now = 1_700_000_000_000;
   const { app, tables } = await createApp({
     db,
+    logger: options.logger,
     shared: options.shared,
     config: { ...testConfig, ...options.config },
 

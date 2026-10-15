@@ -1,6 +1,6 @@
 # Backend: `apps/api`
 
-Trạng thái ngày 2026-10-14. Server phục vụ farm, kho, outfit, đăng nhập, người chơi cùng khu trên phố giải trí và bàn người thật cho cả bảy game arcade. Phòng luyện tập vẫn chơi riêng với bot.
+Trạng thái ngày 2026-10-15. Server phục vụ farm, kho, outfit, đăng nhập, người chơi cùng khu trên phố giải trí và bàn người thật cho cả bảy game arcade. Phòng luyện tập vẫn chơi riêng với bot.
 
 ## Quyết định đã chốt
 
@@ -24,17 +24,50 @@ apps/api/
     app.ts                   # createApp(deps): CORS, lỗi, đăng ký route
     config.ts
     _utils/                  # password, session-auth, http-errors
-    db/                      # schema, kết nối
+    application/             # WebSocket transport
+    infrastructure/
+      database/              # schema, kết nối, migration runner
+      realtime/              # shared-state, Redis, hub phát sự kiện
     modules/
       auth/                  # đăng ký, đăng nhập, Google
-      game/                  # route của GameSdk, kho lưu, số người theo khu
-      realtime/              # WebSocket, hub phát sự kiện, phòng theo khu của map
-      tables/                # lưu và khóa bàn người với người, quét hết giờ
+      player/                # player route, khóa và lưu document
+      character/             # lựa chọn trang bị khởi đầu
+      inventory/             # inventory route, hydrate/lưu collection trong transaction
+      farm/                  # snapshot, kho nông sản
+      arcade/                # routes, repository, transaction bàn, dọn bàn hết hạn
+      world/                 # khu, presence, phòng map
+      commands/              # endpoint SDK /commands, chuyển tới service của domain
   tests/                     # chạy trên PGlite, không cần Docker
 packages/game-service/       # lõi điều phối dùng chung cho local và server
 ```
 
 `@chibi-town/game-service` chứa toàn bộ thao tác của `GameSdk` dưới dạng hai bước: gọi với input để validate, nhận lại một hàm chạy trên `PlayerDocument`. Nơi gọi tự mở transaction. `createLocalSdk` chạy nó trên IndexedDB với người chơi cố định `local-player`; server chạy nó trên một dòng Postgres bị khóa, với id tài khoản thật. Session bàn ghi id đó làm `hostId`, khớp với `getPlayer().id` mà UI dùng để bật quyền chủ bàn.
+
+### Ranh giới nghiệp vụ và cách lần lỗi
+
+`app.ts` khởi tạo dependency và đăng ký từng module qua `app.register()`. Module dùng các tên file ngắn theo vai trò:
+
+```text
+modules/inventory/
+  index.ts        # public API và nối route/controller/service
+  routes.ts       # URL → controller được đặt tên
+  controller.ts   # request.player/body → service
+  service.ts      # nghiệp vụ, transaction, gọi pure core
+  repository.ts   # SQL inventory
+  transaction.ts  # hydrate/lưu collection cùng row lock của ví
+```
+
+Chỉ thêm lớp khi có trách nhiệm thật: `player` có một route đọc nên gọi service trực tiếp; `farm` dùng player repository và không có repository riêng; `character` chỉ có service cấp starter nên không tạo route/controller rỗng. `arcade/tables` có service/repository và helper dọn bàn riêng vì bàn PvP được lưu khác phòng luyện tập. Module khác gọi qua `index.ts` của owner; helper nội bộ không cần export rộng.
+
+Nhóm route game có hook `preHandler` xác thực một lần, gán `request.player` từ cookie và cập nhật presence. Public auth nằm ngoài scope đó; WebSocket vẫn kiểm tra origin/cookie riêng. Controller gọi thẳng `service.getInventory(player, query, trace)` hoặc các hàm có tên tương tự; không còn `GameContext`, `runPlayer`, `runInventory`, `onPlayer` hay callback `prepare`.
+
+`/commands` giữ nguyên cho SDK; `commands/controller.ts` validate rồi chuyển lệnh tới `inventory/service.ts` hoặc `farm/service.ts`. Service của domain mở đúng loại transaction. Player repository không biết bảng inventory. `inventory/transaction.ts` hydrate/chạy/lưu collection bằng cùng transaction và row lock với wallet; auth gọi `character` khi cấp starter. Các service API chỉ dùng shared rules: command coordinator vẫn chịu trách nhiệm receipt/revision/ví để local và server xử lý giống nhau.
+
+Trong shared core, `game-service.ts` chỉ ghép các service nhỏ. `application/command-service.ts` giữ validation, receipt, revision và đồng bộ ví; `farm/farm-commands.ts` xử lý farm; `character/` xử lý outfit; `inventory/` giữ grant, collection và thao tác; `shop/cosmetic-offers.ts` giữ offer/mua. `arcade/` chia phòng luyện tập theo game và bàn PvP theo vòng đời. Hai file public `character-inventory.ts` và `arcade-tables.ts` chỉ re-export để giữ tương thích. Không thêm DI container, base repository hay event bus nghiệp vụ.
+
+Bật `LOG_LEVEL=debug` khi chạy API để thấy từng bước. Header response `X-Request-Id` tương ứng `reqId` trong JSON log; `commandId` là requestId do SDK gửi để replay, hai mã phục vụ hai mục đích khác nhau. Các bước inventory: `lock-player → load-player → load-inventory → run-operation → save-inventory → save-player`. Khi lỗi, log dừng ở bước tương ứng; transaction rollback toàn bộ. Log từ chối có `code` và `reason` như `ITEM_IN_WAREHOUSE`, `COLOR_NOT_OWNED`, `COSMETIC_ALREADY_OWNED`; response vẫn chỉ trả code tương thích SDK. Không log body, mật khẩu, cookie hoặc outfit.
+
+Ví dụ lỗi mua đồ: tìm `reqId` → xem `operation/commandId/playerId/phase/reason` → mở `modules/commands/routes.ts` → `controller.ts` → `modules/inventory/service.ts` → `transaction.ts` → `packages/game-service/src/shop/cosmetic-offers.ts`. Farm đi tới `farm/farm-commands.ts`; bàn PvP đi tới `modules/arcade/service.ts` → `tables/service.ts` rồi luật `arcade/table-play.ts`.
 
 ## Dữ liệu
 
@@ -106,17 +139,17 @@ Lobby arcade và danh sách khu trả `source: 'live'`. Presence đếm người
 
 Server đẩy `match {gameId}` cho mọi người ngồi trong bàn khi bàn đổi. `lobby` và `match` không mang dữ liệu: client đọc lại snapshot của chính mình qua SDK, nên bài của người khác không bao giờ nằm trên một message dùng chung.
 
-`modules/realtime/shared-state.ts` là ranh giới phối hợp (`get/set/entries`, lease, claim presence nguyên tử, khóa và pub/sub). `createApp({shared})` cho phép inject một bus trong bộ nhớ dùng chung khi test. Không đặt `REDIS_URL` thì mỗi app tự tạo bộ nhớ riêng; có URL thì dùng npm client `redis` ghim 5.8.2, với một kết nối lệnh và một kết nối subscribe. Hub chỉ giữ socket/topic cục bộ; envelope pub/sub có id process để không phát trùng ở nguồn. Không đưa snapshot bài vào Redis pub/sub.
+`infrastructure/realtime/shared-state.ts` là ranh giới phối hợp (`get/set/entries`, lease, claim presence nguyên tử, khóa và pub/sub). `createApp({shared})` cho phép inject một bus trong bộ nhớ dùng chung khi test. Không đặt `REDIS_URL` thì mỗi app tự tạo bộ nhớ riêng; có URL thì dùng npm client `redis` ghim 5.8.2, với một kết nối lệnh và một kết nối subscribe. Hub chỉ giữ socket/topic cục bộ; envelope pub/sub có id process để không phát trùng ở nguồn. Không đưa snapshot bài vào Redis pub/sub.
 
 Map room lưu outfit/vị trí và token chủ sở hữu theo socket, lease 45 giây. Heartbeat 15 giây gia hạn lease, kiểm tra pong và gửi lại `map.state` để loại người đã hết hạn. Tab cũ đóng hoặc di chuyển không xóa/ghi đè người đang do tab mới giữ. Socket lease dùng chung cũng giúp một API không gỡ ghế chờ của người còn kết nối ở API khác. Redis pub/sub không lưu lịch sử; snapshot trong Postgres vẫn là nguồn chính.
 
 
 ## Bàn người với người
 
-Đã có Tiến lên, Phỏm, Cờ vua, Cờ tướng, Kim cương, Bầu cua và Xèng. Khách chỉ được vào phòng luyện tập ID 3 và bàn nhà cái Bầu cua/Xèng; vào bàn cược Tiến lên/Phỏm/Cờ vua/Cờ tướng/Kim cương trả `403 ACCOUNT_REQUIRED`. Luật dùng chung trong `assertTableAccount` của game-service; SDK HTTP giữ nguyên code, UI hiện giải thích và nút mở popup đăng ký. Phòng cược (ID 0–2) chỉ có người thật; phòng luyện tập (ID 3) vẫn là ván riêng với bot trên save của người chơi. SDK và đường dẫn HTTP giữ nguyên; `tableGameRoutes` chuyển request tới bàn hoặc save theo phòng và ván đang ngồi. Kim cương dùng lobby `/arcade`, `battleId` và kết quả `battle`; các trò khác dùng `matchId` và `match`.
+Đã có Tiến lên, Phỏm, Cờ vua, Cờ tướng, Kim cương, Bầu cua và Xèng. Khách chỉ được vào phòng luyện tập ID 3 và bàn nhà cái Bầu cua/Xèng; vào bàn cược Tiến lên/Phỏm/Cờ vua/Cờ tướng/Kim cương trả `403 ACCOUNT_REQUIRED`. Luật dùng chung trong `assertTableAccount` của game-service; SDK HTTP giữ nguyên code, UI hiện giải thích và nút mở popup đăng ký. Phòng cược (ID 0–2) chỉ có người thật; phòng luyện tập (ID 3) vẫn là ván riêng với bot trên save của người chơi. SDK và đường dẫn HTTP giữ nguyên; `modules/arcade/routes.ts` gọi controller; `service.ts` chọn bàn hoặc save theo phòng và ván đang ngồi. Kim cương dùng lobby `/arcade`, `battleId` và kết quả `battle`; các trò khác dùng `matchId` và `match`.
 
 - **Địa chỉ bàn**: `(gameId, khu, roomId, tableId)`; khu là khu phố giải trí đã chọn. `arcade_tables` chỉ có dòng khi có người ngồi; `arcade_seats` đảm bảo mỗi người một bàn mỗi game, kể cả không mở đồng thời phòng luyện tập.
-- **Luật bàn**: `packages/game-service/src/arcade-tables.ts` khai báo `TableGame` và `tableGames`, không đụng DB. Người đầu tiên là chủ bàn. Không mời bot vào phòng cược. Bài cần ít nhất 2 người; cờ/Kim cương đúng 2; trò nhà cái cho phép 1–4.
+- **Luật bàn**: `packages/game-service/src/arcade/table-types.ts` khai báo `TableGame`, `table-adapters.ts` đăng ký từng game; `table-lobby.ts`, `table-play.ts`, `table-view.ts` giữ luật/chuyển trạng thái/snapshot, không đụng DB. Người đầu tiên là chủ bàn. Không mời bot vào phòng cược. Bài cần ít nhất 2 người; cờ/Kim cương đúng 2; trò nhà cái cho phép 1–4.
 - **Tiến lên/Phỏm**: chủ bàn đặt cược chung; đổi cược thì các thành viên xác nhận lại. Số người là số ghế thật, không do chủ bàn chọn. Cả hai trả `topTwoPayout`: 2 người 100/0, 3 người 80/20, 4 người 60/40 cho nhất/nhì. Phỏm giữ chủ bàn là người nhận 10 lá và đi đầu; các ghế còn lại nhận 9 lá. Chỉ xử lý hành động ghế gọi; không tự chơi các ghế khác.
 - **Cờ vua/Cờ tướng**: chủ bàn trắng/đỏ, ghế còn lại đen. Snapshot có `side`, board/moves giữ tọa độ và màu tuyệt đối; kết quả thắng/thua theo người xem. Người đen thấy bàn xoay 180 độ và được đi quân đen đúng lượt. Đầu hàng cho đối thủ thắng. Thắng +cược, thua −cược, hòa 0.
 - **Kim cương**: ghế 0 là fighter `player`, ghế 1 là `bot` trong engine; đây là hai người thật. Snapshot ghế 1 đổi fighters, lượt, won/lost và actor của từng bước animation. Lượt thưởng/cascade giữ cùng luật; không tự tạo nước đi cho đối thủ. Thắng +cược, thua −cược.
@@ -152,7 +185,7 @@ Không có Docker thì đặt `DATABASE_URL=pglite:.data/dev`: Postgres chạy n
 
 Chạy game với server: đặt `NEXT_PUBLIC_API_URL=http://127.0.0.1:3001/api` trong `apps/game/.env.local` và `WEB_ORIGIN` của API trùng origin của game, rồi khởi động lại `pnpm dev`.
 
-Server tự chạy migration khi khởi động. Sau khi đổi `src/db/schema.ts`, chạy `pnpm --filter @chibi-town/api db:generate` và commit thư mục `drizzle/`. `pnpm dev` ở gốc không khởi động API.
+Server tự chạy migration khi khởi động. Sau khi đổi `src/infrastructure/database/schema.ts`, chạy `pnpm --filter @chibi-town/api db:generate` và commit thư mục `drizzle/`. `pnpm dev` ở gốc không khởi động API.
 
 ## Nhiều process và Redis
 

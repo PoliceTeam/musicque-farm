@@ -169,7 +169,7 @@ Migration từng bước, không viết lại assets hay đổi gameplay đồng
 - `apps/game/src/features/`: dialog kho, chăm sóc hàng loạt, vật nuôi và âm thanh bằng React.
 - `packages/api-sdk/src/local-repository.ts`: transaction IndexedDB và migration bản lưu cũ.
 - `packages/api-sdk/src/local-adapter.ts`, `http-adapter.ts`: hai adapter cùng GameSdk.
-- `packages/game-service/src/game-service.ts`: thao tác của GameSdk trên một document người chơi; local adapter và `apps/api` cùng gọi.
+- `packages/game-service/src/game-service.ts`: ghép các service theo domain. Luật nằm trong `farm/`, `character/`, `inventory/`, `shop/`, `arcade/`, `world/`; local adapter và `apps/api` cùng gọi. `application/command-service.ts` giữ receipt/revision/ví dùng chung.
 - `packages/game-content/src/world.ts`: 8 khu và registry nhiều map; renderer location dùng layers/depth/obstacles.
 
 Các helper vẽ canvas và công cụ art/sandbox còn dùng DOM cho rendering hoặc preview; UI gameplay chính đã dùng React. Map farm giữ bố cục và assets hiện có. Map location tổng quát chưa có nội dung cho 7 khu còn lại. Local cho phép nhiều instance cùng map; wallet/kho dùng chung, ruộng/vật nuôi riêng từng instance. Đây chưa phải multiplayer.

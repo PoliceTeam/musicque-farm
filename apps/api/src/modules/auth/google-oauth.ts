@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { HttpError } from '@/_utils/http-errors';
-import type { ExternalProfile } from '@/modules/auth/auth-service';
+import type { ExternalProfile } from '@/modules/auth/service';
 
 export type GoogleClient = { clientId: string; clientSecret: string; redirectUri: string };
 
