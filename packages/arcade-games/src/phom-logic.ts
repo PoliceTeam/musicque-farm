@@ -1,4 +1,5 @@
 import { validSavedArcadeSeat } from '@chibi-town/game-content/arcade-catalog';
+import { isRandomSeed, normalizeSeed, type RandomSeed, random } from './random.js';
 import { type ArcadeSession, validArcadeSession } from './session.js';
 import type { TableSnapshot } from './table-snapshot.js';
 
@@ -14,7 +15,7 @@ export type PhomMatch = {
   roomId: number;
   tableId: number;
   session?: ArcadeSession;
-  seed: number;
+  seed: RandomSeed;
   revision: number;
   status: 'waiting' | 'playing' | 'finished';
   phase: 'receive' | 'discard' | 'lay' | 'send';
@@ -98,12 +99,12 @@ export function solvePhom(hand: number[], eaten: number[] = []) {
   return result;
 }
 
-export function createPhomMatch(id: string, roomId: number, seed: number, tableId = 0): PhomMatch {
+export function createPhomMatch(id: string, roomId: number, seed: RandomSeed, tableId = 0): PhomMatch {
   return {
     id,
     roomId,
     tableId,
-    seed: seed >>> 0,
+    seed: normalizeSeed(seed),
     revision: 0,
     status: 'waiting',
     phase: 'discard',
@@ -188,11 +189,6 @@ function finish(match: PhomMatch, u?: number) {
   match.winner = match.placements[0];
   match.u = u;
   match.status = 'finished';
-}
-
-function random(match: PhomMatch) {
-  match.seed = (Math.imul(match.seed, 1664525) + 1013904223) >>> 0;
-  return match.seed / 4294967296;
 }
 
 function act(match: PhomMatch, action: PhomAction) {
@@ -480,9 +476,7 @@ export function isPhomMatch(value: unknown): value is PhomMatch {
       m.hands.length !== 4 ||
       !m.hands.every(cardsValid) ||
       !cardsValid(m.stock) ||
-      !Number.isInteger(m.seed) ||
-      m.seed < 0 ||
-      m.seed > 4294967295
+      !isRandomSeed(m.seed)
     )
       return false;
     if (!isPhomSnapshot(phomSnapshot(m))) return false;

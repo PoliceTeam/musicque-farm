@@ -1,3 +1,5 @@
+import type { RandomSeed } from '@chibi-town/arcade-games/random';
+import { forfeitTienSeat, type TienMatch } from '@chibi-town/arcade-games/tien-len-logic';
 import type { SdkErrorCode } from '@chibi-town/contracts';
 import type { ArcadeTableResult } from '@chibi-town/contracts/arcade-table';
 import {
@@ -57,6 +59,7 @@ export function playAtTable(
   command: { requestId: string; revision: number },
   wallets: TableWallets,
   now = Date.now(),
+  seed?: RandomSeed,
 ): TableOutcome<unknown> {
   if (!game.validCommand(command)) return fail('INVALID_COMMAND');
   const seat = seatOf(record, playerId);
@@ -86,7 +89,7 @@ export function playAtTable(
     const previousStatus = record.match.status;
     let next: ReturnType<TableGame['play']>;
     try {
-      next = game.play(record.match, seat, command);
+      next = game.play(seed === undefined ? record.match : { ...record.match, seed }, seat, command);
     } catch (error) {
       const code = error instanceof Error ? (error.message as SdkErrorCode) : undefined;
       if (code && ENGINE_ERRORS.includes(code)) return fail(code);
@@ -109,19 +112,37 @@ export function playAtTable(
 }
 
 /**
- * Leaving before the deal, or after the result, costs nothing. Leaving a match in play forfeits the stake to the
- * players who stayed and closes the table, because a seat cannot be played on by anyone else.
+ * Leaving before the deal or after settlement costs nothing. Tiến lên keeps known placements and settles
+ * the ranked pool only after the surviving players determine the top two. Other games split a forfeited stake.
  */
 export function leaveTable(
   game: TableGame,
   record: TableRecord,
   playerId: string,
   wallets: TableWallets,
+  now = Date.now(),
 ): TableOutcome<ArcadeTableResult> {
   const seat = seatOf(record, playerId);
   const document = wallet(wallets, playerId);
   const session = record.match.session!;
   if (record.match.status === 'playing' && !session.settled) {
+    if (record.gameId === 'tien-len') {
+      const match = record.match as TienMatch;
+      record.departedPlayerIds = [...new Set([...(record.departedPlayerIds ?? []), playerId])];
+      if (match.placements?.includes(seat))
+        return { record, result: { coins: document.farm.coins, coinDelta: 0 }, changed: true };
+      const stake = memberStake(record, seat);
+      const next = forfeitTienSeat(match, seat);
+      record.match = next;
+      delete record.lastSteps;
+      if (next.status === 'finished') {
+        pay(record, game, game.deltas(next, session.stake, record.seats.length), wallets);
+        return { record: null, result: { coins: document.farm.coins, coinDelta: -stake }, changed: true };
+      }
+      if (next.turn !== match.turn) record.turnStartedAt = now;
+      return { record, result: { coins: document.farm.coins, coinDelta: -stake }, changed: true };
+    }
+
     const others = record.seats.length - 1;
     const stake = memberStake(record, seat);
     const share = others ? Math.floor(stake / others) : 0;
@@ -143,7 +164,9 @@ export function leaveTable(
     return { record: null, result: { coins: document.farm.coins, coinDelta: -stake }, changed: true };
   }
   const ready = readiness(record);
-  record.seats = record.seats.filter((entry) => entry.playerId !== playerId);
+  record.seats = record.seats.filter(
+    (entry) => entry.playerId !== playerId && !record.departedPlayerIds?.includes(entry.playerId),
+  );
   delete record.receipts[playerId];
   if (!record.seats.length)
     return { record: null, result: { coins: document.farm.coins, coinDelta: 0 }, changed: true };

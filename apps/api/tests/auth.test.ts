@@ -407,6 +407,9 @@ describe('Google sign-in', () => {
       (await f.t.app.inject({ url: '/api/auth/session', headers: { cookie: f.t.cookieOf(known.headers) } })).json()
         .player.id,
     ).toBe(first.player.id);
+    expect(
+      (await f.t.app.inject({ url: '/api/auth/session', headers: { cookie: second.cookie } })).json().player,
+    ).toBeNull();
     await f.t.close();
 
     let accountId = '';

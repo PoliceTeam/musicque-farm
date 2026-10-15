@@ -1,8 +1,8 @@
 import { createMemorySharedState, type SharedState } from '@/infrastructure/realtime/shared-state';
 
 /**
- * Counts failed attempts per key in a sliding window, in memory. Enough to stop password guessing against one
- * process; several processes would each allow the limit.
+ * Counts failed attempts per key in a sliding window using the configured shared store (memory or Redis).
+ * Callers must hold an attempt lock around checking and recording an authentication attempt.
  */
 export function createAttemptLimiter(
   limit: number,

@@ -1,6 +1,7 @@
 import { createGemBattle, isGemBattle, playGemAction } from './gem-battle-logic.js';
 import { createMiniMatch, isMiniMatch, type MiniGameId, playMiniAction } from './mini-games-logic.js';
 import { createPhomMatch, isPhomMatch, playPhomAction } from './phom-logic.js';
+import type { RandomSeed } from './random.js';
 import { createTienMatch, isTienMatch, playTienAction } from './tien-len-logic.js';
 
 export const diamondsGame = {
@@ -29,7 +30,7 @@ const miniDefinition = (id: MiniGameId) => ({
   id,
   seats: id === 'bau-cua' || id === 'slots' ? 4 : 2,
 
-  create: (requestId: string, roomId: number, seed: number, tableId = 0) =>
+  create: (requestId: string, roomId: number, seed: RandomSeed, tableId = 0) =>
     createMiniMatch(id, requestId, roomId, seed, tableId),
 
   play: playMiniAction,

@@ -1,4 +1,5 @@
 import { type Command, validateCommand } from '@chibi-town/contracts';
+import { isInventoryCommand } from '@chibi-town/game-service';
 import type { FastifyRequest } from 'fastify';
 import { operationTrace } from '@/_utils/operation-trace';
 import type { FarmService } from '@/modules/farm';
@@ -11,17 +12,9 @@ export function createCommandController(services: { farm: FarmService; inventory
       const command = request.body;
       validateCommand(command);
       const trace = operationTrace(request, command.type, command.requestId);
-      switch (command.type) {
-        case 'buy-cosmetic':
-        case 'move-character-item':
-        case 'equip-character-item':
-        case 'unequip-character-item':
-        case 'apply-cosmetic-color':
-        case 'equip-outfit':
-          return services.inventory.execute(request.player!, command, trace);
-        default:
-          return services.farm.execute(request.player!, command, trace);
-      }
+      return isInventoryCommand(command)
+        ? services.inventory.execute(request.player!, command, trace)
+        : services.farm.execute(request.player!, command, trace);
     },
   };
 }

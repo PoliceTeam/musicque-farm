@@ -7,7 +7,7 @@ export function createPlayerService(deps: { db: Database; clock: () => number })
   return {
     getPlayer(player: PlayerAccount, trace?: TransactionTrace) {
       const rules = createPlayerRules({ player, clock: deps.clock });
-      return withPlayerDocument(deps.db, player.id, rules.getPlayer(), trace);
+      return withPlayerDocument(deps.db, player.id, rules.getPlayer(), trace, deps.clock);
     },
   };
 }

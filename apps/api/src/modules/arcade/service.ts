@@ -21,13 +21,14 @@ import {
   startPractice,
   validateStart,
 } from '@/modules/arcade/practice';
+import { randomSeed } from '@/modules/arcade/random-seed';
 import type { TableService } from '@/modules/arcade/tables';
-import { type TransactionTrace, withPlayerDocument } from '@/modules/player';
+import { type TransactionTrace, withPlayerDocument, withPlayerTransaction } from '@/modules/player';
 
 export function createArcadeService(deps: { db: Database; clock: () => number; tables: TableService }) {
   const { db, clock, tables } = deps;
 
-  const practiceFor = (player: PlayerAccount) => createGameService({ player, clock, live: true });
+  const practiceFor = (player: PlayerAccount) => createGameService({ player, clock, randomSeed, live: true });
 
   async function isSeated(playerId: string, input: ArcadeTableCommand) {
     return (
@@ -43,6 +44,7 @@ export function createArcadeService(deps: { db: Database; clock: () => number; t
         player.id,
         (document) => ({ lobby: read(document), channel: arcadeChannel(document) }),
         trace,
+        clock,
       );
       const [open, mine] = await Promise.all([tables.directory(gameId, saved.channel), tables.view(player.id, gameId)]);
       const activeKey = gameId === 'diamonds' ? 'activeBattle' : 'activeMatch';
@@ -69,11 +71,20 @@ export function createArcadeService(deps: { db: Database; clock: () => number; t
     async start(player: PlayerAccount, gameId: ArcadeGameId, input: ArcadeStart, trace?: TransactionTrace) {
       validateStart(gameId, input);
       if (input.roomId === ARCADE_PRACTICE_ROOM_ID) {
-        if (await tables.seatedMatchId(player.id, gameId)) throw new ApiSdkError('MATCH_IN_PROGRESS');
         const operation = startPractice(practiceFor(player), gameId, input);
-        return withPlayerDocument(db, player.id, (document) => operation(document), trace);
+        return withPlayerTransaction(
+          db,
+          player.id,
+          async (document, tx) => {
+            if (document.tableStakes?.[gameId] || (await tables.seatedMatchId(player.id, gameId, tx)))
+              throw new ApiSdkError('MATCH_IN_PROGRESS');
+            return operation(document);
+          },
+          trace,
+          clock,
+        );
       }
-      const channel = await withPlayerDocument(db, player.id, arcadeChannel, trace);
+      const channel = await withPlayerDocument(db, player.id, arcadeChannel, trace, clock);
       trace?.('sit-at-table');
       return tables.sit(player, gameId, channel, input);
     },
@@ -86,13 +97,13 @@ export function createArcadeService(deps: { db: Database; clock: () => number; t
         return tables.play(player.id, gameId, { ...input, matchId });
       }
       const operation = playPractice(practiceFor(player), gameId, input);
-      return withPlayerDocument(db, player.id, (document) => operation(document), trace);
+      return withPlayerDocument(db, player.id, (document) => operation(document), trace, clock);
     },
 
     async updateMember(player: PlayerAccount, input: ArcadeMemberCommand, trace?: TransactionTrace) {
       if (!(await isSeated(player.id, input))) {
         const operation = practiceFor(player).updateArcadeMember(input);
-        return withPlayerDocument(db, player.id, (document) => operation(document), trace);
+        return withPlayerDocument(db, player.id, (document) => operation(document), trace, clock);
       }
       if (!validArcadeMemberCommand(input)) throw new ApiSdkError('INVALID_COMMAND');
       trace?.('update-table-member');
@@ -102,7 +113,7 @@ export function createArcadeService(deps: { db: Database; clock: () => number; t
     async configure(player: PlayerAccount, input: ArcadeTableSettings, trace?: TransactionTrace) {
       if (!(await isSeated(player.id, input))) {
         const operation = practiceFor(player).configureArcadeTable(input);
-        return withPlayerDocument(db, player.id, (document) => operation(document), trace);
+        return withPlayerDocument(db, player.id, (document) => operation(document), trace, clock);
       }
       if (!validArcadeSettings(input)) throw new ApiSdkError('INVALID_COMMAND');
       trace?.('configure-table');
@@ -112,7 +123,7 @@ export function createArcadeService(deps: { db: Database; clock: () => number; t
     async leave(player: PlayerAccount, input: ArcadeTableCommand, trace?: TransactionTrace) {
       if (!(await isSeated(player.id, input))) {
         const operation = practiceFor(player).leaveArcadeTable(input);
-        return withPlayerDocument(db, player.id, (document) => operation(document), trace);
+        return withPlayerDocument(db, player.id, (document) => operation(document), trace, clock);
       }
       if (!validArcadeTableCommand(input)) throw new ApiSdkError('INVALID_COMMAND');
       trace?.('leave-table');

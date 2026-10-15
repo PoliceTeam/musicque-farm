@@ -87,19 +87,23 @@ export function createAuthController(deps: {
       .trim()
       .toLowerCase()
       .slice(0, 254);
-    if ((await byEmail.blocked(email, clock())) || (await byAddress.blocked(request.ip, clock())))
-      throw new HttpError(429, 'TOO_MANY_ATTEMPTS');
-    try {
-      const player = await loginPlayer(db, request.body);
-      await byEmail.clear(email);
-      return await signIn(reply, player);
-    } catch (error) {
-      if (error instanceof HttpError && error.code === 'INVALID_CREDENTIALS') {
-        await byEmail.fail(email, clock());
-        await byAddress.fail(request.ip, clock());
-      }
-      throw error;
-    }
+    return deps.shared.exclusive(`login-attempt-address:${request.ip}`, () =>
+      deps.shared.exclusive(`login-attempt-email:${email}`, async () => {
+        if ((await byEmail.blocked(email, clock())) || (await byAddress.blocked(request.ip, clock())))
+          throw new HttpError(429, 'TOO_MANY_ATTEMPTS');
+        try {
+          const player = await loginPlayer(db, request.body);
+          await byEmail.clear(email);
+          return await signIn(reply, player);
+        } catch (error) {
+          if (error instanceof HttpError && error.code === 'INVALID_CREDENTIALS') {
+            await byEmail.fail(email, clock());
+            await byAddress.fail(request.ip, clock());
+          }
+          throw error;
+        }
+      }),
+    );
   };
 
   async function updateUsername(request: FastifyRequest) {
@@ -153,7 +157,9 @@ export function createAuthController(deps: {
         current,
         clock(),
       );
-      if (player.id !== current?.id) await signIn(reply, player);
+      if (player.id !== current?.id) await deleteSession(db, request.cookies[SESSION_COOKIE]);
+      if (player.id !== current?.id || !(await readSession(db, request.cookies[SESSION_COOKIE], clock())))
+        await signIn(reply, player);
       return reply.redirect(`${config.webOrigin}/${player.registrationBonusGranted ? '?auth=registered' : ''}`);
     } catch (error) {
       if (!(error instanceof HttpError)) request.log.error(error);

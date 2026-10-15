@@ -17,10 +17,12 @@ import {
   viewTable,
 } from '@chibi-town/game-service';
 import { and, eq } from 'drizzle-orm';
+import type { FastifyBaseLogger } from 'fastify';
 import type { PlayerAccount } from '@/_utils/session-auth';
 import type { Database } from '@/infrastructure/database/database';
 import { arcadeSeats, arcadeTables } from '@/infrastructure/database/schema';
 import type { RealtimeHub } from '@/infrastructure/realtime/realtime-hub';
+import { randomSeed } from '@/modules/arcade/random-seed';
 import { createTableMaintenance } from '@/modules/arcade/tables/maintenance';
 import { createTableRepository } from '@/modules/arcade/tables/repository';
 
@@ -34,7 +36,12 @@ const uniqueViolation = (error: unknown) =>
 
 export const lobbyTopic = (gameId: string, channel: number) => `lobby:${gameId}:${channel}`;
 
-export function createTableService(deps: { db: Database; clock: () => number; hub: RealtimeHub }) {
+export function createTableService(deps: {
+  db: Database;
+  clock: () => number;
+  hub: RealtimeHub;
+  logger: Pick<FastifyBaseLogger, 'error'>;
+}) {
   const { db, clock, hub } = deps;
   const { lockWallets, refreshNames, store, seatedTable } = createTableRepository(clock);
 
@@ -79,13 +86,13 @@ export function createTableService(deps: { db: Database; clock: () => number; hu
   }
 
   const service = {
-    ...createTableMaintenance({ db, clock, adapter, change, lockWallets }),
+    ...createTableMaintenance({ db, clock, adapter, change, logger: deps.logger }),
 
     has: (gameId: string) => gameId in tableGames,
 
     /** The match id of the table this player sits at, if any. */
-    async seatedMatchId(playerId: string, gameId: string) {
-      const [row] = await db
+    async seatedMatchId(playerId: string, gameId: string, connection: Database | Transaction = db) {
+      const [row] = await connection
         .select({ record: arcadeTables.record })
         .from(arcadeSeats)
         .innerJoin(arcadeTables, eq(arcadeTables.id, arcadeSeats.tableId))
@@ -113,7 +120,7 @@ export function createTableService(deps: { db: Database; clock: () => number; hu
         rows.map((row) => [
           `${row.roomId}:${row.tableId}`,
           {
-            occupants: row.record.seats.length,
+            occupants: row.record.seats.filter((seat) => !row.record.departedPlayerIds?.includes(seat.playerId)).length,
             status: row.record.match.status === 'waiting' ? ('waiting' as const) : ('playing' as const),
           },
         ]),
@@ -137,20 +144,24 @@ export function createTableService(deps: { db: Database; clock: () => number; hu
 
       const attempt = () =>
         db.transaction(async (tx) => {
+          const [row] = await tx.select().from(arcadeTables).where(address).for('update');
+          if (row) await refreshNames(tx, row.record);
+          const locked = await lockWallets(tx, [player.id]);
           const [mine] = await tx
             .select({ tableId: arcadeSeats.tableId })
             .from(arcadeSeats)
             .where(and(eq(arcadeSeats.playerId, player.id), eq(arcadeSeats.gameId, gameId)));
-          const [row] = await tx.select().from(arcadeTables).where(address).for('update');
-          if (row) await refreshNames(tx, row.record);
           if (mine && mine.tableId !== row?.id) return fail('MATCH_IN_PROGRESS');
-          const locked = await lockWallets(tx, [player.id]);
           const practice = game.practiceMatch(locked.wallets.get(player.id) as PlayerDocument);
-          if (practice && practice.status !== 'finished') return fail('MATCH_IN_PROGRESS');
+          if (
+            (practice && practice.status !== 'finished') ||
+            (!mine && locked.wallets.get(player.id)?.tableStakes?.[gameId])
+          )
+            return fail('MATCH_IN_PROGRESS');
           const ids = {
             now: clock(),
             matchId: randomUUID(),
-            seed: (clock() ^ Math.floor(Math.random() * 2 ** 32)) >>> 0,
+            seed: randomSeed(),
           };
           const before = row?.record.seats.map((seat) => seat.playerId) ?? [];
           const outcome = sitAtTable(
@@ -196,7 +207,7 @@ export function createTableService(deps: { db: Database; clock: () => number; hu
       command: { requestId: string; revision: number; matchId?: string },
     ) =>
       change(playerId, gameId, command.matchId, (record, wallets) =>
-        playAtTable(adapter(gameId), record, playerId, command, wallets, clock()),
+        playAtTable(adapter(gameId), record, playerId, command, wallets, clock(), randomSeed()),
       ),
 
     configure: (playerId: string, gameId: ArcadeGameId, input: { matchId: string; requestId: string; stake: number }) =>
@@ -210,7 +221,9 @@ export function createTableService(deps: { db: Database; clock: () => number; hu
       change(playerId, gameId, input.matchId, (record, wallets) => updateTableMember(record, playerId, input, wallets)),
 
     leave: (playerId: string, gameId: ArcadeGameId, matchId?: string) =>
-      change(playerId, gameId, matchId, (record, wallets) => leaveTable(adapter(gameId), record, playerId, wallets)),
+      change(playerId, gameId, matchId, (record, wallets) =>
+        leaveTable(adapter(gameId), record, playerId, wallets, clock()),
+      ),
   };
   return service;
 }

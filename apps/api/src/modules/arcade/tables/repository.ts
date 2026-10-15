@@ -77,7 +77,7 @@ export function createTableRepository(clock: () => number) {
       await tx.delete(arcadeTables).where(eq(arcadeTables.id, row.id));
       return before;
     }
-    const after = record.seats.map((seat) => seat.playerId);
+    const after = record.seats.map((seat) => seat.playerId).filter((id) => !record.departedPlayerIds?.includes(id));
     await tx
       .update(arcadeTables)
       .set({ record, updatedAt: new Date(clock()) })

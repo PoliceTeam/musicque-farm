@@ -37,5 +37,6 @@ export function withCharacterInventory<T>(
     playerId,
     (document, tx) => onCharacterInventory(tx, playerId, document, now, operation, trace),
     trace,
+    () => now,
   );
 }

@@ -9,7 +9,8 @@ import type { PracticeContext } from './practice-context.js';
 export function createPhomService(
   context: PracticeContext,
 ): Pick<GameService, 'getPhomLobby' | 'startPhomRoom' | 'playPhom'> {
-  const { clock, lobbySource, reservedCoins, prune, settle, sessionFor, checkStart, tableDirectory, phom } = context;
+  const { randomSeed, lobbySource, reservedCoins, prune, settle, sessionFor, checkStart, tableDirectory, phom } =
+    context;
   return {
     getPhomLobby() {
       return (document) => {
@@ -39,7 +40,7 @@ export function createPhomService(
             throw new ApiSdkError('MATCH_IN_PROGRESS');
           return phomSnapshot(state.activeMatch);
         }
-        state.activeMatch = createPhomMatch(input.requestId, input.roomId, clock(), input.tableId ?? 0);
+        state.activeMatch = createPhomMatch(input.requestId, input.roomId, randomSeed(), input.tableId ?? 0);
         state.activeMatch.session = sessionFor(input.roomId, input.difficulty);
         state.activeMatch.session.payoutRule = 'ranked-pool';
         state.activeMatch.session.playerCount = 4;
@@ -67,7 +68,7 @@ export function createPhomService(
         if (command.action.type === 'start') checkStart(document, match.session);
         let next: ReturnType<typeof playPhomAction>;
         try {
-          next = playPhomAction(match, command.action);
+          next = playPhomAction({ ...match, seed: randomSeed() }, command.action);
         } catch (error) {
           const code = error instanceof Error ? error.message : '';
           if (['INVALID_TURN', 'INVALID_PLAY', 'MATCH_FINISHED'].includes(code))

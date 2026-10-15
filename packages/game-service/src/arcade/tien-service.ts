@@ -8,7 +8,8 @@ import type { PracticeContext } from './practice-context.js';
 export function createTienService(
   context: PracticeContext,
 ): Pick<GameService, 'getTienLobby' | 'startTienRoom' | 'playTien'> {
-  const { clock, lobbySource, reservedCoins, prune, settle, sessionFor, checkStart, tableDirectory, tien } = context;
+  const { randomSeed, lobbySource, reservedCoins, prune, settle, sessionFor, checkStart, tableDirectory, tien } =
+    context;
   return {
     getTienLobby() {
       return (document) => {
@@ -38,7 +39,7 @@ export function createTienService(
             throw new ApiSdkError('MATCH_IN_PROGRESS');
           return tienSnapshot(state.activeMatch);
         }
-        state.activeMatch = createTienMatch(input.requestId, input.roomId, clock(), input.tableId ?? 0);
+        state.activeMatch = createTienMatch(input.requestId, input.roomId, randomSeed(), input.tableId ?? 0);
         state.activeMatch.session = sessionFor(input.roomId, input.difficulty);
         state.activeMatch.session.payoutRule = 'ranked-pool';
         state.activeMatch.session.playerCount = 4;
@@ -66,7 +67,7 @@ export function createTienService(
         if (command.action.type === 'start') checkStart(document, match.session);
         let next: ReturnType<typeof playTienAction>;
         try {
-          next = playTienAction(match, command.action);
+          next = playTienAction({ ...match, seed: randomSeed() }, command.action);
         } catch (error) {
           const code = error instanceof Error ? error.message : '';
           if (['INVALID_TURN', 'INVALID_PLAY', 'CANNOT_PASS', 'MATCH_FINISHED'].includes(code))

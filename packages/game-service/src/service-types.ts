@@ -1,3 +1,4 @@
+import type { RandomSeed } from '@chibi-town/arcade-games/random';
 import type { Command, GameSdk } from '@chibi-town/contracts';
 import type { PlayerDocument } from './player-document.js';
 
@@ -8,6 +9,7 @@ export type GameServiceOptions = {
   clock: () => number;
   /** Unit-interval random source; defaults to cryptographic entropy. */
   random?: () => number;
+  randomSeed?: () => RandomSeed;
   /** Other players in a channel, excluding `player`. */
   channelPopulation?: (mapId: string, channelId: number, capacity: number) => number;
   /** True when lobbies and channels describe real players rather than a single local save. */

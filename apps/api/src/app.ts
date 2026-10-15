@@ -96,9 +96,9 @@ export async function createApp(deps: AppDependencies) {
 
   /** Arcade tables belong to the entertainment-street channel the player last chose. */
   const watchedLobby = async (player: PlayerAccount, gameId: string) =>
-    lobbyTopic(gameId, await withPlayerDocument(db, player.id, arcadeChannel));
+    lobbyTopic(gameId, await withPlayerDocument(db, player.id, arcadeChannel, undefined, clock));
 
-  const tables = createTableService({ db, clock, hub });
+  const tables = createTableService({ db, clock, hub, logger: app.log });
   const player = createPlayerService({ db, clock });
   const farm = createFarmService({ db, clock });
   const inventory = createInventoryService({ db, clock });

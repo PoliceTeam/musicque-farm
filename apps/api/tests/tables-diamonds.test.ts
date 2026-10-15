@@ -1,6 +1,7 @@
 import { bestGemMove, type GemAction } from '@chibi-town/arcade-games/gem-battle-logic';
 import { ApiSdkError, type GameSdk } from '@chibi-town/contracts';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { tableGames } from '@chibi-town/game-service';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TURN_LIMIT_MS } from '@/modules/arcade/tables';
 import { createTestApp } from './test-app.js';
 
@@ -80,6 +81,23 @@ describe('Diamonds tables of people', () => {
       expect(result.steps.every((s) => s.actor === 'player')).toBe(true);
     }
     throw new Error('battle did not finish');
+  });
+  it('injects new entropy on every turn that generates gems', async () => {
+    await deal();
+    const play = vi.spyOn(tableGames.diamonds!, 'play');
+    try {
+      for (let turn = 0; turn < 3; turn++) {
+        const a = await view(0);
+        const actor = a.turn === 0 ? 0 : 1;
+        const mine = await view(actor);
+        await send(actor, { type: 'swap', ...bestGemMove(mine, 'player')! });
+        const seed = play.mock.calls[turn][0].seed;
+        expect(Array.isArray(seed) && seed.length).toBe(4);
+        if (turn) expect(seed).not.toEqual(play.mock.calls[turn - 1][0].seed);
+      }
+    } finally {
+      play.mockRestore();
+    }
   });
   it('rejects out-of-turn and illegal actions and replays a receipt once', async () => {
     await deal();

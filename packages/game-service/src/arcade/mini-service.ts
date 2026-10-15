@@ -15,7 +15,6 @@ export function createMiniService(
   context: PracticeContext,
 ): Pick<GameService, 'getMiniLobby' | 'startMiniRoom' | 'playMini'> {
   const {
-    clock,
     randomSeed,
     lobbySource,
     localHostId,
@@ -63,7 +62,7 @@ export function createMiniService(
           input.gameId,
           input.requestId,
           input.roomId,
-          input.gameId === 'bau-cua' || input.gameId === 'slots' ? randomSeed() : clock(),
+          randomSeed(),
           input.tableId ?? 0,
         );
         state.activeMatch.session = sessionFor(input.roomId, input.difficulty);
@@ -108,7 +107,7 @@ export function createMiniService(
           (match.status === 'waiting' && ['roll', 'spin'].includes(command.action.type))
         )
           checkStart(document, match.session);
-        const prepared = structuredClone(match);
+        const prepared = { ...structuredClone(match), seed: randomSeed() };
         if (
           ['start', 'roll', 'spin'].includes(command.action.type) &&
           prepared.session?.mode === 'wager' &&

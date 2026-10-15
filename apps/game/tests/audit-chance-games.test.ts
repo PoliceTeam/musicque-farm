@@ -14,6 +14,7 @@ import {
   miniMemberCoinDeltas,
   playMiniAction,
 } from '@chibi-town/arcade-games/mini-games-logic';
+import type { RandomSeed } from '@chibi-town/arcade-games/random';
 import { describe, expect, it, vi } from 'vitest';
 
 type ChanceId = 'bau-cua' | 'slots';
@@ -742,7 +743,7 @@ describe('defects found by simulation', () => {
     const opened = 1_791_000_000_000 + 17_321; // unknown to the attacker within ±30 s
     const t = table('bau-cua', 1000, () => opened);
     await t.open();
-    // Enumerate the original ±30-second attack window using the current engine, including its seed mixer.
+    // Enumerate the original ±30-second attack window using the current engine, including its PRNG.
     const minimal = BOTS.map((memberId) => ({ memberId, stake: 1 }));
     const seen: number[][] = [];
     for (let round = 0; round < 2; round++) {
@@ -750,7 +751,7 @@ describe('defects found by simulation', () => {
       seen.push((await t.play(0)).match.roll!);
       await t.next();
     }
-    const candidates: number[] = [];
+    const candidates: RandomSeed[] = [];
     const guessTime = 1_791_000_000_000;
     for (let time = guessTime - 30000; time <= guessTime + 30000; time++) {
       let candidate = createMiniMatch('bau-cua', 'attacker', 0, time);
@@ -768,7 +769,7 @@ describe('defects found by simulation', () => {
       if (matches) candidates.push(candidate.seed);
     }
     const storedSeed = await t.repository.transaction((document) => document.mini!['bau-cua']!.activeMatch!.seed);
-    expect(candidates).not.toContain(storedSeed);
+    expect(candidates).not.toContainEqual(storedSeed);
     let predicted = createMiniMatch('bau-cua', 'attacker', 0, opened);
     predicted.seed = candidates[0] ?? predicted.seed;
     predicted.session = wager(100);

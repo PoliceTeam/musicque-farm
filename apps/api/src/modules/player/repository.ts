@@ -12,7 +12,8 @@ export function withPlayerTransaction<T>(
   db: Database,
   playerId: string,
   operation: (document: PlayerDocument, tx: PlayerTransaction) => T,
-  trace?: TransactionTrace,
+  trace: TransactionTrace | undefined,
+  clock: () => number,
 ) {
   return db.transaction(async (tx) => {
     trace?.('lock-player');
@@ -30,7 +31,7 @@ export function withPlayerTransaction<T>(
     if (JSON.stringify(document) !== before)
       await tx
         .update(playerDocuments)
-        .set({ document, updatedAt: new Date() })
+        .set({ document, updatedAt: new Date(clock()) })
         .where(eq(playerDocuments.playerId, playerId));
     return value;
   });
@@ -40,7 +41,8 @@ export function withPlayerDocument<T>(
   db: Database,
   playerId: string,
   operation: (document: PlayerDocument) => T,
-  trace?: TransactionTrace,
+  trace: TransactionTrace | undefined,
+  clock: () => number,
 ) {
   return withPlayerTransaction(
     db,
@@ -50,5 +52,6 @@ export function withPlayerDocument<T>(
       return operation(document);
     },
     trace,
+    clock,
   );
 }

@@ -23,7 +23,7 @@ export function createWorldService(deps: { db: Database; clock: () => number; pr
   return {
     async getWorld(player: PlayerAccount, trace?: TransactionTrace) {
       const rules = await rulesFor(player);
-      return withPlayerDocument(db, player.id, rules.getWorld(), trace);
+      return withPlayerDocument(db, player.id, rules.getWorld(), trace, clock);
     },
 
     async getChannels(player: PlayerAccount, input: MapChannelInput, trace?: TransactionTrace) {
@@ -38,6 +38,7 @@ export function createWorldService(deps: { db: Database; clock: () => number; pr
           return directory;
         },
         trace,
+        clock,
       );
     },
 
@@ -57,6 +58,7 @@ export function createWorldService(deps: { db: Database; clock: () => number; pr
             return directory;
           },
           trace,
+          clock,
         );
       });
     },
@@ -66,10 +68,16 @@ export function createWorldService(deps: { db: Database; clock: () => number; pr
       const rules = await rulesFor(player);
       const channels = rules.getMapChannels(input);
       const self = createPlayerRules({ player, clock }).getPlayer();
-      return withPlayerDocument(db, player.id, (document) => ({
-        channelId: channels(document).currentChannelId,
-        outfit: self(document).outfit,
-      }));
+      return withPlayerDocument(
+        db,
+        player.id,
+        (document) => ({
+          channelId: channels(document).currentChannelId,
+          outfit: self(document).outfit,
+        }),
+        undefined,
+        clock,
+      );
     },
   };
 }

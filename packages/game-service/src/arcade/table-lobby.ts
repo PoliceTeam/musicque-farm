@@ -1,3 +1,4 @@
+import type { RandomSeed } from '@chibi-town/arcade-games/random';
 import { sanitizeOutfit } from '@chibi-town/character-core/outfit-logic';
 import type { ArcadeTableResult } from '@chibi-town/contracts/arcade-table';
 import type { ArcadeGameId } from '@chibi-town/game-content/arcade-catalog';
@@ -27,7 +28,7 @@ export function sitAtTable(
   record: TableRecord | undefined,
   player: TableSeat,
   input: { roomId: number; tableId?: number; requestId: string },
-  ids: { matchId: string; seed: number; now?: number },
+  ids: { matchId: string; seed: RandomSeed; now?: number },
 ): TableOutcome<unknown> {
   assertTableAccount(player.guest ?? false, game.gameId, input.roomId);
   player = { ...player, outfit: sanitizeOutfit(player.outfit) };
@@ -48,6 +49,10 @@ export function sitAtTable(
     };
     const created: TableRecord = { gameId: game.gameId, match, seats: [player], receipts: {} };
     return { record: created, result: named(created, 0, game.snapshot(match, 0), ids.now), changed: true };
+  }
+  if (isFinished(game, record.match) && record.departedPlayerIds?.length) {
+    record.seats = record.seats.filter((seat) => !record.departedPlayerIds!.includes(seat.playerId));
+    delete record.departedPlayerIds;
   }
   const seated = record.seats.findIndex((entry) => entry.playerId === player.playerId);
   if (seated >= 0) record.seats[seated] = { ...player, outfit: sanitizeOutfit(player.outfit) };
