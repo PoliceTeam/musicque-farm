@@ -204,7 +204,7 @@ it('requires the Google username step in the same popup and displays the registr
   );
   expect(html).toContain('Chọn username');
   expect(html).toContain('name="username"');
-  expect(html).toContain('Bạn nhận 100.000 xu và 20 lượng');
+  expect(html).toContain('Bạn nhận 50.000 xu và 20 lượng');
   expect(html).not.toContain('name="password"');
   expect(html).not.toContain('Chơi tiếp với tư cách khách');
   expect(html).not.toContain('ui-icon-button');
@@ -224,7 +224,7 @@ it('shows a registration confirmation with a button to enter the game', () => {
       />
     </I18nextProvider>,
   );
-  expect(html).toContain('Bạn nhận 100.000 xu và 20 lượng');
+  expect(html).toContain('Bạn nhận 50.000 xu và 20 lượng');
   expect(html).toContain('Vào chơi');
   expect(html).not.toContain('name="password"');
 });

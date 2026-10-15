@@ -1,4 +1,4 @@
-import { FARM_UNIT_SAVE_LIMITS } from '@chibi-town/game-content/farm-balance';
+import { FARM_STARTING_COINS, FARM_UNIT_SAVE_LIMITS } from '@chibi-town/game-content/farm-balance';
 import { type CropId, FARM_CROPS } from '@chibi-town/game-content/farm-catalog';
 import { landUpgradePrice } from '@chibi-town/game-content/farm-upgrade-catalog';
 import { type KitchenJob, parseKitchenJobs } from './farm-kitchen-logic.js';
@@ -60,7 +60,7 @@ export function createFarmProgress(): FarmProgress {
     capacity: { ...FARM_UNIT_START },
     animals: [],
     fish: [],
-    coins: 20000,
+    coins: FARM_STARTING_COINS,
     harvested: 0,
     owned: 6,
     plots: Array.from({ length: FARM_PLOT_LIMIT }, () => ({ stage: 'dry', wateredAt: null })),

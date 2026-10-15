@@ -207,7 +207,7 @@ describe('Phỏm tables of people', () => {
 
   it('holds the stake while the match runs, so it cannot be spent or wagered twice', async () => {
     const seats = await players(2);
-    await deal(seats, 149_990);
+    await deal(seats, 79_990);
     expect((await seats[0].sdk.getPhomLobby()).availableCoins).toBe(10);
     const buy = await code(
       seats[0].sdk.execute({
@@ -219,7 +219,7 @@ describe('Phỏm tables of people', () => {
       }),
     );
     expect(buy).not.toBe('resolved');
-    expect(await coins(seats[0])).toBe(150_000);
+    expect(await coins(seats[0])).toBe(80_000);
     expect(await code(seats[0].sdk.startPhomRoom({ roomId: 0, tableId: 9, requestId: requestId() }))).toBe(
       'MATCH_IN_PROGRESS',
     );
@@ -238,8 +238,8 @@ describe('Phỏm tables of people', () => {
       revision: quitter.revision,
       requestId: requestId(),
     });
-    expect(left).toMatchObject({ coins: 149_900, coinDelta: -100 });
-    expect(await Promise.all(seats.map(coins))).toEqual([150_050, 149_900, 150_050]);
+    expect(left).toMatchObject({ coins: 79_900, coinDelta: -100 });
+    expect(await Promise.all(seats.map(coins))).toEqual([80_050, 79_900, 80_050]);
     for (const seat of seats) {
       const lobby = await seat.sdk.getPhomLobby();
       expect(lobby.activeMatch).toBeUndefined();
@@ -308,8 +308,8 @@ describe('Phỏm tables of people', () => {
     expect((await view(seats[0])).status).toBe('playing');
     t.advance(2000);
     await t.tables.sweep();
-    expect(await coins(seats[slow])).toBe(149_900);
-    expect(await coins(seats[1 - slow])).toBe(150_100);
+    expect(await coins(seats[slow])).toBe(79_900);
+    expect(await coins(seats[1 - slow])).toBe(80_100);
     expect((await seats[0].sdk.getPhomLobby()).activeMatch).toBeUndefined();
 
     const [idle] = await players(1, 'idle');
@@ -373,7 +373,7 @@ describe('Phỏm tables of people', () => {
     (await connect(seats[1])).terminate();
     await away();
     expect((await view(seats[0])).status).toBe('playing');
-    expect(await coins(seats[1])).toBe(150_000);
+    expect(await coins(seats[1])).toBe(80_000);
   });
 
   it('tells the other players and the lobby when the table changes', async () => {

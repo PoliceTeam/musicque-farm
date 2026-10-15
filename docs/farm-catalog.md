@@ -1,4 +1,4 @@
-# Quy tắc farm hiện hành — 11/10/2026
+# Quy tắc farm hiện hành — 15/10/2026
 
 Cấu hình theo bảng người dùng cung cấp. Giá cây trồng là giá cân bằng đề xuất, dữ liệu Avatar chưa được kiểm chứng độc lập. Tài liệu này thay các thông số demo trong kế hoạch cũ.
 
@@ -26,8 +26,10 @@ Một ô dùng một hạt. Đất khô → xới → gieo → tưới → tăng
 | pumpkin | 10 | coins | 2 | 80 | 1 |
 | potato | 10 | coins | 6 | 120 | 1 |
 | chili | 10 | coins | 1 | 45 | 1 |
+| starfruit | 10 | coins | 24 | 360 | 1 |
+| strawberry | 10 | coins | 2 | 60 | 1 |
 
-Dâu của save demo cũ giữ chu kỳ 60 giây, sản lượng 1 và bán 35 xu để không đổi cây đang trồng. Không đưa dâu demo vào danh sách giống mới. Nha đam dùng Gem, vẫn trồng/thu vào kho nhưng chưa cho bán.
+Dâu dùng giá giống 10 xu, chu kỳ 2 giờ, sản lượng 60 và giá bán 1 xu/SP: lãi 25 xu/ô/giờ nếu trồng liên tục. Áp dụng cấu hình mới cho cả cây trong save cũ; giữ nguyên thời điểm tưới, số lượng hạt và hàng tồn, không nhân/chia lại kho. Nha đam dùng Gem, vẫn trồng/thu vào kho nhưng chưa cho bán.
 
 ## Chăn nuôi
 
@@ -74,12 +76,12 @@ Một lượt nấu (cấu hình khởi đầu), trừ nguyên liệu nguyên t�
 | friedIceCream | 1 cream | 30 | 12500 |
 | watermelonJuice | 1000 watermelon | 120 | 10000 |
 | beefBalls | 2 beef | 30 | 20000 |
-| fishBalls | 2 fish | 30 | 10000 |
+| fishBalls | 2 fish | 30 | 25000 |
 | cheese | 100 milk + 400 egg | 240 | 32000 |
 | ketchup | 1000 tomato | 360 | 20000 |
 | chiliSauce | 500 chili | 30 | 3000 |
 
-Khế, vải, đào, kem tươi, đĩa trái cây chưa có nguồn sản xuất/mua nên các món thiếu chúng báo chưa có nguồn cung. Nếu SDK cung cấp đủ item tương ứng thì công thức hoạt động mà không cần đổi UI. Không tự bịa công thức nguyên liệu trung gian.
+Vải, đào, kem tươi, đĩa trái cây chưa có nguồn sản xuất/mua nên các món thiếu chúng báo chưa có nguồn cung. Nếu SDK cung cấp đủ item tương ứng thì công thức hoạt động mà không cần đổi UI. Không tự bịa công thức nguyên liệu trung gian.
 
 ## Ranh giới và lưu trữ
 
@@ -134,3 +136,7 @@ Cá dùng ảnh nhìn ngang, lật trái/phải với độ nghiêng nhỏ và �
 Chăm sóc nhanh có chọn cây và gieo trên các ô đất khô/đã xới thuộc quyền sở hữu. Mỗi ô gieo thành công được xới và tưới trong cùng lệnh; dùng giống dự trữ trước rồi trả giá giống bằng xu/Gem. Không đổi cây đang trồng và không xới các ô thiếu số dư. Kho giống chỉ hiển thị giống dự trữ, không có mua giống riêng.
 
 Menu avatar giữ điều hướng nhân vật/bản đồ, mua vật nuôi & mở rộng, chăm sóc nhanh và âm thanh. Các nhà mở trực tiếp trên map; bảng chăm sóc không liệt kê từng con. Trạng thái trống của kho, vật nuôi và bếp dùng EmptyState chung trong packages/ui.
+
+## Cân bằng khởi đầu — 15/10/2026
+
+Local và server cấp 30.000 xu cho người chơi mới; giữ thưởng đăng ký 50.000 xu + 20 Gem (đăng ký mới tổng 80.000 xu + 20 Gem); không cộng bù hay đặt lại số dư save đã có. Giá nâng cấp giữ nguyên bảng hiện hành. Cá viên dùng 2 cá trị giá bán thẳng 20.000 xu và bán 25.000 xu sau 30 phút, tăng thêm 5.000 xu khi chế biến. Bốn món thiếu nguồn nguyên liệu vẫn khóa nấu khi chưa đủ hàng; chưa tự đặt giá hoặc công thức cho nguyên liệu chưa chốt.

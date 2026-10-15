@@ -241,7 +241,7 @@ describe('accounts and sessions', () => {
     expect((await session(cookie)).player.guest).toBe(false);
     expect((await sdk.getInventory()).farm).toEqual({
       ...command.farm,
-      coins: command.farm.coins + 100_000,
+      coins: command.farm.coins + 50_000,
       gems: command.farm.gems + 20,
     });
     const login = await post('/api/auth/login', { email: 'saved@example.test', password: 'correct horse' });
@@ -395,7 +395,7 @@ describe('Google sign-in', () => {
     expect(player).toMatchObject({ id: first.player.id, guest: false });
     expect((await f.t.sdkFor(cookie).getInventory()).farm).toEqual({
       ...changed.farm,
-      coins: changed.farm.coins + 100_000,
+      coins: changed.farm.coins + 50_000,
       gems: changed.farm.gems + 20,
     });
     const second = await guest();

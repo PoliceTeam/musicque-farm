@@ -99,7 +99,7 @@ describe('six-level stackable chests', () => {
     expect(state.homeInventory.tomato).toBe(10);
     expect(sellFarmItem(state, 'tomato', 1, 'home')).toBe(true);
     expect(state.homeInventory.tomato).toBe(9);
-    expect(state.coins).toBe(20001);
+    expect(state.coins).toBe(30001);
     expect(transferFarmGoods(state, 'home', 'tomato', 9)).toBe(true);
     expect(state.inventory.tomato).toBe(9);
   });

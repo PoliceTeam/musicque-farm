@@ -1,3 +1,4 @@
+import { FARM_CROPS } from '@chibi-town/game-content/farm-catalog';
 import { applyFarmBatch, collectFarmHerd, feedFarmHerd } from '@chibi-town/gameplay/farm-batch-logic';
 import { createFarmProgress, parseFarmProgress } from '@chibi-town/gameplay/farm-crop-logic';
 import { feedFarmUnit } from '@chibi-town/gameplay/farm-feeding-logic';
@@ -123,12 +124,12 @@ describe('care, production, inventory and explicit sales', () => {
     expect(state.plots[6].stage).toBe('dry');
     expect(state.plots.slice(0, 2).map((plot) => plot.stage)).toEqual(['growing', 'growing']);
     expect(applyFarmBatch(state, 'water', 0).completed).toBe(0);
-    expect(applyFarmBatch(state, 'harvest', minute)).toEqual({ completed: 2, eligible: 2 });
-    expect(state.inventory.strawberry).toBe(2);
+    expect(applyFarmBatch(state, 'harvest', FARM_CROPS.strawberry.growMs)).toEqual({ completed: 2, eligible: 2 });
+    expect(state.inventory.strawberry).toBe(120);
     expect(state.coins).toBe(0);
-    expect(applyFarmBatch(state, 'harvest', minute).completed).toBe(0);
-    expect(sellFarmItem(state, 'strawberry', 2)).toBe(true);
-    expect(state.coins).toBe(70);
+    expect(applyFarmBatch(state, 'harvest', FARM_CROPS.strawberry.growMs).completed).toBe(0);
+    expect(sellFarmItem(state, 'strawberry', 120)).toBe(true);
+    expect(state.coins).toBe(120);
   });
 });
 
@@ -155,7 +156,7 @@ describe('one-step batch planting', () => {
     state.seeds.aloe = 1;
     expect(applyFarmBatch(state, 'sow', 100, 'aloe')).toEqual({ completed: 2, eligible: 6 });
     expect(state.gems).toBe(0);
-    expect(state.coins).toBe(20000);
+    expect(state.coins).toBe(30000);
     expect(state.plots[2].stage).toBe('dry');
   });
 });

@@ -144,7 +144,7 @@ export const FARM_RECIPES = {
   },
   fishBalls: {
     cookMs: 1800000,
-    sellPrice: 10000,
+    sellPrice: 25000,
     ingredients: {
       fish: 2,
     },

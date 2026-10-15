@@ -71,9 +71,9 @@ Mọi `{player}` trong auth có `guest: boolean` và `username: string | null`; 
 
 ### Số dư, thưởng và giới hạn đăng ký
 
-Mọi document tài khoản server mới khởi tạo **50.000 xu, 0 lượng**; các hằng số nằm trong `packages/game-content/src/account-balance.ts`. Không đổi `createFarmProgress()` hay số dư local. Lần đầu chuyển thành tài khoản không phải khách (đăng ký trực tiếp, nâng cấp khách, Google lần đầu) nhận thêm **100.000 xu + 20 lượng**. Đăng ký trực tiếp/Google mới vì thế có số dư cuối 150.000 xu và 20 lượng. Nâng cấp giữ tiền và tiến độ đã có rồi cộng thưởng.
+Mọi document tài khoản server mới khởi tạo **30.000 xu, 0 lượng**; các hằng số nằm trong `packages/game-content/src/account-balance.ts`. Local và server dùng chung mức xu khởi đầu; chỉ áp dụng khi tạo người chơi mới, không đặt lại ví đã lưu. Lần đầu chuyển thành tài khoản không phải khách (đăng ký trực tiếp, nâng cấp khách, Google lần đầu) nhận thêm **50.000 xu + 20 lượng**. Đăng ký trực tiếp/Google mới vì thế có số dư cuối 80.000 xu và 20 lượng. Nâng cấp giữ tiền và tiến độ đã có rồi cộng thưởng.
 
-`registration_bonus_at` được ghi cùng transaction tạo/nâng cấp và cập nhật document đã khóa; identity Google cũng ghi trong transaction đó. Retry, đăng nhập lại và callback Google đồng thời không trả thưởng thêm. Tài khoản không phải khách có từ trước thay đổi này không được trả thưởng hồi tố. Popup dùng key react-i18next để xác nhận “Bạn nhận 100.000 xu và 20 lượng”; Google chuyển về `?auth=registered` khi vừa được thưởng.
+`registration_bonus_at` được ghi cùng transaction tạo/nâng cấp và cập nhật document đã khóa; identity Google cũng ghi trong transaction đó. Retry, đăng nhập lại và callback Google đồng thời không trả thưởng thêm. Tài khoản không phải khách có từ trước thay đổi này không được trả thưởng hồi tố. Popup dùng key react-i18next để xác nhận “Bạn nhận 50.000 xu và 20 lượng”; Google chuyển về `?auth=registered` khi vừa được thưởng.
 
 Đăng ký trực tiếp và nâng cấp khách dùng chung hạn mức **5 đăng ký thành công mỗi địa chỉ trong cửa sổ 24 giờ**, qua attempt limiter và khóa SharedState theo địa chỉ; thất bại validate/trùng email/username không tiêu hạn mức. Vượt hạn trả `429 TOO_MANY_ATTEMPTS`. Google không nằm trong hạn mức đăng ký email này. `request.ip` là địa chỉ do Fastify xử lý theo cấu hình `trustProxy`.
 
@@ -131,7 +131,7 @@ Map room lưu outfit/vị trí và token chủ sở hữu theo socket, lease 45 
 - **Outfit**: lấy từ save, `sanitizeOutfit` trước khi lưu ghế và trước khi xuất snapshot; ngồi lại cập nhật outfit. Ghế bài/cờ/Kim cương và danh sách người cược dùng outfit thật; bot luyện tập giữ hình mặc định.
 - **Sweep nhiều process**: mỗi API vẫn có timer riêng, nhưng một lượt sweep giữ `pg_try_advisory_xact_lock(76324891)` trong transaction Postgres; API khác không quét chồng. Khóa bàn/ví và kiểm tra lại revision bảo vệ payout. Thông báo chỉ phát sau khi transaction sweep commit.
 
-Test `account-policy.test.ts` bao phủ số dư server, thưởng một lần với retry/callback đồng thời, hạn mức đăng ký, username/login/backfill, đổi tên và biên 7 ngày, chặn khách ở cả năm game PvP và cho luyện tập/nhà cái, cùng username/tên hiện tại trong snapshot bàn. Client kiểm tra payload/lỗi auth, bước Google bắt buộc, xác nhận thưởng và ACCOUNT_REQUIRED. Các bộ test bàn dùng số dư đăng ký mới 150.000 xu.
+Test `account-policy.test.ts` bao phủ số dư server, thưởng một lần với retry/callback đồng thời, hạn mức đăng ký, username/login/backfill, đổi tên và biên 7 ngày, chặn khách ở cả năm game PvP và cho luyện tập/nhà cái, cùng username/tên hiện tại trong snapshot bàn. Client kiểm tra payload/lỗi auth, bước Google bắt buộc, xác nhận thưởng và ACCOUNT_REQUIRED. Các bộ test bàn dùng số dư đăng ký mới 80.000 xu.
 
 Test `auth.test.ts` bao phủ tạo/giới hạn khách đồng thời, cookie 365 ngày, giữ farm và phiên khi đăng ký, Google liên kết/chuyển tài khoản, login không gộp save, throttle last_seen và cleanup. Client tự mở popup một lần mỗi browser session (sessionStorage có try/catch), cho chơi tiếp và mở lại qua menu hồ sơ; khách không có mục đăng xuất.
 

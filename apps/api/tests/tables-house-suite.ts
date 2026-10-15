@@ -72,19 +72,19 @@ export function houseTableSuite(gameId: 'bau-cua' | 'slots') {
         (_, i) =>
           100 * (i + 1) * (gameId === 'bau-cua' ? dice.filter((v) => v === i).length || -1 : slotsMultiplier - 1),
       );
-      expect(await coins()).toEqual(deltas.map((delta) => 150_000 + delta));
+      expect(await coins()).toEqual(deltas.map((delta) => 80_000 + delta));
       for (let i = 0; i < count; i++) {
         const m = await view(i);
         expect(m.session?.coinDelta).toBe(deltas[i]);
         expect(m.session?.housePayouts).toEqual(
-          seats.map((s, j) => ({ memberId: s.id, delta: deltas[j], coinsAfter: 150_000 + deltas[j] })),
+          seats.map((s, j) => ({ memberId: s.id, delta: deltas[j], coinsAfter: 80_000 + deltas[j] })),
         );
         expect(m.players?.[0].id).toBe(seats[i].id);
         expect(JSON.stringify(m)).not.toContain('"seed"');
-        expect((await seats[i].sdk.getMiniLobby(gameId)).availableCoins).toBe(150_000 + deltas[i]);
+        expect((await seats[i].sdk.getMiniLobby(gameId)).availableCoins).toBe(80_000 + deltas[i]);
       }
       await send(0, { type: 'next-round' });
-      expect(await coins()).toEqual(deltas.map((delta) => 150_000 + delta));
+      expect(await coins()).toEqual(deltas.map((delta) => 80_000 + delta));
       expect((await view(0)).session?.members?.every((m) => !m.ready)).toBe(true);
       expect(await code(roll())).toBe('NOT_ALLOWED');
     });
@@ -146,10 +146,10 @@ export function houseTableSuite(gameId: 'bau-cua' | 'slots') {
     it('holds each stake in play and forfeits the leaver own stake to others', async () => {
       await prepare(3, 200);
       await send(0, { type: 'start' });
-      expect((await seats[1].sdk.getMiniLobby(gameId)).availableCoins).toBe(149_600);
+      expect((await seats[1].sdk.getMiniLobby(gameId)).availableCoins).toBe(79_600);
       const m = await view(1);
       await seats[1].sdk.leaveArcadeTable({ gameId, matchId: m.id, revision: m.revision, requestId: requestId() });
-      expect(await coins()).toEqual([150_200, 149_600, 150_200]);
+      expect(await coins()).toEqual([80_200, 79_600, 80_200]);
       expect((await seats[0].sdk.getMiniLobby(gameId)).activeMatch).toBeUndefined();
     });
     it('forfeits the host own stake when the turn times out via sweep', async () => {
@@ -157,7 +157,7 @@ export function houseTableSuite(gameId: 'bau-cua' | 'slots') {
       await send(0, { type: 'start' });
       t.advance(TURN_LIMIT_MS + 1);
       await t.tables.sweep();
-      expect(await coins()).toEqual([149_900, 150_050, 150_050]);
+      expect(await coins()).toEqual([79_900, 80_050, 80_050]);
       expect((await seats[1].sdk.getMiniLobby(gameId)).activeMatch).toBeUndefined();
     });
     it('hands the next round to a remaining member without reusing departed bets', async () => {

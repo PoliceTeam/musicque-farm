@@ -11,11 +11,11 @@ describe('feeding and enclosure access', () => {
     p.fish = [{ species: 'fish', boughtAt: 0 }];
     expect(farmFoodPercent(p, 'livestock', 1000)).toBe(0);
     expect(feedFarmUnit(p, 'livestock', 1000)).toBe(true);
-    expect(p.coins).toBe(19950);
+    expect(p.coins).toBe(29950);
     expect(feedFarmUnit(p, 'livestock', 1000)).toBe(false);
     expect(farmFoodPercent(p, 'pond', 1000)).toBe(0);
     expect(feedFarmUnit(p, 'pond', 1000)).toBe(true);
-    expect(p.coins).toBe(19925);
+    expect(p.coins).toBe(29925);
     const restored = parseFarmProgress(JSON.parse(JSON.stringify(p)));
     expect(farmFoodPercent(restored, 'livestock', 1000 + 6 * 3600000)).toBe(50);
     expect(farmFoodPercent(restored, 'livestock', 1000 + 12 * 3600000)).toBe(0);

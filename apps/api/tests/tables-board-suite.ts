@@ -70,7 +70,7 @@ export function boardTableSuite(gameId: 'chess' | 'chinese-chess') {
         expect((await view(0)).moves).toHaveLength(i + 1);
       }
       await send(1, { type: 'resign' });
-      expect(await coins()).toEqual([150_100, 149_900]);
+      expect(await coins()).toEqual([80_100, 79_900]);
       expect((await view(0)).session?.coinDelta).toBe(100);
       expect((await view(1)).outcome).toBe('loss');
     });
@@ -96,7 +96,7 @@ export function boardTableSuite(gameId: 'chess' | 'chinese-chess') {
       }
       expect((await view(0)).outcome).toBe('draw');
       expect((await view(1)).outcome).toBe('draw');
-      expect(await coins()).toEqual([150_000, 150_000]);
+      expect(await coins()).toEqual([80_000, 80_000]);
       expect((await view(1)).session?.coinDelta).toBe(0);
     });
     if (gameId === 'chess')
@@ -111,7 +111,7 @@ export function boardTableSuite(gameId: 'chess' | 'chinese-chess') {
         for (const [n, [from, to]] of moves.entries()) await send(n % 2, { type: 'move', from, to });
         expect((await view(1)).outcome).toBe('win');
         expect((await view(1)).reason).toBe('checkmate');
-        expect(await coins()).toEqual([149_900, 150_100]);
+        expect(await coins()).toEqual([79_900, 80_100]);
       });
     it('rejects out-of-turn and illegal moves and returns an identical receipt once', async () => {
       await deal();
@@ -131,7 +131,7 @@ export function boardTableSuite(gameId: 'chess' | 'chinese-chess') {
       expect((await view(0)).moves).toHaveLength(1);
     });
     it('holds stake and forfeits it when a player leaves in play', async () => {
-      await deal(149_990);
+      await deal(79_990);
       expect((await seats[1].sdk.getMiniLobby(gameId)).availableCoins).toBe(10);
       expect(
         await code(
@@ -146,7 +146,7 @@ export function boardTableSuite(gameId: 'chess' | 'chinese-chess') {
       ).not.toBe('resolved');
       const m = await view(1);
       await seats[1].sdk.leaveArcadeTable({ gameId, matchId: m.id, revision: m.revision, requestId: requestId() });
-      expect(await coins()).toEqual([299_990, 10]);
+      expect(await coins()).toEqual([159_990, 10]);
       expect((await seats[0].sdk.getMiniLobby(gameId)).activeMatch).toBeUndefined();
     });
     it('forfeits the current side after turn timeout', async () => {
@@ -154,7 +154,7 @@ export function boardTableSuite(gameId: 'chess' | 'chinese-chess') {
       await send(0, { type: 'move', ...legalMiniMoves(await view(0))[0] });
       t.advance(TURN_LIMIT_MS + 1);
       await t.tables.sweep();
-      expect(await coins()).toEqual([150_100, 149_900]);
+      expect(await coins()).toEqual([80_100, 79_900]);
       expect((await seats[0].sdk.getMiniLobby(gameId)).activeMatch).toBeUndefined();
     });
     it('keeps the remaining viewer side and real result names after the host leaves', async () => {

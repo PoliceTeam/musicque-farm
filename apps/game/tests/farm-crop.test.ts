@@ -22,8 +22,8 @@ describe('farm crop and land commands', () => {
     const restored = parseFarmProgress(JSON.parse(JSON.stringify(state)));
     expect(cropStage(restored.plots[0], 1000 + FARM_GROW_MS)).toBe('ripe');
     expect(farmAction(restored, 0, 'harvest', 1000 + FARM_GROW_MS)).toBe(true);
-    expect(restored.coins).toBe(19990);
-    expect(restored.inventory.strawberry).toBe(1);
+    expect(restored.coins).toBe(29990);
+    expect(restored.inventory.strawberry).toBe(60);
     expect(restored.harvested).toBe(1);
     expect(farmAction(restored, 0, 'harvest', 1000 + FARM_GROW_MS)).toBe(false);
     expect(farmAction(restored, 0, 'sow', 1000 + FARM_GROW_MS)).toBe(true);

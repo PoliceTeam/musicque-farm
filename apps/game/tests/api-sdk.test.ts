@@ -77,7 +77,7 @@ for (const adapter of ['local', 'http'] as const)
       } as const;
       const after = await sdk.execute(harvest);
       expect(after.farm.coins).toBe(before.farm.coins);
-      expect(after.farm.inventory.strawberry).toBe(1);
+      expect(after.farm.inventory.strawberry).toBe(60);
       expect(await sdk.execute(harvest)).toEqual(after);
       const sold = await sdk.execute({
         requestId: 'sale',
@@ -86,8 +86,8 @@ for (const adapter of ['local', 'http'] as const)
         product: 'strawberry',
         count: 1,
       });
-      expect(sold.farm.coins).toBe(before.farm.coins + 35);
-      expect(sold.farm.inventory.strawberry).toBe(0);
+      expect(sold.farm.coins).toBe(before.farm.coins + 1);
+      expect(sold.farm.inventory.strawberry).toBe(59);
     });
     it('rejects a reused request ID with different intent and preserves state', async () => {
       const sdk = fixtures()[adapter];
@@ -135,7 +135,7 @@ it('snapshots are isolated from consumer mutation', async () => {
   const sdk = fixtures().local;
   const before = await sdk.getMap(map);
   before.farm.coins = 0;
-  expect((await sdk.getMap(map)).farm.coins).toBe(20000);
+  expect((await sdk.getMap(map)).farm.coins).toBe(30000);
 });
 it('simulated connection errors do not mutate local progress', async () => {
   const repository = createMemoryRepository();
@@ -180,7 +180,7 @@ it('multiple map instances keep land separate and share the player wallet/invent
   const first = await sdk.getMap(map);
   expect(first.farm.plots[0].stage).toBe('dry');
   expect(first.farm.owned).toBe(6);
-  expect(first.farm.coins).toBe(9200);
+  expect(first.farm.coins).toBe(19200);
   expect((await sdk.getMap({ regionId: 'farm', mapId: 'farm-second', instanceId: 'home' })).farm.owned).toBe(7);
 });
 it('HTTP adapter rejects malformed successful responses', async () => {
@@ -205,5 +205,5 @@ it('keeps separate instances of the same map independent', async () => {
   });
   expect((await sdk.getMap(map)).farm.owned).toBe(6);
   expect((await sdk.getMap({ ...map, instanceId: 'second' })).farm.owned).toBe(7);
-  expect((await sdk.getMap(map)).farm.coins).toBe(9200);
+  expect((await sdk.getMap(map)).farm.coins).toBe(19200);
 });

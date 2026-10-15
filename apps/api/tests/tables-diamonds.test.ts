@@ -65,7 +65,7 @@ describe('Diamonds tables of people', () => {
       if (a.status !== 'playing') {
         expect(['won', 'lost']).toContain(a.status);
         expect(b.status).toBe(a.status === 'won' ? 'lost' : 'won');
-        expect(await coins()).toEqual(a.status === 'won' ? [150_100, 149_900] : [149_900, 150_100]);
+        expect(await coins()).toEqual(a.status === 'won' ? [80_100, 79_900] : [79_900, 80_100]);
         expect(a.session?.coinDelta).toBe(a.status === 'won' ? 100 : -100);
         const restarted = await seats[0].startDiamondRoom({ roomId: 0, tableId: 4, requestId: requestId() });
         expect(restarted.status).toBe('waiting');
@@ -99,7 +99,7 @@ describe('Diamonds tables of people', () => {
     expect((await view(0)).moves).toBe(1);
   });
   it('holds stake and forfeits on leave', async () => {
-    await deal(149_990);
+    await deal(79_990);
     expect((await seats[1].getArcadeLobby()).availableCoins).toBe(10);
     expect(
       await code(
@@ -119,14 +119,14 @@ describe('Diamonds tables of people', () => {
       revision: m.revision,
       requestId: requestId(),
     });
-    expect(await coins()).toEqual([299_990, 10]);
+    expect(await coins()).toEqual([159_990, 10]);
     expect((await seats[0].getArcadeLobby()).activeBattle).toBeUndefined();
   });
   it('forfeits on turn timeout via sweep', async () => {
     await deal();
     t.advance(TURN_LIMIT_MS + 1);
     await t.tables.sweep();
-    expect(await coins()).toEqual([149_900, 150_100]);
+    expect(await coins()).toEqual([79_900, 80_100]);
     expect((await seats[1].getArcadeLobby()).activeBattle).toBeUndefined();
   });
   it('keeps practice on the individual save with bots', async () => {

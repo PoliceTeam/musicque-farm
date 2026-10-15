@@ -163,8 +163,8 @@ describe('live table clocks, replay and outfits', () => {
     t.advance(20_001);
     await t.tables.sweep();
     expect(await read(seats[0].cookie)).toBeUndefined();
-    expect((await t.sdkFor(seats[1].cookie).getInventory()).farm.coins).toBe(149_900);
-    expect((await t.sdkFor(seats[0].cookie).getInventory()).farm.coins).toBe(150_100);
+    expect((await t.sdkFor(seats[1].cookie).getInventory()).farm.coins).toBe(79_900);
+    expect((await t.sdkFor(seats[0].cookie).getInventory()).farm.coins).toBe(80_100);
   });
 
   it('refreshes and sanitizes the saved outfit when an existing seat sits again', async () => {

@@ -37,7 +37,7 @@ export default {
   usernameHint: '3–20 ký tự a–z, 0–9, dấu _ hoặc .; bắt đầu bằng chữ hoặc số. Username không thể đổi.',
   identifier: 'Email hoặc username',
   saveUsername: 'Lưu username',
-  registrationBonus: 'Bạn nhận 100.000 xu và 20 lượng',
+  registrationBonus: 'Bạn nhận 50.000 xu và 20 lượng',
   done: 'Vào chơi',
   rename: 'Đổi tên hiển thị',
   saveName: 'Lưu tên',

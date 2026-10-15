@@ -1,6 +1,12 @@
 import { createGameSdk, createLocalDocument, createMemoryRepository } from '@chibi-town/api-sdk';
 import type { Command } from '@chibi-town/contracts';
+import {
+  REGISTRATION_BONUS_COINS,
+  REGISTRATION_BONUS_GEMS,
+  SERVER_STARTING_COINS,
+} from '@chibi-town/game-content/account-balance';
 import { FARM_ANIMAL_CATALOG } from '@chibi-town/game-content/farm-animal-catalog';
+import { FARM_PRODUCTS } from '@chibi-town/game-content/farm-balance';
 import { CROP_IDS, FARM_CROPS, HOUR_MS } from '@chibi-town/game-content/farm-catalog';
 import { FARM_RECIPES } from '@chibi-town/game-content/farm-recipes';
 import {
@@ -72,8 +78,8 @@ describe('farm catalogue gameplay', () => {
     expect(loaded.inventory.strawberry).toBe(7);
     expect(loaded.gems).toBe(0);
     expect(loaded.kitchen).toEqual([]);
-    expect(farmAction(loaded, 0, 'harvest', 60100)).toBe(true);
-    expect(loaded.inventory.strawberry).toBe(8);
+    expect(farmAction(loaded, 0, 'harvest', 100 + FARM_CROPS.strawberry.growMs)).toBe(true);
+    expect(loaded.inventory.strawberry).toBe(67);
   });
   it.each(['hen', 'duck', 'cow', 'sheep'] as const)(
     '%s collects the full product batch and preserves the animal',
@@ -94,7 +100,7 @@ describe('farm catalogue gameplay', () => {
       expect(collectFarmProducts(state, unit, 100)).toBe(0);
       expect(sellFarmAnimal(state, unit, 0, NaN)).toBe(false);
       expect(sellFarmAnimal(state, unit, 0, 100)).toBe(true);
-      expect(state.coins).toBe(20000 - (definition.currency === 'coins' ? definition.price : 0) + definition.salePrice);
+      expect(state.coins).toBe(30000 - (definition.currency === 'coins' ? definition.price : 0) + definition.salePrice);
     },
   );
   it('buys, saves and sells dogs without harvesting or butchering them', () => {
@@ -121,7 +127,7 @@ describe('farm catalogue gameplay', () => {
     expect(butcherFarmAnimal(state, 'livestock', 0, 0)).toBe(true);
     expect(state.inventory.beef).toBe(1);
     expect(state.animals).toHaveLength(0);
-    expect(state.coins).toBe(20000);
+    expect(state.coins).toBe(30000);
   });
 });
 describe('kitchen and SDK transactions', () => {
@@ -142,10 +148,10 @@ describe('kitchen and SDK transactions', () => {
     expect(collectFarmRecipe(loaded, 'job', ready - 1)).toBe(false);
     expect(collectFarmRecipe(loaded, 'job', ready)).toBe(true);
     expect(loaded.inventory.eggCake).toBe(1);
-    expect(loaded.coins).toBe(20000);
+    expect(loaded.coins).toBe(30000);
     expect(collectFarmRecipe(loaded, 'job', ready)).toBe(false);
     expect(sellFarmItem(loaded, 'eggCake', 1)).toBe(true);
-    expect(loaded.coins).toBe(25880);
+    expect(loaded.coins).toBe(35880);
   });
   it('serializes repeated cooking and collection commands without spending or granting twice', async () => {
     const document = createLocalDocument();
@@ -229,4 +235,37 @@ it('shares Gem and seed wallets across map instances while keeping planted crops
   expect(home.farm.seeds.aloe).toBe(1);
   expect(home.farm.plots[0].stage).toBe('dry');
   expect((await sdk.getMap({ ...map, instanceId: 'second' })).farm.plots[0].cropId).toBe('aloe');
+});
+
+describe('farm economy balance', () => {
+  it('starts local and server players with 30000 coins and keeps saved wallets intact', () => {
+    expect(createFarmProgress().coins).toBe(30000);
+    expect(SERVER_STARTING_COINS).toBe(30000);
+    expect(REGISTRATION_BONUS_COINS).toBe(50000);
+    expect(REGISTRATION_BONUS_GEMS).toBe(20);
+    const old = createFarmProgress();
+    old.coins = 1234;
+    old.inventory.strawberry = 7;
+    expect(parseFarmProgress(JSON.parse(JSON.stringify(old))).coins).toBe(1234);
+    expect(parseFarmProgress(old).inventory.strawberry).toBe(7);
+  });
+  it('keeps displayed prices equal to transaction prices and never loses sellable ingredients value when cooking', () => {
+    for (const [id, crop] of Object.entries(FARM_CROPS)) {
+      expect(FARM_PRODUCTS[id as keyof typeof FARM_CROPS].price).toBe(crop.sellPrice);
+    }
+    for (const [id, recipe] of Object.entries(FARM_RECIPES)) {
+      expect(FARM_PRODUCTS[id as keyof typeof FARM_RECIPES].price).toBe(recipe.sellPrice);
+      const ingredients = Object.entries(recipe.ingredients);
+      if (ingredients.some(([product]) => FARM_PRODUCTS[product as keyof typeof FARM_PRODUCTS].price === null))
+        continue;
+      const value = ingredients.reduce(
+        (total, [product, quantity]) =>
+          total + quantity * (FARM_PRODUCTS[product as keyof typeof FARM_PRODUCTS].price ?? 0),
+        0,
+      );
+      expect(recipe.sellPrice, id).toBeGreaterThan(value);
+    }
+    const strawberry = FARM_CROPS.strawberry;
+    expect((strawberry.yield * strawberry.sellPrice - strawberry.seedPrice) / (strawberry.growMs / HOUR_MS)).toBe(25);
+  });
 });

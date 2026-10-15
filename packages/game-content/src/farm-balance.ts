@@ -1,4 +1,7 @@
-export const FARM_GROW_MS = 60_000;
+import { FARM_CROPS } from './farm-catalog.js';
+
+export const FARM_STARTING_COINS = 30_000;
+export const FARM_GROW_MS = FARM_CROPS.strawberry.growMs;
 export const FARM_FOOD_MS = 12 * 3_600_000;
 export const FARM_UNIT_LIMITS = { livestock: 20, poultry: 24, pond: 10 } as const;
 // Read-only save compatibility: preserve already purchased capacity.
@@ -107,7 +110,7 @@ export const FARM_PRODUCTS = {
     label: 'chili',
   },
   strawberry: {
-    price: 35,
+    price: FARM_CROPS.strawberry.sellPrice,
     icon: '🍓',
     label: 'strawberry',
   },
@@ -272,7 +275,7 @@ export const FARM_PRODUCTS = {
     label: 'beefBalls',
   },
   fishBalls: {
-    price: 10000,
+    price: 25000,
     icon: '🍽️',
     label: 'fishBalls',
   },

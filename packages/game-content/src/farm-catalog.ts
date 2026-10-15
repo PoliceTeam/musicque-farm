@@ -157,9 +157,9 @@ export const FARM_CROPS = {
     icon: '🍓',
     seedPrice: 10,
     currency: 'coins',
-    growMs: 60000,
-    yield: 1,
-    sellPrice: 35,
+    growMs: 7200000,
+    yield: 60,
+    sellPrice: 1,
   },
 } as const;
 export type CropId = keyof typeof FARM_CROPS;

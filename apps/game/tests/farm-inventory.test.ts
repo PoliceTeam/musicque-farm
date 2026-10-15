@@ -8,22 +8,23 @@ describe('warehouse and free range animals', () => {
   it('harvests into persistent stock without selling, sells only on request and never twice', () => {
     const p = createFarmProgress();
     expect(buyFarmSeeds(p, 10)).toBe(true);
-    expect(p.coins).toBe(19900);
+    expect(p.coins).toBe(29900);
     for (let i = 0; i < 2; i++) {
       farmAction(p, i, 'till', 0);
       farmAction(p, i, 'sow', 0);
       farmAction(p, i, 'water', 0);
       expect(farmAction(p, i, 'harvest', FARM_GROW_MS)).toBe(true);
     }
-    expect(p.coins).toBe(19900);
-    expect(p.inventory).toEqual({ strawberry: 2, seed: 8 });
+    expect(p.coins).toBe(29900);
+    expect(p.inventory).toEqual({ strawberry: 120, seed: 8 });
     expect(farmAction(p, 0, 'harvest', FARM_GROW_MS)).toBe(false);
     const loaded = parseFarmProgress(JSON.parse(JSON.stringify(p)));
     expect(loaded.inventory).toEqual(p.inventory);
-    expect(sellFarmProduce(loaded, 3)).toBe(false);
+    expect(sellFarmProduce(loaded, 121)).toBe(false);
     expect(sellFarmProduce(loaded, 2)).toBe(true);
-    expect(loaded.coins).toBe(19970);
-    expect(loaded.inventory.strawberry).toBe(0);
+    expect(loaded.coins).toBe(29902);
+    expect(loaded.inventory.strawberry).toBe(118);
+    expect(sellFarmProduce(loaded, 118)).toBe(true);
     expect(sellFarmProduce(loaded, 1)).toBe(false);
     for (const n of [-1, 0, 1.5, NaN, Infinity]) {
       expect(sellFarmProduce(loaded, n)).toBe(false);
@@ -45,7 +46,7 @@ describe('warehouse and free range animals', () => {
     });
     expect(migrated.animals).toMatchObject([{ species: 'cow', boughtAt: 100 }]);
     expect(migrated.poultry).toMatchObject(p.animals.slice(1));
-    expect(migrated.coins).toBe(20000);
+    expect(migrated.coins).toBe(30000);
     expect(migrated.capacity.livestock).toBe(24);
     expect(migrated.fedAt.poultry).toBe(1000);
     expect(parseFarmProgress(migrated)).toEqual(migrated);

@@ -26,7 +26,7 @@ it('retries an uncertain network failure with the same command ID', async () => 
   await model.execute({ type: 'plot', index: 6, action: 'buy' });
   expect(ids[0]).toBe(ids[1]);
   expect(model.store.getState().snapshot?.farm.owned).toBe(7);
-  expect(model.store.getState().snapshot?.farm.coins).toBe(9200);
+  expect(model.store.getState().snapshot?.farm.coins).toBe(19200);
 });
 it('a late older snapshot cannot overwrite a completed command', async () => {
   const local = createGameSdk({ adapter: 'local', repository: createMemoryRepository() });

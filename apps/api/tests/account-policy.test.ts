@@ -50,12 +50,12 @@ describe('server account policy', () => {
     name: 'Google player',
   };
 
-  it('starts guests with server money without changing local farm defaults', async () => {
+  it('starts guests and local players with the shared starting balance', async () => {
     const { player, cookie } = await guest();
     expect(player.username).toBeNull();
-    expect(await wallet(player.id)).toMatchObject({ coins: 50_000, gems: 0 });
+    expect(await wallet(player.id)).toMatchObject({ coins: 30_000, gems: 0 });
     expect((await row(player.id)).registrationBonusAt).toBeNull();
-    expect(createPlayerDocument().farm.coins).toBe(20_000);
+    expect(createPlayerDocument().farm.coins).toBe(30_000);
     expect((await t.sdkFor(cookie).getPlayer()).username).toBeNull();
   });
 
@@ -83,10 +83,10 @@ describe('server account policy', () => {
       Array.from({ length: 3 }, () => post('/api/auth/register', registration(), cookie)),
     );
     expect(results.filter((result) => result.statusCode === 201)).toHaveLength(1);
-    expect(await wallet(player.id)).toMatchObject({ coins: 112_345, gems: 27 });
+    expect(await wallet(player.id)).toMatchObject({ coins: 62_345, gems: 27 });
     expect((await row(player.id)).guest).toBe(false);
     await post('/api/auth/register', registration(), cookie);
-    expect(await wallet(player.id)).toMatchObject({ coins: 112_345, gems: 27 });
+    expect(await wallet(player.id)).toMatchObject({ coins: 62_345, gems: 27 });
   });
 
   it('pays Google once and leaves the username for the required popup step', async () => {
@@ -257,7 +257,7 @@ describe('server account policy', () => {
         ).statusCode,
       ).toBe(200);
     }
-    expect(await wallet((await t.sdkFor(cookie).getPlayer()).id)).toMatchObject({ coins: 50_000, gems: 0 });
+    expect(await wallet((await t.sdkFor(cookie).getPlayer()).id)).toMatchObject({ coins: 30_000, gems: 0 });
   });
 
   it('includes immutable handles in peer table payloads and refreshes changed display names', async () => {
