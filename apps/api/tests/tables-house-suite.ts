@@ -1,6 +1,9 @@
 import type { MiniAction } from '@chibi-town/arcade-games/mini-games-logic';
 import { ApiSdkError, type GameSdk } from '@chibi-town/contracts';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { tableGames } from '@chibi-town/game-service';
+import { eq } from 'drizzle-orm';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { arcadeTables } from '@/infrastructure/database/schema';
 import { TURN_LIMIT_MS } from '@/modules/arcade/tables';
 import { createTestApp } from './test-app.js';
 
@@ -87,6 +90,32 @@ export function houseTableSuite(gameId: 'bau-cua' | 'slots') {
       expect(await coins()).toEqual(deltas.map((delta) => 80_000 + delta));
       expect((await view(0)).session?.members?.every((m) => !m.ready)).toBe(true);
       expect(await code(roll())).toBe('NOT_ALLOWED');
+    });
+    it('injects fresh 128-bit entropy for every roll/spin and next-round', async () => {
+      await prepare(1);
+
+      const readSeed = async () =>
+        (await t.db.select().from(arcadeTables).where(eq(arcadeTables.gameId, gameId)))[0].record.match as {
+          seed: unknown;
+        };
+
+      const first = structuredClone((await readSeed()).seed);
+      const play = vi.spyOn(tableGames[gameId]!, 'play');
+      try {
+        const result = await roll();
+        const rollSeed = play.mock.calls[0][0].seed;
+        expect(Array.isArray(rollSeed) && rollSeed.length).toBe(4);
+        expect(rollSeed).not.toEqual(first);
+        expect(JSON.stringify(result)).not.toContain('"seed"');
+        const afterRoll = structuredClone((await readSeed()).seed);
+        await send(0, { type: 'next-round' });
+        expect((await readSeed()).seed).not.toEqual(afterRoll);
+        await configure(0, 100);
+        await roll();
+        expect(play.mock.calls[2][0].seed).not.toEqual(rollSeed);
+      } finally {
+        play.mockRestore();
+      }
     });
     it('lets every member set only their own bet, checks readiness and rejects illegal/out-of-turn actions', async () => {
       await prepare(2);

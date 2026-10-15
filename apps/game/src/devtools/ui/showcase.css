@@ -51,17 +51,17 @@ body {
   max-width: 540px;
   margin-top: 20px;
 }
-.ui-showcase .stock-slot {
+.ui-showcase .ui-inventory-slot {
   position: relative;
   aspect-ratio: 1;
   display: grid;
   place-items: center;
   border: 2px solid transparent;
 }
-.ui-showcase .stock-slot span {
+.ui-showcase .ui-inventory-slot span {
   font-size: 30px;
 }
-.ui-showcase .stock-slot b {
+.ui-showcase .ui-inventory-slot b {
   position: absolute;
   top: 4px;
   right: 8px;

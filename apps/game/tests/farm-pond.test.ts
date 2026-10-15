@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FARM_FEATURES, farmUnitArea, farmUnitPurchaseAt } from '@/features/farm/_utils/farm-map-data';
+import { FARM_FEATURES, farmUnitArea, farmUnitPurchaseAt } from '@/features/farm/_utils/farm-layout';
 import { farmFishPose } from '@/features/farm/_utils/farm-pond-logic';
 
 describe('fish stay in water after pond expansion', () => {

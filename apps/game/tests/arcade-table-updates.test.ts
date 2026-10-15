@@ -1,5 +1,5 @@
+import { turnSeconds, unseenTableSteps } from '@chibi-town/arcade-games-react/table-updates';
 import { expect, it } from 'vitest';
-import { turnSeconds, unseenTableSteps } from '../../../packages/arcade-games-react/src/_utils/table-updates';
 
 it('corrects the countdown for browser clocks ahead of or behind the server, and clamps expired turns', () => {
   for (const receivedAt of [10_000, 9_000_000_000_000]) {

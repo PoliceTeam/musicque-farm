@@ -15,6 +15,7 @@ import type { ArcadeGameProps } from '../_utils/arcade-game-props.js';
 import { roomNumber } from '../_utils/room-number.js';
 import { unseenTableSteps } from '../_utils/table-updates.js';
 import { useArcadeLive } from '../_utils/use-arcade-live.js';
+import { useTableSession } from '../_utils/use-table-session.js';
 import { useArcadeHost } from '../host.js';
 import { ArcadeAvatar } from './arcade-avatar.js';
 import { ArcadeDirectory } from './arcade-directory.js';
@@ -79,11 +80,11 @@ export function MiniGame({
     [promotionTarget, setPromotionTarget] = useState<number>();
   const confirmed = useRef<MiniSnapshot | undefined>(undefined),
     command = useRef<MiniCommand | undefined>(undefined),
-    startRequest = useRef<MiniStart | undefined>(undefined),
-    alive = useRef(false),
-    locked = useRef(false);
-  const timers = useRef(new Map<ReturnType<typeof setTimeout>, () => void>());
+    startRequest = useRef<MiniStart | undefined>(undefined);
   const chance = gameId === 'bau-cua' || gameId === 'slots';
+
+  const session = useTableSession();
+  const { alive, locked, stale, loading } = session;
 
   async function replaySteps(steps: MiniSnapshot[], remote = false) {
     if (remote && chance && steps.at(-1)?.roll) {
@@ -99,8 +100,6 @@ export function MiniGame({
       if (!chance && (remote || (step.turn === 1 && step.status === 'playing'))) await pause();
     }
   }
-
-  const loading = useRef(false);
 
   async function load() {
     if (loading.current) {
@@ -146,8 +145,7 @@ export function MiniGame({
       if (alive.current) setError(t('arcadeLoadFailed'));
     } finally {
       loading.current = false;
-      if (stale.current && alive.current && !locked.current) {
-        stale.current = false;
+      if (session.consumeStale()) {
         void load();
       }
     }
@@ -155,35 +153,18 @@ export function MiniGame({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Module game ID and SDK are fixed for this mount; retries call load explicitly.
   useEffect(() => {
-    alive.current = true;
+    session.activate();
     void load();
     return () => {
-      alive.current = false;
-      for (const [timer, resolve] of timers.current) {
-        clearTimeout(timer);
-        resolve();
-      }
-      timers.current.clear();
+      session.dispose();
     };
   }, []);
-  const stale = useRef(false);
   useArcadeLive(gameId, () => {
     if (locked.current) stale.current = true;
     else void load().then(refreshWallet);
   });
 
-  async function pause() {
-    await new Promise<void>((resolve) => {
-      const timer = setTimeout(
-        () => {
-          timers.current.delete(timer);
-          resolve();
-        },
-        chance ? 2200 : 350,
-      );
-      timers.current.set(timer, resolve);
-    });
-  }
+  const pause = (ms = chance ? 2200 : 350) => session.pause(ms);
 
   async function join(room: number, table: number) {
     if (locked.current) return;
@@ -209,8 +190,7 @@ export function MiniGame({
     } finally {
       locked.current = false;
       if (alive.current) setBusy(false);
-      if (stale.current && alive.current) {
-        stale.current = false;
+      if (session.consumeStale()) {
         void load();
       }
     }
@@ -270,8 +250,7 @@ export function MiniGame({
     } finally {
       locked.current = false;
       if (alive.current) setBusy(false);
-      if (stale.current && alive.current) {
-        stale.current = false;
+      if (session.consumeStale()) {
         void load();
       }
     }

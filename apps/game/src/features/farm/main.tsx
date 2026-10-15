@@ -1,4 +1,4 @@
-import { farmCss } from '@/assets/generated-styles';
+import { farmCss, inventoryCss } from '@/assets/generated-styles';
 
 export { FarmScreen as Screen } from '@/features/farm/farm-screen';
-export const styles = farmCss;
+export const styles = inventoryCss + farmCss;

@@ -6,7 +6,7 @@ export function InventoryGrid({
   selected,
   onSelect,
   slots = 12,
-  id = 'warehouse-grid',
+  id = 'ui-inventory-grid',
 }: {
   items: InventoryItem[];
   selected?: string;

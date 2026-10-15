@@ -25,13 +25,11 @@ apps/game/src/
 ├── devtools/town/
 │   ├── screen.tsx                   # screen sandbox trong Next
 │   ├── main.ts                      # ghép town runtime với SDK
-│   ├── _utils/                      # town state, map và simulation
-│   ├── runtime/town-game.ts          # nối state, view và input
-│   └── rendering/                   # town draw-op và effects
+│   └── runtime/town-game.ts          # nối shared state, view và input
 ├── game/
 │   ├── runtime/game-config.ts       # tick, speed và preview config
-│   ├── movement/                    # movement và pet-follow logic
-│   └── rendering/                   # providers, portrait và texture/cache helpers
+│   ├── movement/                    # town-logic/map, movement và pet-follow logic
+│   └── rendering/                   # town-view/effects, providers, portrait và texture/cache helpers
 └── assets/
     ├── asset-catalog.ts
     ├── sprite-parser.ts
@@ -79,7 +77,7 @@ Town runtime dùng `createTownGame()`; Phaser Input quản lý WASD/mũi tên v�
 Alias nội bộ app: `@/` → `apps/game/src/`. TypeScript `paths` và Vite `resolve.alias` cùng trỏ về thư mục này; Vitest dùng chung config Vite. Import module/asset/CSS trong source và test dùng alias; fixture riêng của test giữ đường dẫn tương đối. Không tạo nhiều alias cho từng domain.
 
 ```ts
-import {createTownState, updateTown} from '@/devtools/town/_utils/town-logic';
+import {createTownState, updateTown} from '@/game/movement/town-logic';
 import {defaultOutfit} from '@chibi-town/character-core/outfit-logic';
 
 const state = createTownState({...defaultOutfit});
@@ -127,3 +125,9 @@ Town characters and pets render at 0.75× around their ground anchors, independe
 Khi chọn vùng Farm trên bản đồ, app tải trước module farm, provider Phaser và artwork cảnh. `farm-scene-assets.ts` giữ một promise tải ảnh và canvas nguồn trong phiên trình duyệt; tải lỗi được bỏ cache để thử lại. Loader artwork ổn định giúp frame động vật/ao bất biến được dùng lại qua các lần vào farm. Progress, vị trí, animation state và renderer vẫn thuộc từng scene; không cache dữ liệu tài khoản hay snapshot gameplay.
 
 Farm tải player và snapshot song song, đồng thời chuẩn bị scenery và provider song song. Shell giữ màn trước đến khi module màn kế tiếp sẵn sàng để tránh khoảng trống trong lúc nạp code. Renderer cũ được hủy khi màn mới mount; renderer farm vẫn được tạo mới mỗi lần vào và đọc snapshot hiện tại.
+
+### Location và world map (Phase 5)
+
+Location dùng cùng phân chia logic/runtime/view như farm: input state và hit-test thuần ở feature `_utils`, đăng ký room/input và hủy tài nguyên ở runtime, sắp depth/drawing ở rendering. Draw entries và buffer movement/camera được tái dùng; layout avatar cache theo pose, mirror, blink và frame trang bị. Locale đọc qua callback nên không đổi vòng đời scene/room. World map tải Phaser bất đồng bộ qua renderer-providers và hủy renderer nếu import hoàn tất sau unmount.
+
+Town logic/map dùng chung đã chuyển sang `game/movement`, town view/effects sang `game/rendering`; devtools town chỉ ghép sandbox. Art/sprite/source data giữ nguyên.

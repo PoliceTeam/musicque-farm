@@ -1,4 +1,5 @@
 import { validSavedArcadeSeat } from '@chibi-town/game-content/arcade-catalog';
+import { isRandomSeed, normalizeSeed, type RandomSeed, random } from './random.js';
 import { type ArcadeSession, validArcadeSession } from './session.js';
 import type { TableSnapshot } from './table-snapshot.js';
 /** Southern-style free practice. Card IDs: ranks 3..A,2; suits spades, clubs, diamonds, hearts. */
@@ -14,7 +15,7 @@ export type TienMatch = {
   roomId: number;
   tableId?: number;
   session?: ArcadeSession;
-  seed: number;
+  seed: RandomSeed;
   revision: number;
   status: 'waiting' | 'playing' | 'finished';
   hands: Card[][];
@@ -28,6 +29,8 @@ export type TienMatch = {
   passed: number[];
   winner?: number;
   placements?: number[];
+  /** Eliminated seats keep their hidden cards for conservation, but can never place or act. */
+  forfeited?: number[];
 };
 export type TienSnapshot = Omit<TienMatch, 'hands' | 'seed' | 'undealt'> & {
   hand: Card[];
@@ -101,12 +104,12 @@ export function legalTienPlays(hand: readonly Card[], pile?: TienCombo, opening 
   return moves.sort((a, b) => a.cards.length - b.cards.length || a.high - b.high);
 }
 
-export function createTienMatch(id: string, roomId: number, seed: number, tableId = 0): TienMatch {
+export function createTienMatch(id: string, roomId: number, seed: RandomSeed, tableId = 0): TienMatch {
   return {
     id,
     roomId,
     tableId,
-    seed: seed >>> 0,
+    seed: normalizeSeed(seed),
     revision: 0,
     status: 'waiting',
     hands: [[], [], [], []],
@@ -118,13 +121,14 @@ export function createTienMatch(id: string, roomId: number, seed: number, tableI
 }
 
 export function tienSnapshot(match: TienMatch): TienSnapshot {
-  const { hands, seed: _seed, undealt, ...rest } = match;
+  const { hands, seed: _seed, undealt, forfeited, ...rest } = match;
   return {
     ...rest,
     session: rest.session ? { ...rest.session } : undefined,
     played: [...rest.played],
     passed: [...rest.passed],
     placements: rest.placements ? [...rest.placements] : undefined,
+    ...(forfeited ? { forfeited: [...forfeited] } : {}),
     pile: rest.pile ? { ...rest.pile, cards: [...rest.pile.cards] } : undefined,
     hand: [...hands[0]],
     counts: hands.map((h) => h.length),
@@ -135,8 +139,7 @@ export function tienSnapshot(match: TienMatch): TienSnapshot {
 function deal(match: TienMatch) {
   const deck = Array.from({ length: 52 }, (_, i) => i);
   for (let i = 51; i > 0; i--) {
-    match.seed = (Math.imul(match.seed, 1664525) + 1013904223) >>> 0;
-    const j = Math.floor((match.seed / 4294967296) * (i + 1));
+    const j = Math.floor(random(match) * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
   }
   const count = match.session?.playerCount ?? 4;
@@ -149,8 +152,48 @@ function deal(match: TienMatch) {
   match.status = 'playing';
 }
 
+function canAct(match: TienMatch, seat: number) {
+  return match.hands[seat].length > 0 && !match.forfeited?.includes(seat) && !match.placements?.includes(seat);
+}
+
+/** Infer a rank only when there is exactly one contender left. No seat-index tie breaking. */
+function finishPlacements(match: TienMatch) {
+  match.placements ??= [];
+  const placements = match.placements;
+  if (placements.length < 2) {
+    const contenders = match.hands.map((_, seat) => seat).filter((seat) => canAct(match, seat));
+    if (contenders.length === 1) placements.push(contenders[0]);
+  }
+  match.winner = placements[0];
+  if (
+    placements.length >= 2 ||
+    (placements.length === 1 && match.forfeited?.length === (match.session?.playerCount ?? 4) - 1)
+  )
+    match.status = 'finished';
+}
+
+function advanceTurn(match: TienMatch, actor: number) {
+  let next: number | undefined;
+  for (let offset = 1; offset <= 4; offset++) {
+    const candidate = (actor + offset) % 4;
+    if (canAct(match, candidate) && !match.passed.includes(candidate)) {
+      next = candidate;
+      break;
+    }
+  }
+  if (next === undefined || next === match.lastPlayer) {
+    const leader = match.lastPlayer ?? actor;
+    match.turn = canAct(match, leader)
+      ? leader
+      : [1, 2, 3, 4].map((offset) => (leader + offset) % 4).find((seat) => canAct(match, seat))!;
+    match.pile = undefined;
+    match.passed = [];
+    match.lastPlayer = undefined;
+  } else match.turn = next;
+}
+
 function act(match: TienMatch, actor: number, action: TienAction, steps: TienResult['steps']) {
-  if (match.status !== 'playing' || actor !== match.turn) throw new Error('INVALID_TURN');
+  if (match.status !== 'playing' || actor !== match.turn || !canAct(match, actor)) throw new Error('INVALID_TURN');
   let cards: Card[] = [];
   if (action.type === 'play') {
     const combo = tienCombo(action.cards);
@@ -172,33 +215,14 @@ function act(match: TienMatch, actor: number, action: TienAction, steps: TienRes
       if (match.session?.payoutRule) {
         match.placements ??= [];
         match.placements.push(actor);
-        if (match.session.playerCount === 2) match.placements.push(actor === 0 ? 1 : 0);
-        if (match.placements.length === 2) match.status = 'finished';
+        finishPlacements(match);
       } else match.status = 'finished';
     }
   } else if (action.type === 'pass') {
     if (!match.pile) throw new Error('CANNOT_PASS');
     match.passed.push(actor);
   } else throw new Error('INVALID_PLAY');
-  if (match.status === 'playing') {
-    let next: number | undefined;
-    for (let offset = 1; offset <= 4; offset++) {
-      const candidate = (actor + offset) % 4;
-      if (match.hands[candidate].length && !match.passed.includes(candidate)) {
-        next = candidate;
-        break;
-      }
-    }
-    if (next === undefined || next === match.lastPlayer) {
-      const leader = match.lastPlayer ?? actor;
-      match.turn = match.hands[leader].length
-        ? leader
-        : [1, 2, 3].map((offset) => (leader + offset) % 4).find((seat) => match.hands[seat].length)!;
-      match.pile = undefined;
-      match.passed = [];
-      match.lastPlayer = undefined;
-    } else match.turn = next;
-  }
+  if (match.status === 'playing') advanceTurn(match, actor);
   steps.push({ actor, action: action.type, cards, match: tienSnapshot(match) });
 }
 
@@ -211,8 +235,28 @@ function cloneTien(source: TienMatch): TienMatch {
     played: [...source.played],
     passed: [...source.passed],
     placements: source.placements ? [...source.placements] : undefined,
+    forfeited: source.forfeited ? [...source.forfeited] : undefined,
     pile: source.pile ? { ...source.pile, cards: [...source.pile.cards] } : undefined,
   };
+}
+
+/** Eliminate one unfinished seat without exposing or discarding its cards. */
+export function forfeitTienSeat(source: TienMatch, seat: number): TienMatch {
+  const count = source.session?.playerCount ?? 4;
+  if (source.status !== 'playing' || !Number.isInteger(seat) || seat < 0 || seat >= count || !canAct(source, seat))
+    throw new Error('INVALID_TURN');
+  const state = cloneTien(source);
+  state.forfeited = [...(state.forfeited ?? []), seat];
+  state.passed = state.passed.filter((entry) => entry !== seat);
+  finishPlacements(state);
+  if (state.status === 'playing' && state.turn === seat) {
+    if (state.opening) {
+      state.openingCard = Math.min(...state.hands.flatMap((hand, index) => (canAct(state, index) ? hand : [])));
+      state.turn = state.hands.findIndex((hand, index) => canAct(state, index) && hand.includes(state.openingCard!));
+    } else advanceTurn(state, seat);
+  }
+  state.revision++;
+  return state;
 }
 
 /**
@@ -235,6 +279,7 @@ export function tienSeatSnapshot(match: TienMatch, viewer: number): TienSnapshot
     passed: snapshot.passed.map(seat),
     winner: snapshot.winner === undefined ? undefined : seat(snapshot.winner),
     placements: snapshot.placements?.map(seat),
+    ...(snapshot.forfeited ? { forfeited: snapshot.forfeited.map(seat) } : {}),
     session: snapshot.session && {
       ...snapshot.session,
       coinDeltas: snapshot.session.coinDeltas && turned(snapshot.session.coinDeltas, 0),
@@ -270,7 +315,10 @@ export function playTienAction(source: TienMatch, action: TienAction): { state: 
     act(state, 0, action, steps);
   }
   let turns = 0;
-  while (state.status === 'playing' && (state.turn !== 0 || state.placements?.includes(0))) {
+  while (
+    state.status === 'playing' &&
+    (state.turn !== 0 || state.placements?.includes(0) || state.forfeited?.includes(0))
+  ) {
     if (++turns > 200) throw new Error('INVALID_TURN');
     const actor = state.turn,
       moves = legalTienPlays(state.hands[actor], state.pile, state.opening, state.openingCard ?? 0);
@@ -278,10 +326,11 @@ export function playTienAction(source: TienMatch, action: TienAction): { state: 
     const difficulty = state.session?.difficulty ?? 'medium';
     let move: TienCombo | undefined;
     if (difficulty === 'easy') {
-      state.seed = (Math.imul(state.seed, 1664525) + 1013904223) >>> 0;
-      move = moves[Math.floor((state.seed / 4294967296) * moves.length)];
+      move = moves[Math.floor(random(state) * moves.length)];
     } else if (difficulty === 'hard') {
-      const threatened = state.hands.some((hand, seat) => seat !== actor && hand.length > 0 && hand.length <= 3);
+      const threatened = state.hands.some(
+        (hand, seat) => seat !== actor && !state.forfeited?.includes(seat) && hand.length > 0 && hand.length <= 3,
+      );
 
       const value = (candidate: TienCombo) => {
         const remaining = state.hands[actor].filter((card) => !candidate.cards.includes(card));
@@ -339,7 +388,21 @@ export function isTienSnapshot(value: unknown): value is TienSnapshot {
     (m.lastPlayer === undefined || seat(m.lastPlayer)) &&
     (m.pile === undefined ||
       (!!m.pile && !!tienCombo(m.pile.cards) && JSON.stringify(tienCombo(m.pile.cards)) === JSON.stringify(m.pile))) &&
-    (m.winner === undefined || seat(m.winner)) &&
+    (m.forfeited === undefined ||
+      (Array.isArray(m.forfeited) &&
+        new Set(m.forfeited).size === m.forfeited.length &&
+        m.forfeited.length < (m.session?.playerCount ?? 4) &&
+        m.forfeited.every(
+          (s) =>
+            seat(s) && s < (m.session?.playerCount ?? 4) && !(Array.isArray(m.placements) && m.placements.includes(s)),
+        ) &&
+        (m.status !== 'waiting' || m.forfeited.length === 0) &&
+        (m.status !== 'playing' ||
+          (m.counts[m.turn] > 0 &&
+            !(Array.isArray(m.placements) && m.placements.includes(m.turn)) &&
+            !m.forfeited.includes(m.turn) &&
+            !m.passed.some((s) => m.forfeited!.includes(s)))))) &&
+    (m.winner === undefined || (seat(m.winner) && !m.forfeited?.includes(m.winner))) &&
     (m.placements === undefined ||
       (Array.isArray(m.placements) &&
         m.placements.length <= 2 &&
@@ -348,16 +411,27 @@ export function isTienSnapshot(value: unknown): value is TienSnapshot {
           (s, rank) =>
             seat(s) &&
             s < (m.session?.playerCount ?? 4) &&
-            (m.counts[s] === 0 || (m.session?.playerCount === 2 && rank === 1)),
+            (m.counts[s] === 0 ||
+              (m.status === 'finished' &&
+                rank === m.placements!.length - 1 &&
+                (m.session?.playerCount === 2 || !!m.forfeited?.length) &&
+                m.counts.every((count, index) => !count || m.forfeited?.includes(index) || index === s))),
         ) &&
         (m.placements.length === 0 || m.winner === m.placements[0]) &&
-        (m.status !== 'finished' || m.placements.length === 2))) &&
-    (!m.session?.payoutRule || m.status !== 'finished' || m.placements?.length === 2) &&
+        (m.status !== 'finished' ||
+          m.placements.length === 2 ||
+          (m.placements.length === 1 && m.forfeited?.length === (m.session?.playerCount ?? 4) - 1)))) &&
+    (!m.session?.payoutRule ||
+      m.status !== 'finished' ||
+      m.placements?.length === 2 ||
+      (m.placements?.length === 1 && m.forfeited?.length === (m.session?.playerCount ?? 4) - 1)) &&
     (m.status === 'waiting' || (m.undealtCount ?? 0) === 13 * (4 - (m.session?.playerCount ?? 4))) &&
     (m.status === 'waiting'
       ? m.played.length === 0 && m.counts.every((c) => c === 0)
       : m.counts.reduce((a, b) => a + b, 0) + m.played.length + (m.undealtCount ?? 0) === 52) &&
-    (m.status !== 'finished' || (m.winner !== undefined && m.counts[m.winner] === 0))
+    (m.status !== 'finished' ||
+      (m.winner !== undefined &&
+        (m.counts[m.winner] === 0 || m.forfeited?.length === (m.session?.playerCount ?? 4) - 1)))
   );
 }
 
@@ -370,9 +444,7 @@ export function isTienMatch(value: unknown): value is TienMatch {
     !m.hands.every((h) => Array.isArray(h) && h.every((c) => Number.isSafeInteger(c) && c >= 0 && c < 52)) ||
     !Array.isArray(m.played) ||
     !Array.isArray(m.passed) ||
-    !Number.isSafeInteger(m.seed) ||
-    m.seed < 0 ||
-    m.seed > 4294967295
+    !isRandomSeed(m.seed)
   )
     return false;
   if (

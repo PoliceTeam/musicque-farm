@@ -1,45 +1,27 @@
-import { createMemorySharedState, type SharedState } from '@/infrastructure/realtime/shared-state';
+import { MAPS } from '@chibi-town/game-content';
+import type { RealtimeService } from '@chibi-town/realtime-core';
 
-type Member = { mapId: string; channelId: number; seenAt: number };
+const topic = (mapId: string, channelId: number) => `map:${mapId}:${channelId}`;
 
-export function createChannelPresence(ttlMs = 5 * 60_000, shared: SharedState = createMemorySharedState()) {
-  const key = (playerId: string) => `presence:${playerId}`;
-
+export function createChannelPresence(presence: RealtimeService['presence']) {
   return {
-    claim(playerId: string, mapId: string, channelId: number, capacity: number, now: number) {
-      return shared.claimPresence(playerId, mapId, channelId, capacity, now, ttlMs);
-    },
+    claim: (playerId: string, mapId: string, channelId: number, capacity: number, now: number) =>
+      presence.claim(playerId, topic(mapId, channelId), capacity, now),
 
-    async touch(playerId: string, now: number) {
-      await shared.exclusive('presence', async () => {
-        const member = await shared.get<Member>(key(playerId));
-        if (member) await shared.set(key(playerId), { ...member, seenAt: now }, ttlMs);
-      });
-    },
-
-    async enter(playerId: string, mapId: string, channelId: number, now: number) {
-      await shared.exclusive('presence', () => shared.set(key(playerId), { mapId, channelId, seenAt: now }, ttlMs));
-    },
-
-    async leave(playerId: string) {
-      await shared.exclusive('presence', () => shared.delete(key(playerId)));
-    },
+    touch: presence.touch,
+    leave: presence.leave,
 
     async population(playerId: string, now: number) {
-      const members = await shared.entries<Member>('presence:');
-      return (mapId: string, channelId: number) =>
-        members.filter(
-          ([id, m]) =>
-            id !== key(playerId) && now - m.seenAt <= ttlMs && m.mapId === mapId && m.channelId === channelId,
-        ).length;
-    },
-
-    async others(playerId: string, mapId: string, channelId: number, now: number) {
-      return (await this.population(playerId, now))(mapId, channelId);
-    },
-
-    exclusive<T>(_mapId: string, task: () => Promise<T>): Promise<T> {
-      return shared.exclusive('channel-join', task);
+      const counts = new Map<string, number>();
+      await Promise.all(
+        MAPS.flatMap((map) =>
+          Array.from({ length: map.channels?.count ?? 0 }, async (_, id) => {
+            const name = topic(map.id, id);
+            counts.set(name, await presence.count(name, playerId, now));
+          }),
+        ),
+      );
+      return (mapId: string, channelId: number) => counts.get(topic(mapId, channelId)) ?? 0;
     },
   };
 }

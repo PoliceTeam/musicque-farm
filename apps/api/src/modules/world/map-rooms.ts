@@ -1,105 +1,99 @@
-import { randomUUID } from 'node:crypto';
 import type { MapPlayer } from '@chibi-town/contracts/realtime';
-import type { RealtimeClient, RealtimeHub } from '@/infrastructure/realtime/realtime-hub';
-import { createMemorySharedState, type SharedState } from '@/infrastructure/realtime/shared-state';
+import type { Connection, RealtimeService } from '@chibi-town/realtime-core';
+import { CONNECTION_POLICY } from '@chibi-town/realtime-core/connection-policy';
+import { createMoveBatches } from '@/modules/world/_utils/move-batches';
+import { acceptMovement, type MovementState, startMovement } from '@/modules/world/movement-policy';
 
-type Entry = { owner: string; player: MapPlayer; size: readonly [number, number] };
-export const MAP_LEASE_MS = 45_000;
+type Entry = { player: MapPlayer; size: readonly [number, number]; movement: MovementState };
+export const MAP_LEASE_MS = CONNECTION_POLICY.leaseMs;
 
-/** Shared leases with per-connection ownership: closing an old tab cannot remove a new tab's player. */
-export function createMapRooms(hub: RealtimeHub, shared: SharedState = createMemorySharedState()) {
-  const current = new Map<RealtimeClient, { topic: string; owner: string }>();
+/** World owns coordinates and movement; core only sees an opaque room value and connection owner. */
+export function createMapRooms(
+  realtime: RealtimeService,
+  clock: () => number = Date.now,
+  onError: (error: unknown) => void = console.error,
+) {
+  const current = new Map<string, { topic: string; entry: Entry; mapId: string; channelId: number }>();
 
-  const key = (topic: string, id: string) => `room:${topic}:${id}`;
-
-  type Ownership = { key: string; topic: string; owner: string };
-
-  const ownerKey = (id: string) => `room-owner:${id}`;
+  const batches = createMoveBatches(realtime, onError);
 
   const rooms = {
-    async leave(client: RealtimeClient) {
-      const mine = current.get(client);
-      if (!mine) return;
-      current.delete(client);
-      hub.unsubscribe(client, mine.topic);
-      await shared.exclusive('map-rooms', async () => {
-        const entry = await shared.get<Entry>(key(mine.topic, client.playerId));
-        if (entry?.owner !== mine.owner) return;
-        await shared.delete(key(mine.topic, client.playerId));
-        const owner = await shared.get<Ownership>(ownerKey(client.playerId));
-        if (owner?.owner === mine.owner) await shared.delete(ownerKey(client.playerId));
-        hub.publish(mine.topic, { type: 'map.leave', id: client.playerId });
-      });
+    close: batches.close,
+
+    async leave(client: Connection) {
+      const mine = current.get(client.id);
+      current.delete(client.id);
+      batches.discard(client.identity.playerId, client.id);
+      if (mine) await realtime.unsubscribe(client, mine.topic);
+      const topic = await realtime.rooms.leave(client);
+      if (topic) await realtime.publish(topic, { type: 'map.leave', id: client.identity.playerId });
     },
 
     async enter(
-      client: RealtimeClient,
+      client: Connection,
       mapId: string,
       channelId: number,
       size: readonly [number, number],
       player: MapPlayer,
+      capacity = Number.MAX_SAFE_INTEGER,
     ) {
-      await rooms.leave(client);
-      await shared.exclusive('map-rooms', async () => {
-        const topic = `map:${mapId}:${channelId}`,
-          owner = randomUUID();
-        const previous = await shared.get<Ownership>(ownerKey(player.id));
-        if (previous) {
-          await shared.delete(previous.key);
-          if (previous.topic !== topic) hub.publish(previous.topic, { type: 'map.leave', id: player.id });
-        }
-        const entries = await shared.entries<Entry>(`room:${topic}:`);
-        client.send({
-          type: 'map.state',
-          mapId,
-          channelId,
-          players: entries.map(([, entry]) => entry.player).filter((entry) => entry.id !== player.id),
-        });
-        await shared.set(key(topic, player.id), { owner, player, size }, MAP_LEASE_MS);
-        await shared.set(ownerKey(player.id), { key: key(topic, player.id), topic, owner }, MAP_LEASE_MS);
-        current.set(client, { topic, owner });
-        hub.publish(topic, { type: 'map.join', player });
-        hub.subscribe(client, topic);
+      const topic = `map:${mapId}:${channelId}`;
+      const mine = current.get(client.id);
+      const movement =
+        mine?.topic === topic
+          ? acceptMovement(mine.entry.movement, player.x, player.y, clock())
+          : startMovement(player.x, player.y, clock());
+      if (!movement) return true;
+      const entry = { player, size, movement };
+      const result = await realtime.rooms.enter(client, topic, entry, capacity);
+      if (!result) return false;
+      batches.discard(player.id);
+      if (mine) await realtime.unsubscribe(client, mine.topic);
+      if (result.previous && result.previous.topic !== topic)
+        await realtime.publish(result.previous.topic, { type: 'map.leave', id: player.id });
+      realtime.send(client, {
+        type: 'map.state',
+        mapId,
+        channelId,
+        players: Object.values(result.members)
+          .filter((member) => member.player && member.player.player.id !== player.id)
+          .map((member) => member.player.player),
       });
+      current.set(client.id, { topic, entry, mapId, channelId });
+      await realtime.publish(topic, { type: 'map.join', player });
+      await realtime.subscribe(client, topic);
+      return true;
     },
 
-    async move(client: RealtimeClient, x: number, y: number) {
-      const mine = current.get(client);
-      if (!mine) return;
-      await shared.exclusive('map-rooms', async () => {
-        const entry = await shared.get<Entry>(key(mine.topic, client.playerId));
-        if (entry?.owner !== mine.owner || x > entry.size[0] || y > entry.size[1]) return;
-        entry.player = { ...entry.player, x, y };
-        await shared.set(key(mine.topic, client.playerId), entry, MAP_LEASE_MS);
-        await shared.set(ownerKey(client.playerId), { key: key(mine.topic, client.playerId), ...mine }, MAP_LEASE_MS);
-        hub.publish(mine.topic, { type: 'map.move', id: client.playerId, x, y }, client);
-      });
+    async move(client: Connection, x: number, y: number) {
+      const mine = current.get(client.id);
+      if (!mine || x > mine.entry.size[0] || y > mine.entry.size[1]) return;
+      const movement = acceptMovement(mine.entry.movement, x, y, clock());
+      if (!movement) return;
+      const entry = { ...mine.entry, movement, player: { ...mine.entry.player, x, y } };
+      if (!(await realtime.rooms.update(client, entry))) return;
+      mine.entry = entry;
+      batches.add(mine.topic, { id: client.identity.playerId, x, y, owner: client.id });
     },
 
-    async touch(client: RealtimeClient) {
-      const mine = current.get(client);
+    async touch(client: Connection) {
+      const mine = current.get(client.id);
       if (!mine) return;
-      await shared.exclusive('map-rooms', async () => {
-        const entry = await shared.get<Entry>(key(mine.topic, client.playerId));
-        if (entry?.owner !== mine.owner) {
-          current.delete(client);
-          hub.unsubscribe(client, mine.topic);
-          return;
-        }
-        await shared.set(key(mine.topic, client.playerId), entry, MAP_LEASE_MS);
-        await shared.set(ownerKey(client.playerId), { key: key(mine.topic, client.playerId), ...mine }, MAP_LEASE_MS);
-        const [, mapId, channel] = mine.topic.split(':');
-        const entries = await shared.entries<Entry>(`room:${mine.topic}:`);
-        client.send({
-          type: 'map.state',
-          mapId,
-          channelId: Number(channel),
-          players: entries.map(([, value]) => value.player).filter((player) => player.id !== client.playerId),
-        });
+      const members = await realtime.rooms.members<Entry>(mine.topic);
+      if (members[client.identity.playerId]?.owner !== client.id) {
+        current.delete(client.id);
+        await realtime.unsubscribe(client, mine.topic);
+        return;
+      }
+      realtime.send(client, {
+        type: 'map.state',
+        mapId: mine.mapId,
+        channelId: mine.channelId,
+        players: Object.values(members)
+          .filter((member) => member.player && member.player.player.id !== client.identity.playerId)
+          .map((member) => member.player.player),
       });
     },
   };
   return rooms;
 }
-
-export type MapRooms = ReturnType<typeof createMapRooms>;

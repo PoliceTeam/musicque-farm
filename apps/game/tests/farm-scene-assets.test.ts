@@ -19,7 +19,7 @@ it('shares concurrent loads and keeps decoded artwork for later farm visits', as
     },
   );
   vi.stubGlobal('document', { createElement: () => ({ getContext: () => ({ drawImage }) }) });
-  const { farmSceneAssetLoader, loadFarmSceneAssets } = await import('@/features/farm/_utils/farm-scene-assets');
+  const { farmSceneAssetLoader, loadFarmSceneAssets } = await import('@/features/farm/rendering/farm-scene-assets');
   const first = loadFarmSceneAssets();
   expect(loadFarmSceneAssets()).toBe(first);
   const images = await first;
@@ -41,7 +41,7 @@ it('retries artwork after a failed decode instead of keeping a rejected cache en
     },
   );
   vi.stubGlobal('document', { createElement: () => ({ getContext: () => ({ drawImage() {} }) }) });
-  const { loadFarmSceneAssets } = await import('@/features/farm/_utils/farm-scene-assets');
+  const { loadFarmSceneAssets } = await import('@/features/farm/rendering/farm-scene-assets');
   await expect(loadFarmSceneAssets()).rejects.toThrow('offline');
   expect((await loadFarmSceneAssets()).size).toBe(2);
   expect(decode).toHaveBeenCalledTimes(4);

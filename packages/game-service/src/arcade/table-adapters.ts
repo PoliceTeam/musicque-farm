@@ -70,7 +70,13 @@ export const tienTable: TableGame<TienMatch> = {
   deltas: (match, stake, players) =>
     match.placements && match.placements.length >= 2
       ? topTwoPayout(stake, match.placements[0], match.placements[1], players)
-      : [0, 0, 0, 0],
+      : match.status === 'finished' && match.placements?.length === 1 && match.forfeited?.length === players - 1
+        ? players === 2
+          ? topTwoPayout(stake, match.winner!, 1 - match.winner!, players)
+          : Array.from({ length: 4 }, (_, seat) =>
+              seat >= players ? 0 : seat === match.winner ? stake * (players - 1) : -stake,
+            )
+        : [0, 0, 0, 0],
 
   winner: (match) => match.winner,
 
@@ -208,6 +214,7 @@ export const gemTable: TableGame<GemBattle> = {
 
   recordWin(document) {
     document.arcade ??= { bestScore: 0, starts: {}, requests: {} };
+    document.arcade.wins = (document.arcade.wins ?? 0) + 1;
   },
 };
 

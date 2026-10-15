@@ -12,3 +12,11 @@ export async function createPreviewProviders(name: string) {
   } else throw new Error(`unknown preview renderer: ${name}`);
   return registry;
 }
+
+/** World overview uses the same composition boundary and never imports Phaser during SSR. */
+export async function createWorldMapRenderer(
+  options: import('@chibi-town/renderer-phaser/world-map-view').WorldMapViewOptions,
+) {
+  const { createWorldMapView } = await import('@chibi-town/renderer-phaser/world-map-view');
+  return createWorldMapView(options);
+}

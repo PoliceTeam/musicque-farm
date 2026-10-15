@@ -2,8 +2,6 @@ import { Action } from '@chibi-town/character-core/animation-logic';
 import { items } from '@chibi-town/character-core/item-catalog';
 import { defaultOutfit, gokuOutfit, normalizeOutfitLevels } from '@chibi-town/character-core/outfit-logic';
 import { describe, expect, it } from 'vitest';
-import { createTownState, moveTownTo, setTownOutfit, updateTown } from '@/devtools/town/_utils/town-logic';
-import { WALK_AREA } from '@/devtools/town/_utils/town-map';
 import {
   createCharacterLabState,
   equippedHat,
@@ -12,6 +10,8 @@ import {
   tickCharacterLab,
   updateCharacterLab,
 } from '@/features/character/_utils/character-lab-logic';
+import { createTownState, moveTownTo, setTownOutfit, updateTown } from '@/game/movement/town-logic';
+import { WALK_AREA } from '@/game/movement/town-map';
 
 // These run in Node: state and equipment must work without a browser or Phaser.
 describe('state across the new module boundaries', () => {

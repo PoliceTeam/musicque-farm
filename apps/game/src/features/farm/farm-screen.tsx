@@ -1,7 +1,7 @@
+import type { GameSdk } from '@chibi-town/api-sdk';
 import type { createGameAudio } from '@chibi-town/game-audio';
 import type { MapDefinition } from '@chibi-town/game-content';
-import type { FarmSpecies } from '@chibi-town/game-content/farm-animal-logic';
-import { CROP_IDS, type CropId, FARM_CROPS } from '@chibi-town/game-content/farm-catalog';
+import { type CropId, FARM_CROPS } from '@chibi-town/game-content/farm-catalog';
 import {
   createFarmProgress,
   cropStage,
@@ -12,108 +12,50 @@ import {
 } from '@chibi-town/gameplay';
 import { Button } from '@chibi-town/ui/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
 import { LocationLayout } from '@/application/_components/location-layout';
-import { createReviewSdk, getApiSdk, getDevelopmentTimeScale } from '@/application/api-sdk';
+import { getApiSdk, getDevelopmentTimeScale } from '@/application/api-sdk';
 import { createGameUi } from '@/application/game-ui-handler';
 import { FarmBatchDialog } from '@/features/farm/_components/farm-batch-dialog';
 import { FarmCropSelector } from '@/features/farm/_components/farm-crop-selector';
 import { FarmUnitPanel } from '@/features/farm/_components/farm-unit-panel';
 import { FarmUnitShopDialog } from '@/features/farm/_components/farm-unit-shop-dialog';
 import { KitchenDialog } from '@/features/farm/_components/kitchen-dialog';
-import {
-  FARM_EGG_BASKET_SPOTS,
-  FARM_PLOTS,
-  farmExpansionAt,
-  farmFeatureAt,
-  farmFeaturesFor,
-  farmPlotAt,
-  farmUnitPurchaseAt,
-} from '@/features/farm/_utils/farm-map-data';
+import { farmInputAt } from '@/features/farm/_utils/farm-input-logic';
+import { FARM_PLOTS } from '@/features/farm/_utils/farm-layout';
+import { useFarmTime } from '@/features/farm/_utils/use-farm-time';
 import { createFarmStore, type FarmCommand } from '@/features/farm/farm-store';
 import { createFarmGame } from '@/features/farm/runtime/farm-game';
 import { InventoryDialog } from '@/features/inventory/_components/inventory-dialog';
 
 type Audio = ReturnType<typeof createGameAudio>;
 type Selection = { plot: number } | { unit: FarmUnit };
-const SPECIES: Record<FarmUnit, FarmSpecies[]> = {
-  livestock: ['cow', 'pig', 'sheep'],
-  poultry: ['hen', 'duck'],
-  pond: ['fish'],
-};
 
-function reviewProgress(mode: string | null) {
-  const state = createFarmProgress();
-  if (mode === 'max' || mode === 'storage') {
-    state.owned = FARM_PLOTS.length;
-    state.capacity = { livestock: 20, poultry: 24, pond: 10 };
-    state.units = { livestock: 2, pond: 2 };
-    for (const unit of ['livestock', 'poultry', 'pond'] as const) {
-      const animals = Array.from({ length: state.capacity[unit] }, (_, index) => ({
-        species: SPECIES[unit][index % SPECIES[unit].length],
-        boughtAt: Date.now() - 259200000,
-        ageMs: 259200000,
-        productionMs: 43200000,
-      }));
-      if (unit === 'livestock') state.animals = animals;
-      else if (unit === 'poultry') state.poultry = animals;
-      else state.fish = animals;
-    }
-    state.inventory = { strawberry: 12, seed: 8, rice: 1440, egg: 20, tomato: 1000 };
-    state.gems = mode === 'storage' ? 1000 : 20;
-    if (mode === 'storage') state.coins = 1_000_000;
-    state.seeds = { tomato: 8, chili: 4 };
-    state.animalStartedAt = Date.now();
-    state.plots.forEach((plot) => {
-      plot.stage = 'ripe';
-    });
-  }
-  if (mode === 'crops') {
-    state.owned = 24;
-    state.chests.main = 3;
-    state.plots.slice(0, 24).forEach((plot, i) => {
-      plot.stage = 'ripe';
-      plot.cropId = CROP_IDS[i % CROP_IDS.length];
-    });
-    for (const id of CROP_IDS) state.inventory[id] = 10;
-  }
-  if (mode === 'timers') {
-    const now = Date.now();
-    state.coins = 200000;
-    state.animalStartedAt = now;
-    state.fedAt = { livestock: now, poultry: now, pond: now };
-    state.plots.slice(0, 6).forEach((plot, i) => {
-      plot.cropId = 'tomato';
-      plot.stage = 'growing';
-      plot.wateredAt = now - (i === 0 ? 14400000 - 5000 : i === 1 ? 14400000 : 7200000);
-    });
-    state.poultry = [
-      { species: 'hen', boughtAt: now - 86400000, careAt: now, ageMs: 86400000, productionMs: 21600000 - 5000 },
-      { species: 'hen', boughtAt: now, careAt: now, ageMs: 43200000, productionMs: 0 },
-      { species: 'duck', boughtAt: now, careAt: now, ageMs: 0, productionMs: 0 },
-    ];
-    state.animals = [{ species: 'cow', boughtAt: now, careAt: now, ageMs: 129600000, productionMs: 0 }];
-    state.fish = [{ species: 'fish', boughtAt: now, careAt: now, ageMs: 129600000, productionMs: 0 }];
-  }
-  return state;
-}
-
-export function FarmScreen({ audio, definition }: { audio: Audio; definition?: MapDefinition }) {
-  const { t } = useTranslation('farm');
+export function FarmScreen({
+  audio,
+  definition,
+  sdk,
+  review = false,
+}: {
+  audio: Audio;
+  definition?: MapDefinition;
+  sdk?: GameSdk;
+  review?: boolean;
+}) {
+  const { t, i18n } = useTranslation('farm');
   const { t: common } = useTranslation('common');
   const { t: inventory } = useTranslation('inventory');
   const LABELS = { livestock: t('livestock'), poultry: t('poultry'), pond: t('pond') };
   const navigation = useRouter();
-  const review = process.env.NODE_ENV === 'development' ? new URLSearchParams(location.search).get('review') : null;
   const model = useMemo(
     () =>
       createFarmStore(
-        review ? createReviewSdk(reviewProgress(review)) : getApiSdk(),
+        sdk ?? getApiSdk(),
         definition ? { regionId: definition.regionId, mapId: definition.id, instanceId: 'home' } : undefined,
       ),
-    [review, definition],
+    [sdk, definition],
   );
   const snapshot = useStore(model.store, (state) => state.snapshot);
   const player = useStore(model.store, (state) => state.player);
@@ -123,6 +65,8 @@ export function FarmScreen({ audio, definition }: { audio: Audio; definition?: M
   const [selection, setSelection] = useState<Selection>();
   const [shopUnit, setShopUnit] = useState<FarmUnit>('livestock');
   const [dialog, setDialog] = useState<'warehouse' | 'batch' | 'kitchen' | 'animals'>();
+  const now = useFarmTime(snapshot?.serverTime, !!selection || !!dialog, review ? 1 : getDevelopmentTimeScale());
+  const menu = useRef<HTMLDetailsElement>(null);
   const host = useRef<HTMLDivElement>(null);
   const obstacleLevels = useRef('');
   const game = useRef<Awaited<ReturnType<typeof createFarmGame>>>(undefined);
@@ -158,7 +102,7 @@ export function FarmScreen({ audio, definition }: { audio: Audio; definition?: M
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setSelection(undefined);
-        document.querySelector('.farm-menu')?.removeAttribute('open');
+        menu.current?.removeAttribute('open');
       }
     };
 
@@ -177,7 +121,7 @@ export function FarmScreen({ audio, definition }: { audio: Audio; definition?: M
     };
   }, [audio, model, t]);
   useEffect(() => {
-    if (dialog) document.querySelector<HTMLDetailsElement>('.farm-menu')?.removeAttribute('open');
+    if (dialog) menu.current?.removeAttribute('open');
   }, [dialog]);
   useEffect(() => {
     if (!snapshot) return;
@@ -197,55 +141,17 @@ export function FarmScreen({ audio, definition }: { audio: Audio; definition?: M
         host.current!,
         snapshot.outfit,
         (x, y) => {
-          const state = progress.current;
-          if (x >= 590 && x <= 690 && y >= 658) {
-            navigation.push('/');
-            return undefined;
-          }
-          const basket = FARM_EGG_BASKET_SPOTS.find(
-            (spot) =>
-              state.poultry.some((animal) => animal.species === spot.species) &&
-              Math.abs(x - spot.x) < 24 &&
-              y > spot.y - 40 &&
-              y < spot.y + 18,
-          );
-          if (basket) {
-            setSelection({ unit: 'poultry' });
-            return { stand: [basket.x, basket.y + 24] };
-          }
-          const plot =
-            farmPlotAt(x, y, state.owned) ?? (farmExpansionAt(x, y, state.owned) ? FARM_PLOTS[state.owned] : undefined);
-          if (plot) {
-            const index = FARM_PLOTS.indexOf(plot);
-            setSelection({ plot: index });
-            return plot;
-          }
-          const purchase = farmUnitPurchaseAt(x, y, farmFeaturesFor(state.units), state.capacity);
-          if (purchase?.id === 'livestock' || purchase?.id === 'pond') {
+          const hit = farmInputAt(progress.current, x, y);
+          if (hit.kind === 'exit') navigation.push('/');
+          else if (hit.kind === 'plot') setSelection({ plot: hit.index });
+          else if (hit.kind === 'unit') setSelection({ unit: hit.unit });
+          else if (hit.kind === 'shop') {
             setSelection(undefined);
-            setShopUnit(purchase.id);
+            setShopUnit(hit.unit);
             setDialog('animals');
-            return { stand: purchase.stand };
-          }
-          const feature = farmFeatureAt(x, y, farmFeaturesFor(state.units), state.capacity);
-          if (feature?.id === 'store') {
-            setDialog('warehouse');
-            return { stand: feature.stand };
-          }
-          if (feature?.id === 'kitchen') {
-            setDialog('kitchen');
-            return { stand: feature.stand };
-          }
-          if (feature?.id === 'exit') {
-            navigation.push('/');
-            return undefined;
-          }
-          if (feature?.id === 'livestock' || feature?.id === 'pond') {
-            setSelection({ unit: feature.id });
-            return { stand: feature.stand };
-          }
-          setSelection(undefined);
-          return undefined;
+          } else if (hit.kind === 'warehouse' || hit.kind === 'kitchen') setDialog(hit.kind);
+          else setSelection(undefined);
+          return hit.selection;
         },
         units,
         target,
@@ -253,6 +159,11 @@ export function FarmScreen({ audio, definition }: { audio: Audio; definition?: M
           serverClock.current.server +
           (Date.now() - serverClock.current.real) * (review ? 1 : getDevelopmentTimeScale()),
         {
+          enter: common('enterLocation'),
+          exit: common('exitLocation'),
+
+          avatarLabel: (level, name) => common('avatarName', { level, name }),
+
           ready: t('timerReady'),
           paused: t('timerPaused'),
 
@@ -271,54 +182,58 @@ export function FarmScreen({ audio, definition }: { audio: Audio; definition?: M
       obstacleLevels.current = levelsKey;
       game.current?.refresh();
     }
-  }, [snapshot, navigation, t, review, model.store]);
+  }, [snapshot, navigation, t, review, model.store, common]);
 
-  async function execute(
-    command: FarmCommand,
-    confirm?: { price: number; title: string; currency?: 'coins' | 'gems' },
-  ) {
-    if (pending) return;
-    if (
-      confirm &&
-      !(await ui.current?.confirm({
-        title: confirm.title,
-        description: confirm.price
-          ? `${confirm.price.toLocaleString('vi-VN')} ${t(confirm.currency ?? 'coins')}`
-          : t('sellDescription'),
-        confirmLabel: common('confirm'),
-      }))
-    )
-      return;
-    if (!alive.current) return;
-    try {
-      const result = await model.execute(command);
-      if (result && alive.current) {
-        audio.play('success');
-        ui.current?.notify(
-          command.type === 'sell'
-            ? t('sold')
-            : t(command.type === 'batch' ? 'batchProcessed' : 'processed', {
-                count: result.completed,
-                total: result.eligible,
-              }),
-          'success',
-        );
+  const execute = useCallback(
+    async (command: FarmCommand, confirm?: { price: number; title: string; currency?: 'coins' | 'gems' }) => {
+      if (pending) return;
+      if (
+        confirm &&
+        !(await ui.current?.confirm({
+          title: confirm.title,
+          description: confirm.price
+            ? t('price', {
+                amount: confirm.price.toLocaleString(i18n.language),
+                currency: t(confirm.currency ?? 'coins'),
+              })
+            : t('sellDescription'),
+          confirmLabel: common('confirm'),
+        }))
+      )
+        return;
+      if (!alive.current) return;
+      try {
+        const result = await model.execute(command);
+        if (result && alive.current) {
+          audio.play('success');
+          ui.current?.notify(
+            command.type === 'sell'
+              ? t('sold')
+              : t(command.type === 'batch' ? 'batchProcessed' : 'processed', {
+                  count: result.completed,
+                  total: result.eligible,
+                }),
+            'success',
+          );
+        }
+      } catch (error) {
+        if (alive.current) {
+          audio.play('error');
+          ui.current?.notify(
+            error instanceof Error && error.message === 'INVENTORY_FULL' ? inventory('chestFull') : t('actionFailed'),
+            'error',
+          );
+        }
       }
-    } catch (error) {
-      if (alive.current) {
-        audio.play('error');
-        ui.current?.notify(
-          error instanceof Error && error.message === 'INVENTORY_FULL' ? inventory('chestFull') : t('actionFailed'),
-          'error',
-        );
-      }
-    }
-  }
+    },
+    [pending, t, common, inventory, model, audio, i18n.language],
+  );
 
   const state = snapshot?.farm;
   const unit = selection && 'unit' in selection ? selection.unit : undefined;
   return (
     <LocationLayout
+      menuRef={menu}
       title={review ? t('reviewTitle') : t('title')}
       accessibleTitle={t('accessibleTitle')}
       player={player}
@@ -383,22 +298,22 @@ export function FarmScreen({ audio, definition }: { audio: Audio; definition?: M
                         seeded: t('seeded'),
                         growing: t('growing'),
                         ripe: t('ripe'),
-                      }[cropStage(state.plots[selection.plot], snapshot!.serverTime)]}
+                      }[cropStage(state.plots[selection.plot], now)]}
                 </p>
-                {cropStage(state.plots[selection.plot], snapshot!.serverTime) === 'tilled' && (
+                {cropStage(state.plots[selection.plot], now) === 'tilled' && (
                   <FarmCropSelector value={cropId} onChange={setCropId} />
                 )}
                 {state.plots[selection.plot].cropId && (
                   <p>{inventory(`products.${state.plots[selection.plot].cropId ?? 'strawberry'}`)}</p>
                 )}
-                {cropStage(state.plots[selection.plot], snapshot!.serverTime) === 'growing' && (
+                {cropStage(state.plots[selection.plot], now) === 'growing' && (
                   <p>
                     {t('growingTime', {
                       minutes: Math.ceil(
                         Math.max(
                           0,
                           FARM_CROPS[state.plots[selection.plot].cropId ?? 'strawberry'].growMs -
-                            (snapshot!.serverTime - state.plots[selection.plot].wateredAt!),
+                            (now - state.plots[selection.plot].wateredAt!),
                         ) / 60000,
                       ),
                     })}
@@ -410,12 +325,12 @@ export function FarmScreen({ audio, definition }: { audio: Audio; definition?: M
                       selection.plot >= state.owned
                         ? 'buy'
                         : ({ dry: 'till', tilled: 'sow', seeded: 'water', growing: 'water', ripe: 'harvest' } as const)[
-                            cropStage(state.plots[selection.plot], snapshot!.serverTime)
+                            cropStage(state.plots[selection.plot], now)
                           ];
                     return (
                       <Button
                         variant="primary"
-                        disabled={pending || cropStage(state.plots[selection.plot], snapshot!.serverTime) === 'growing'}
+                        disabled={pending || cropStage(state.plots[selection.plot], now) === 'growing'}
                         onClick={() =>
                           void execute(
                             { type: 'plot', index: selection.plot, action, cropId },
@@ -438,7 +353,16 @@ export function FarmScreen({ audio, definition }: { audio: Audio; definition?: M
                 </div>
               </>
             )}
-            {unit && <FarmUnitPanel key={unit} unit={unit} snapshot={snapshot!} pending={pending} execute={execute} />}
+            {unit && (
+              <FarmUnitPanel
+                key={unit}
+                unit={unit}
+                snapshot={snapshot!}
+                now={now}
+                pending={pending}
+                execute={execute}
+              />
+            )}
           </div>
         </section>
       )}
@@ -455,12 +379,18 @@ export function FarmScreen({ audio, definition }: { audio: Audio; definition?: M
         <InventoryDialog state={state} pending={pending} execute={execute} onClose={() => setDialog(undefined)} />
       )}
       {dialog === 'batch' && (
-        <FarmBatchDialog snapshot={snapshot} pending={pending} execute={execute} onClose={() => setDialog(undefined)} />
+        <FarmBatchDialog
+          snapshot={snapshot}
+          now={now}
+          pending={pending}
+          execute={execute}
+          onClose={() => setDialog(undefined)}
+        />
       )}
       {dialog === 'kitchen' && state && (
         <KitchenDialog
           state={state}
-          now={snapshot!.serverTime}
+          now={now}
           pending={pending}
           execute={execute}
           onClose={() => setDialog(undefined)}

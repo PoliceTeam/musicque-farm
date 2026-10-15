@@ -1,10 +1,4 @@
-import {
-  FARM_OBSTACLES,
-  FARM_WALK_AREA,
-  FARM_WORLD,
-  type FarmPoint,
-  inside,
-} from '@/features/farm/_utils/farm-map-data';
+import { FARM_OBSTACLES, FARM_WALK_AREA, FARM_WORLD, type FarmPoint, inside } from '@/features/farm/_utils/farm-layout';
 import type { Area } from '@/game/movement/movement-logic';
 
 const CELL = 8;

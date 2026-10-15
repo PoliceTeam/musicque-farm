@@ -1,6 +1,6 @@
 import { Action, AvatarState } from '@chibi-town/character-core/animation-logic';
 import { toEquip } from '@chibi-town/character-core/outfit-logic';
-import type { RealtimeEvent } from '@chibi-town/contracts/realtime';
+import type { RealtimeEvent, RealtimeNotification } from '@chibi-town/contracts/realtime';
 
 export type RemotePlayer = {
   id: string;
@@ -35,15 +35,18 @@ export function createRemotePlayers(selfId: string) {
   return {
     players,
 
-    apply(event: RealtimeEvent) {
-      if (event.type === 'map.state') {
+    apply(event: RealtimeNotification) {
+      if (event.type === 'reconnected') players.clear();
+      else if (event.type === 'map.state') {
         players.clear();
         event.players.forEach(add);
       } else if (event.type === 'map.join') add(event.player);
       else if (event.type === 'map.leave') players.delete(event.id);
-      else if (event.type === 'map.move') {
-        const player = players.get(event.id);
-        if (player) player.target = [event.x, event.y];
+      else if (event.type === 'map.moves') {
+        for (const move of event.moves) {
+          const player = players.get(move.id);
+          if (player) player.target = [move.x, move.y];
+        }
       }
     },
 

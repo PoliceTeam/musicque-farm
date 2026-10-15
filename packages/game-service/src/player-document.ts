@@ -58,6 +58,7 @@ export type PlayerDocument = {
     requests: Record<string, { fingerprint: string; result: TienResult }>;
   };
   arcade?: {
+    wins?: number;
     bestScore: number;
     activeBattle?: GemBattle;
     starts: Record<string, { fingerprint: string; battle: GemBattleSnapshot }>;

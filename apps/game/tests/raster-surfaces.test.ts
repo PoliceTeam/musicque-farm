@@ -1,5 +1,5 @@
+import { CharacterView } from '@chibi-town/renderer-phaser/character-view';
 import { describe, expect, it, vi } from 'vitest';
-import { CharacterView } from '../../../packages/renderer-phaser/src/character-view';
 
 vi.mock('phaser', () => ({ default: { Textures: { FilterMode: { LINEAR: 0 } } } }));
 

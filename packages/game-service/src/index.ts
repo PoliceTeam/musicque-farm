@@ -1,3 +1,4 @@
+export { isInventoryCommand } from './application/command-service.js';
 export * from './arcade-tables.js';
 export * from './character-inventory.js';
 export * from './game-service.js';

@@ -13,7 +13,8 @@ import type { PracticeContext } from './practice-context.js';
 export function createDiamondService(
   context: PracticeContext,
 ): Pick<GameService, 'getArcadeLobby' | 'startDiamondRoom' | 'playDiamond'> {
-  const { clock, lobbySource, reservedCoins, prune, settle, sessionFor, checkStart, tableDirectory, arcade } = context;
+  const { randomSeed, lobbySource, reservedCoins, prune, settle, sessionFor, checkStart, tableDirectory, arcade } =
+    context;
   return {
     getArcadeLobby() {
       return (document) => {
@@ -44,12 +45,7 @@ export function createDiamondService(
             return gemBattleSnapshot(state.activeBattle);
           throw new ApiSdkError('MATCH_IN_PROGRESS');
         }
-        state.activeBattle = createGemBattle(
-          input.requestId,
-          input.roomId,
-          (clock() + input.roomId * 10 + (input.tableId ?? 0)) >>> 0,
-          input.tableId ?? 0,
-        );
+        state.activeBattle = createGemBattle(input.requestId, input.roomId, randomSeed(), input.tableId ?? 0);
         state.activeBattle.session = sessionFor(input.roomId, input.difficulty);
         state.activeBattle.status = 'waiting';
         state.starts[input.requestId] = { fingerprint, battle: gemBattleSnapshot(state.activeBattle) };
@@ -75,7 +71,7 @@ export function createDiamondService(
         if (command.action.type === 'start') checkStart(document, battle.session);
         let result: ReturnType<typeof playGemAction>;
         try {
-          result = playGemAction(battle, command.action);
+          result = playGemAction({ ...battle, seed: randomSeed() }, command.action);
         } catch (error) {
           const code = error instanceof Error ? error.message : '';
           if (['INVALID_MOVE', 'NO_MATCH', 'NOT_ENOUGH_MANA', 'MATCH_FINISHED', 'INVALID_TURN'].includes(code))

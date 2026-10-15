@@ -1,5 +1,6 @@
 import { validArcadeSeat } from '@chibi-town/game-content/arcade-catalog';
 import { chessBoard, chessSquare, chooseChessMove, legalChessMoves, loadChess } from './chess-logic.js';
+import { isRandomSeed, normalizeSeed, type RandomSeed, random } from './random.js';
 import { type ArcadeSession, validArcadeSession } from './session.js';
 import type { TableSnapshot } from './table-snapshot.js';
 import {
@@ -25,7 +26,7 @@ export type MiniMatch = {
   tableId: number;
   session?: ArcadeSession;
   revision: number;
-  seed: number;
+  seed: RandomSeed;
   status: 'waiting' | 'playing' | 'finished';
   board: (string | null)[];
   moves: (BoardMove & { check?: boolean })[];
@@ -57,21 +58,19 @@ export function isMiniGameId(v: unknown): v is MiniGameId {
   return MINI_GAME_IDS.includes(v as MiniGameId);
 }
 
-/** Avalanche nearby seeds before the first LCG output; stored seeds remain replayable. */
-function mixSeed(seed: number) {
-  let value = seed >>> 0;
-  value = Math.imul(value ^ (value >>> 16), 0x7feb352d);
-  value = Math.imul(value ^ (value >>> 15), 0x846ca68b);
-  return (value ^ (value >>> 16)) >>> 0;
-}
-
-export function createMiniMatch(gameId: MiniGameId, id: string, roomId: number, seed: number, tableId = 0): MiniMatch {
+export function createMiniMatch(
+  gameId: MiniGameId,
+  id: string,
+  roomId: number,
+  seed: RandomSeed,
+  tableId = 0,
+): MiniMatch {
   return {
     id,
     gameId,
     roomId,
     tableId,
-    seed: gameId === 'bau-cua' || gameId === 'slots' ? mixSeed(seed) : seed >>> 0,
+    seed: normalizeSeed(seed),
     revision: 0,
     status: 'waiting',
     board: [],
@@ -94,11 +93,6 @@ const clone = (m: MiniMatch): MiniMatch => ({
 export function miniSnapshot(m: MiniMatch): MiniSnapshot {
   const { seed: _seed, ...snapshot } = clone(m);
   return snapshot;
-}
-
-function random(m: MiniMatch) {
-  m.seed = (Math.imul(m.seed, 1664525) + 1013904223) >>> 0;
-  return m.seed / 4294967296;
 }
 
 const key = (board: (string | null)[], turn: number) => `${turn}:${board.map((p) => p ?? '.').join(',')}`;
@@ -424,7 +418,7 @@ export function isMiniSnapshot(v: unknown): v is MiniSnapshot {
 export function isMiniMatch(v: unknown): v is MiniMatch {
   const m = v as MiniMatch;
   try {
-    if (!isMiniSnapshot(m) || !Number.isInteger(m.seed) || m.seed < 0 || m.seed > 4294967295) return false;
+    if (!isMiniSnapshot(m) || !isRandomSeed(m.seed)) return false;
     if (m.gameId === 'chess' && m.status !== 'waiting') {
       const c = loadChess(m.moves);
       return JSON.stringify(chessBoard(c)) === JSON.stringify(m.board) && (c.turn() === 'w' ? 0 : 1) === m.turn;

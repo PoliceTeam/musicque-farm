@@ -23,7 +23,7 @@ export function createWorldService(deps: { db: Database; clock: () => number; pr
   return {
     async getWorld(player: PlayerAccount, trace?: TransactionTrace) {
       const rules = await rulesFor(player);
-      return withPlayerDocument(db, player.id, rules.getWorld(), trace);
+      return withPlayerDocument(db, player.id, rules.getWorld(), trace, clock);
     },
 
     async getChannels(player: PlayerAccount, input: MapChannelInput, trace?: TransactionTrace) {
@@ -34,31 +34,32 @@ export function createWorldService(deps: { db: Database; clock: () => number; pr
         player.id,
         async (document) => {
           const directory = read(document);
-          await presence.enter(player.id, directory.mapId, directory.currentChannelId, clock());
+          const capacity = directory.channels.find((channel) => channel.id === directory.currentChannelId)!.capacity;
+          if (!(await presence.claim(player.id, directory.mapId, directory.currentChannelId, capacity, clock())))
+            throw new ApiSdkError('CHANNEL_FULL');
           return directory;
         },
         trace,
+        clock,
       );
     },
 
-    joinChannel(player: PlayerAccount, input: MapChannelInput & { channelId: number }, trace?: TransactionTrace) {
-      const mapId = input?.mapId;
-      return presence.exclusive(typeof mapId === 'string' ? mapId : '', async () => {
-        const rules = await rulesFor(player);
-        const join = rules.joinMapChannel(input);
-        return withPlayerDocument(
-          db,
-          player.id,
-          async (document) => {
-            const directory = join(document);
-            const capacity = directory.channels.find((channel) => channel.id === directory.currentChannelId)!.capacity;
-            if (!(await presence.claim(player.id, directory.mapId, directory.currentChannelId, capacity, clock())))
-              throw new ApiSdkError('CHANNEL_FULL');
-            return directory;
-          },
-          trace,
-        );
-      });
+    async joinChannel(player: PlayerAccount, input: MapChannelInput & { channelId: number }, trace?: TransactionTrace) {
+      const rules = await rulesFor(player);
+      const join = rules.joinMapChannel(input);
+      return withPlayerDocument(
+        db,
+        player.id,
+        async (document) => {
+          const directory = join(document);
+          const capacity = directory.channels.find((channel) => channel.id === directory.currentChannelId)!.capacity;
+          if (!(await presence.claim(player.id, directory.mapId, directory.currentChannelId, capacity, clock())))
+            throw new ApiSdkError('CHANNEL_FULL');
+          return directory;
+        },
+        trace,
+        clock,
+      );
     },
 
     /** A socket needs channel and outfit from the same player document lock. */
@@ -66,10 +67,16 @@ export function createWorldService(deps: { db: Database; clock: () => number; pr
       const rules = await rulesFor(player);
       const channels = rules.getMapChannels(input);
       const self = createPlayerRules({ player, clock }).getPlayer();
-      return withPlayerDocument(db, player.id, (document) => ({
-        channelId: channels(document).currentChannelId,
-        outfit: self(document).outfit,
-      }));
+      return withPlayerDocument(
+        db,
+        player.id,
+        (document) => ({
+          channelId: channels(document).currentChannelId,
+          outfit: self(document).outfit,
+        }),
+        undefined,
+        clock,
+      );
     },
   };
 }

@@ -10,6 +10,7 @@ import type { ArcadeGameProps } from '../_utils/arcade-game-props.js';
 import { clearTable } from '../_utils/clear-table.js';
 import { unseenTableSteps } from '../_utils/table-updates.js';
 import { useArcadeLive } from '../_utils/use-arcade-live.js';
+import { useTableSession } from '../_utils/use-table-session.js';
 import { useArcadeHost } from '../host.js';
 import { ArcadeDirectory } from './arcade-directory.js';
 import { CoinChange } from './coin-change.js';
@@ -33,9 +34,9 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
   const confirmed = useRef<PhomSnapshot | undefined>(undefined);
   const command = useRef<PhomCommand | undefined>(undefined);
   const roomRequest = useRef<ArcadeTableStart | undefined>(undefined);
-  const alive = useRef(false),
-    locked = useRef(false);
-  const timers = useRef(new Map<ReturnType<typeof setTimeout>, () => void>());
+
+  const session = useTableSession();
+  const { alive, locked, stale, loading } = session;
 
   async function replaySteps(steps: PhomResult['steps']) {
     for (const step of steps) {
@@ -48,8 +49,6 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
     }
     setEvent(undefined);
   }
-
-  const loading = useRef(false);
 
   async function load() {
     if (loading.current) {
@@ -92,8 +91,7 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
       if (alive.current) setError(t('arcadeLoadFailed'));
     } finally {
       loading.current = false;
-      if (stale.current && alive.current && !locked.current) {
-        stale.current = false;
+      if (session.consumeStale()) {
         void load();
       }
     }
@@ -101,32 +99,18 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Load once; retry uses the current load handler explicitly.
   useEffect(() => {
-    alive.current = true;
+    session.activate();
     void load();
     return () => {
-      alive.current = false;
-      for (const [timer, resolve] of timers.current) {
-        clearTimeout(timer);
-        resolve();
-      }
-      timers.current.clear();
+      session.dispose();
     };
   }, []);
-  const stale = useRef(false);
   useArcadeLive('phom', () => {
     if (locked.current) stale.current = true;
     else void load().then(refreshWallet);
   });
 
-  async function pause() {
-    await new Promise<void>((resolve) => {
-      const timer = setTimeout(() => {
-        timers.current.delete(timer);
-        resolve();
-      }, 300);
-      timers.current.set(timer, resolve);
-    });
-  }
+  const pause = (ms = 300) => session.pause(ms);
 
   async function join(roomId: number, tableId: number) {
     if (locked.current) return;
@@ -150,8 +134,7 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
     } finally {
       locked.current = false;
       if (alive.current) setBusy(false);
-      if (stale.current && alive.current) {
-        stale.current = false;
+      if (session.consumeStale()) {
         void load();
       }
     }
@@ -207,8 +190,7 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
     } finally {
       locked.current = false;
       if (alive.current) setBusy(false);
-      if (stale.current && alive.current) {
-        stale.current = false;
+      if (session.consumeStale()) {
         void load();
       }
     }

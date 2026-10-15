@@ -1,4 +1,5 @@
 export default {
+  price: '{{amount}} {{currency}}',
   timerReady: '✓',
   timerPaused: 'Ⅱ',
   harvestReady: 'Sẵn sàng thu hoạch',

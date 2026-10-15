@@ -1,3 +1,140 @@
+.game-ui :is(.map-tools a) {
+  min-height: 44px;
+}
+.game-ui .map-tools a {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  border: 2px solid var(--ui-border);
+  border-radius: 10px;
+}
+.game-ui .map-hint {
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  border-color: var(--ui-border);
+}
+.game-ui .close-selection {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+}
+.game-ui .coming-soon {
+  color: var(--ui-muted);
+}
+/* Feature skin, moved from the shared theme. */
+.game-ui .enter-zone {
+  font-family: inherit;
+  font-weight: 800;
+  border: 2px solid var(--ui-border);
+  border-radius: 10px;
+  background: linear-gradient(#fffbea, #f4e6c7);
+  color: var(--ui-ink);
+  box-shadow:
+    inset 0 1px #ffffffb0,
+    0 2px #8a6b4555;
+  transition:
+    filter 100ms ease,
+    box-shadow 100ms ease;
+}
+.game-ui :is(.map-panel),
+.game-ui :is(.time-popover) {
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  border: 2px solid var(--ui-border);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px #fffdf5,
+    0 4px #8a6b4550,
+    0 8px 24px #263a3025;
+}
+.game-ui :is(.map-panel) h2 {
+  color: var(--ui-ink);
+}
+.game-ui :is(.map-panel) p,
+.game-ui :is(.map-panel) small {
+  color: var(--ui-muted);
+}
+.game-ui :is(.enter-zone) {
+  background: linear-gradient(#56783f, #446631);
+  color: #fffbea;
+  border-color: var(--ui-green-dark);
+  box-shadow:
+    inset 0 1px #b9ce9690,
+    0 3px #4d6b3655;
+}
+.game-ui .world-header,
+.game-ui .world-footer {
+  background: linear-gradient(#fff6e1f5, #eaddbcf5);
+  color: var(--ui-ink);
+  border-color: var(--ui-border);
+}
+.game-ui .town-brand,
+.game-ui .world-status,
+.game-ui .footer-caption,
+.game-ui .footer-heading .eyebrow {
+  color: var(--ui-ink);
+}
+.game-ui .town-brand small,
+.game-ui .zone-directory small,
+.game-ui .time-settings small {
+  color: var(--ui-muted);
+}
+.game-ui .time-settings summary {
+  color: var(--ui-ink);
+}
+.game-ui .zone-directory button {
+  color: var(--ui-ink);
+}
+.game-ui .brand-emblem,
+.game-ui .zone-icon {
+  background: #eadbb8;
+}
+.game-ui .world-shell > .time-tools .time-settings summary {
+  background: linear-gradient(#fffbea, #f4e6c7);
+  color: var(--ui-ink);
+  border: 2px solid var(--ui-border);
+}
+.game-ui .world-shell > .time-tools .time-settings small {
+  color: var(--ui-muted);
+}
+.game-ui :is(.time-popover) :is(p, small, output, label) {
+  color: var(--ui-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.game-ui .world-shell > .time-tools .time-popover {
+  width: 360px;
+  max-height: calc(100dvh - 100px);
+  overflow: auto;
+  padding: 16px;
+}
+.game-ui .world-shell > .time-tools .time-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.game-ui .time-presets button {
+  min-width: 0;
+  padding: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.game-ui .time-popover label {
+  margin-top: 16px;
+  gap: 8px;
+}
+.game-ui .time-popover p {
+  margin: 12px 0 16px;
+}
+.game-ui .world-shell > .time-tools .time-settings output {
+  color: var(--ui-ink);
+}
+.game-ui :is(.map-panel) p {
+  line-height: 1.55;
+}
+
 .world-map-page {
   --sky-color: #60b5fb;
   --sea-color: #0c8dd7;

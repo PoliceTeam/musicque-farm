@@ -3,7 +3,7 @@ import { farmEggBaskets } from '@chibi-town/gameplay/farm-egg-logic';
 import { animalTimer, cropTimer, type FarmTimer } from '@chibi-town/gameplay/farm-progress-logic';
 import type { FarmAnimal, FarmUnit } from '@chibi-town/gameplay/farm-unit-logic';
 import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-types';
-import { FARM_EGG_BASKET_SPOTS, FARM_PLOTS } from '@/features/farm/_utils/farm-map-data';
+import { FARM_EGG_BASKET_SPOTS, FARM_PLOTS } from '@/features/farm/_utils/farm-layout';
 
 type AnimalAnchor = { animal: FarmAnimal; unit: FarmUnit; x: number; y: number };
 

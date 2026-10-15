@@ -3,9 +3,9 @@ import { Button, Dialog, InventoryGrid, Meter } from '@chibi-town/ui/react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { createGameUi } from '@/application/game-ui-handler';
-import { showcaseCss } from '@/assets/generated-styles';
+import { inventoryCss, showcaseCss } from '@/assets/generated-styles';
 import { AudioSettings } from '@/features/settings/_components/audio-settings';
-export const styles = showcaseCss;
+export const styles = inventoryCss + showcaseCss;
 
 export function Screen({ audio }: { audio: ReturnType<typeof createGameAudio> }) {
   const [open, setOpen] = useState(false);

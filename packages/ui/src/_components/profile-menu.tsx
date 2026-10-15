@@ -1,20 +1,23 @@
 'use client';
-import { type ReactNode, useEffect, useRef } from 'react';
+import { type ReactNode, type RefObject, useEffect, useRef } from 'react';
 
 export function ProfileMenu({
+  menuRef,
   portrait,
   name,
   subtitle,
   children,
   label = 'Menu người chơi',
 }: {
+  menuRef?: RefObject<HTMLDetailsElement | null>;
   portrait: ReactNode;
   name: string;
   subtitle: ReactNode;
   children: ReactNode;
   label?: string;
 }) {
-  const ref = useRef<HTMLDetailsElement>(null);
+  const localRef = useRef<HTMLDetailsElement>(null);
+  const ref = menuRef ?? localRef;
   useEffect(() => {
     const dismiss = (event: PointerEvent) => {
       if (event.target instanceof Node && !ref.current?.contains(event.target) && ref.current) ref.current.open = false;
@@ -48,10 +51,10 @@ export function ProfileMenu({
       document.removeEventListener('pointerdown', dismiss);
       document.removeEventListener('keydown', closeOnEscape);
     };
-  }, []);
+  }, [ref]);
   return (
-    <details ref={ref} className="farm-menu ui-profile-menu">
-      <summary aria-label="Mở menu người chơi">
+    <details ref={ref} className="ui-profile-menu">
+      <summary aria-label={label}>
         {portrait}
         <span className="ui-profile-info">
           <strong>{name}</strong>

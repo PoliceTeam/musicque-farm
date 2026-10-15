@@ -19,6 +19,7 @@ import {
   playGemAction,
   validGemMoves,
 } from '@chibi-town/arcade-games/gem-battle-logic';
+import { isRandomSeed } from '@chibi-town/arcade-games/random';
 import type { ArcadeDifficulty } from '@chibi-town/arcade-games/session';
 import { decodeGemBattle, decodeGemResult } from '@chibi-town/contracts/arcade';
 import { DIAMOND_RULES } from '@chibi-town/game-content/arcade-catalog';
@@ -567,7 +568,8 @@ it('public start, resume, lobby, play and retry receipts conceal the seed while 
   assertPublic(await sdk.getArcadeLobby());
   const stored = await repository.transaction((document) => structuredClone(document));
   expect(isGemBattle(stored.arcade!.activeBattle)).toBe(true);
-  expect(Number.isInteger(stored.arcade!.activeBattle!.seed)).toBe(true);
+  expect(stored.arcade!.activeBattle!.seed).toHaveLength(4);
+  expect(isRandomSeed(stored.arcade!.activeBattle!.seed)).toBe(true);
   assertPublic(stored.arcade!.starts);
   assertPublic(stored.arcade!.requests);
   // Older saves contained seeded receipts; normalization must scrub those too.

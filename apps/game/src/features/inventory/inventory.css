@@ -1,0 +1,137 @@
+.game-ui :is(#warehouse) {
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  border: 2px solid var(--ui-border);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px #fffdf5,
+    0 4px #8a6b4550,
+    0 8px 24px #263a3025;
+}
+.game-ui #warehouse-detail {
+  min-height: 44px;
+}
+.game-ui #warehouse .ui-actions {
+  min-height: 52px;
+}
+
+.game-ui #warehouse .ui-inventory-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.game-ui #warehouse .ui-inventory-slot {
+  min-width: 0;
+  padding: 8px;
+}
+@media (max-width: 540px) {
+  .game-ui #warehouse .ui-inventory-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.game-ui #warehouse {
+  height: fit-content;
+  max-height: calc(100dvh - 32px);
+}
+.game-ui .warehouse-folder {
+  margin-top: 16px;
+}
+.game-ui .warehouse-folder-body {
+  border: 2px solid var(--ui-border);
+  background: #fffaf0;
+  border-radius: 0 12px 12px 12px;
+  padding: 16px;
+}
+.game-ui .warehouse-content {
+  min-height: 0;
+}
+.game-ui .warehouse-content .ui-empty-state {
+  min-height: 180px;
+}
+.game-ui #warehouse-detail {
+  min-height: 0;
+  margin: 16px 0 12px;
+}
+.game-ui #warehouse .ui-actions {
+  min-height: 0;
+  margin: 0;
+}
+@media (max-width: 480px) {
+  .game-ui .warehouse-folder-body {
+    padding: 12px;
+  }
+}
+.game-ui :is(#warehouse.ui-tab-dialog) {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  height: fit-content;
+  max-height: calc(100dvh - 32px);
+}
+.game-ui .ui-tab-dialog .warehouse-folder-body {
+  border: 0;
+  padding: 0;
+  margin-top: 16px;
+  background: transparent;
+}
+.game-ui .ui-dialog-body .warehouse-content,
+.game-ui .ui-dialog-body .warehouse-content .ui-inventory-grid {
+  max-height: none;
+  overflow: visible;
+}
+.game-ui .warehouse-footer {
+  width: 100%;
+}
+.game-ui .warehouse-footer > .ui-button {
+  margin-top: 12px;
+}
+.game-ui .warehouse-footer > .ui-button {
+  display: flex;
+  margin-left: auto;
+}
+
+:is(#warehouse) {
+  width: min(530px, calc(100vw - 28px));
+  border: 3px solid #77b5cb;
+  border-radius: 22px;
+  padding: 18px;
+  background: #fffefa;
+  color: #476978;
+  box-shadow:
+    0 5px 0 #427e97,
+    0 18px 60px #203c4855;
+}
+#warehouse-detail {
+  min-height: 44px;
+  margin: 14px 0;
+}
+#warehouse .ui-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 52px;
+  align-items: stretch;
+}
+#warehouse {
+  height: fit-content;
+  max-height: calc(100dvh - 28px);
+  overflow-y: auto;
+}
+.chest-upgrade {
+  padding: 10px 12px;
+  border: 1px solid #b49563;
+  border-radius: 12px;
+  background: #fff3d8;
+  margin-bottom: 12px;
+}
+.chest-upgrade p {
+  margin: 6px 0;
+}
+#warehouse > small {
+  display: block;
+  margin-top: 14px;
+  line-height: 1.6;
+}
+#warehouse > button {
+  width: 100%;
+  margin-top: 12px;
+}

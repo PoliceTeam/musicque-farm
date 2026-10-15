@@ -209,16 +209,16 @@ describe('realtime map rooms', () => {
     far.send({ type: 'map.enter', ...street, x: 5, y: 5 });
     expect(await state).toMatchObject({ channelId: 2, players: [] });
 
-    const moved = one.next('map.move');
+    const moved = one.next('map.moves');
     two.send({ type: 'map.move', x: 320, y: 410 });
-    expect(await moved).toEqual({ type: 'map.move', id: b.player.id, x: 320, y: 410 });
+    expect(await moved).toEqual({ type: 'map.moves', moves: [{ id: b.player.id, x: 320, y: 410 }] });
     expect((await t.sdkFor(a.cookie).getMapChannels(street)).channels[0].occupants).toBe(2);
 
     const left = one.next('map.leave');
     two.socket.terminate();
     expect(await left).toEqual({ type: 'map.leave', id: b.player.id });
     expect(far.events.map((event) => event.type)).toEqual(['map.state']);
-    expect(two.events.filter((event) => event.type === 'map.move')).toEqual([]);
+    expect(two.events.filter((event) => event.type === 'map.moves')).toEqual([]);
     await t.close();
   });
 
@@ -239,10 +239,10 @@ describe('realtime map rooms', () => {
     // Let the server handle the rejected commands before the clock moves past the move interval.
     await new Promise((resolve) => setTimeout(resolve, 50));
     t.advance(1000);
-    const moved = one.next('map.move');
+    const moved = one.next('map.moves');
     two.send({ type: 'map.move', x: 20, y: 20 });
-    expect(await moved).toMatchObject({ x: 20, y: 20 });
-    expect(one.events.slice(before).filter((event) => event.type === 'map.move')).toHaveLength(1);
+    expect(await moved).toMatchObject({ moves: [{ x: 20, y: 20 }] });
+    expect(one.events.slice(before).filter((event) => event.type === 'map.moves')).toHaveLength(1);
     await t.close();
   });
 });

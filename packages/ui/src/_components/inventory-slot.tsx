@@ -13,10 +13,10 @@ export function InventorySlot({
   onSelect: (id: string) => void;
 }) {
   if (!item || !Number.isSafeInteger(item.count) || item.count <= 0)
-    return <div className="stock-slot" aria-hidden="true" />;
+    return <div className="ui-inventory-slot" aria-hidden="true" />;
   return (
     <Button
-      className={`stock-slot${selected ? ' active' : ''}`}
+      className={`ui-inventory-slot${selected ? ' active' : ''}`}
       aria-label={`${item.label}: ${item.count}`}
       aria-pressed={selected}
       onClick={() => onSelect(item.id)}

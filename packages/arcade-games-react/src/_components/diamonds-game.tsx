@@ -19,6 +19,7 @@ import { GEM_REPLAY_TIMING, type GemReplay } from '../_utils/gem-replay.js';
 import { roomNumber } from '../_utils/room-number.js';
 import { unseenTableSteps } from '../_utils/table-updates.js';
 import { useArcadeLive } from '../_utils/use-arcade-live.js';
+import { useTableSession } from '../_utils/use-table-session.js';
 import { useArcadeHost } from '../host.js';
 import { ArcadeDirectory } from './arcade-directory.js';
 import { CoinChange } from './coin-change.js';
@@ -45,14 +46,13 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
   const [flashing, setFlashing] = useState<number[]>([]);
   const [step, setStep] = useState<GemStep>();
   const [replay, setReplay] = useState<GemReplay>();
-  const replayId = useRef(0);
   const [notice, setNotice] = useState('');
-  const locked = useRef(false);
   const [canRetry, setCanRetry] = useState(false);
   const lastCommand = useRef<DiamondCommand | undefined>(undefined);
   const startRequest = useRef<ArcadeTableStart | undefined>(undefined);
-  const alive = useRef(true);
-  const timers = useRef<Map<ReturnType<typeof setTimeout>, () => void>>(new Map());
+
+  const session = useTableSession();
+  const { alive, locked, stale, replayId } = session;
 
   async function replaySteps(steps: GemStep[], source: GemBattleSnapshot) {
     for (const nextStep of steps) {
@@ -91,7 +91,7 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
   const [reload, setReload] = useState(0);
   // biome-ignore lint/correctness/useExhaustiveDependencies: reload explicitly retries the SDK load.
   useEffect(() => {
-    alive.current = true;
+    session.activate();
     let disposed = false;
     void sdk
       .getArcadeLobby()
@@ -134,15 +134,9 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
       });
     return () => {
       disposed = true;
-      alive.current = false;
-      for (const [timer, resolve] of timers.current) {
-        clearTimeout(timer);
-        resolve();
-      }
-      timers.current.clear();
+      session.dispose();
     };
   }, [reload, t]);
-  const stale = useRef(false);
   useArcadeLive('diamonds', () => {
     if (locked.current) stale.current = true;
     else {
@@ -151,15 +145,7 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
     }
   });
 
-  async function pause(ms: number) {
-    await new Promise<void>((resolve) => {
-      const timer = setTimeout(() => {
-        timers.current.delete(timer);
-        resolve();
-      }, ms);
-      timers.current.set(timer, resolve);
-    });
-  }
+  const pause = (ms = 0) => session.pause(ms);
 
   async function refreshLobby() {
     const next = await sdk.getArcadeLobby();
@@ -206,8 +192,7 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
     } finally {
       locked.current = false;
       if (alive.current) setBusy(false);
-      if (stale.current && alive.current) {
-        stale.current = false;
+      if (session.consumeStale()) {
         setReload((n) => n + 1);
       }
     }
@@ -279,8 +264,7 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
     } finally {
       locked.current = false;
       if (alive.current) setBusy(false);
-      if (stale.current && alive.current) {
-        stale.current = false;
+      if (session.consumeStale()) {
         setReload((n) => n + 1);
       }
     }

@@ -74,6 +74,10 @@ export type WorldMapView = {
 };
 
 type Fader = { setAlpha(a: number): unknown };
+const WALK_FRAMES = [0, 1, 0, 2];
+const PASS_ORDER = [0, 5, 1, 3, 2, 4];
+const LIGHT_COLORS = [0xff6fb5, 0xffd34d, 0x6fe3ff];
+const FOUNTAIN_SIDES = [-1, 1];
 const PEOPLE = ['#e84a5f', '#2f7de1', '#f5b83d', '#3fb56b', '#a35fd6', '#ffffff', '#ff8a3d'];
 
 const smooth = (t: number) => t * t * (3 - 2 * t);
@@ -83,8 +87,32 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
   const d = options.decor;
   const sp = options.sprites;
 
+  const mix = [0, 0, 0, 0],
+    parallax = [0, 0],
+    size = [W, H];
+  const lighthouseA = d.lighthouses[0],
+    lighthouseB = d.lighthouses[1];
+  const beaconA = lighthouseA ? [lighthouseA[0], lighthouseA[1], 767, 0] : [-10000, -10000, 767, 0];
+  const beaconB = lighthouseB ? [lighthouseB[0], lighthouseB[1], 445, 2.1] : [-10000, -10000, 445, 2.1];
+  const textures = new Map<string, [string, string?]>();
+
   function texture(name: string): [string, string?] {
-    return options.spriteAtlas ? ['map-sprites', name] : [`sp-${name}`];
+    let value = textures.get(name);
+    if (!value) {
+      value = options.spriteAtlas ? ['map-sprites', name] : [`sp-${name}`];
+      textures.set(name, value);
+    }
+    return value;
+  }
+
+  const lastFrames = new WeakMap<Phaser.GameObjects.Image, string>();
+
+  function setFrame(sprite: Phaser.GameObjects.Image, name: string) {
+    if (lastFrames.get(sprite) !== name) {
+      sprite.setTexture(...texture(name));
+      lastFrames.set(sprite, name);
+    }
+    return sprite;
   }
 
   class MapScene extends Phaser.Scene {
@@ -116,6 +144,7 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
       wait: number;
     }[] = [];
     private living: (WorldMapLife & { sprite: Phaser.GameObjects.Image; phase: number })[] = [];
+
     private cow?: Phaser.GameObjects.Image;
     private fish!: { sprite: Phaser.GameObjects.Image; splash: Phaser.GameObjects.Particles.ParticleEmitter };
     private fishNext = 2;
@@ -174,15 +203,21 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
                 setUniform('uClouds', 5);
                 setUniform('uSurf', 6);
                 setUniform('uTime', this.time.now / 1000);
-                setUniform('uMix', [light.day, light.evening, light.night, light.dawn]);
-                setUniform('uPar', [cam.midPoint.x - W / 2, cam.midPoint.y - H / 2]);
-                setUniform('uSize', [W, H]);
+                mix[0] = light.day;
+                mix[1] = light.evening;
+                mix[2] = light.night;
+                mix[3] = light.dawn;
+                setUniform('uMix', mix);
+                parallax[0] = cam.midPoint.x - W / 2;
+                parallax[1] = cam.midPoint.y - H / 2;
+                setUniform('uPar', parallax);
+                setUniform('uSize', size);
                 setUniform('uFlipY', 0);
                 setUniform('uHover', this.hoverCode);
                 setUniform('uHoverT', this.hoverT);
-                setUniform('uFlag', [...d.flag]);
-                setUniform('uBeaconA', [...d.lighthouses[0], 767, 0]);
-                setUniform('uBeaconB', [...d.lighthouses[1], 445, 2.1]);
+                setUniform('uFlag', d.flag);
+                setUniform('uBeaconA', beaconA);
+                setUniform('uBeaconB', beaconB);
               },
             },
             0,
@@ -332,6 +367,9 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
     }
 
     private addLandmarks() {
+      const cow = sp.cow;
+      if (cow) this.cow = this.add.image(cow.x + cow.w / 2, cow.y + cow.h / 2, ...texture('cow')).setDepth(24);
+
       const mill = sp['mill-rotor-v1'];
       if (mill?.hub) this.mill = this.add.image(...mill.hub, ...texture('mill-rotor-v1')).setDepth(25);
       const wheel = sp['ferris-rim-v1'];
@@ -733,10 +771,9 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
         if (actor.route && actor.frames) {
           const motion = options.walkRoute(actor.route, t, actor.speed ?? 3);
           if (options.canWalk(motion.at)) {
-            const sequence = [0, 1, 0, 2];
+            const sequence = WALK_FRAMES;
             const frame = motion.moving ? sequence[Math.floor(t * 5) % 4] : actor.motion === 'pasture' ? 3 : 0;
-            actor.sprite
-              .setTexture(...texture(`${actor.frames}-${frame}`))
+            setFrame(actor.sprite, `${actor.frames}-${frame}`)
               .setPosition(...motion.at)
               .setFlipX(motion.facingLeft);
             actor.sprite
@@ -764,14 +801,15 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
         const motion = options.walkRoute(actor.path.route, sec + actor.phase, actor.path.speed);
         if (!options.canWalk(motion.at)) continue;
         const frame = motion.moving ? Math.floor((sec + actor.phase) * 5.5) % 4 : 1;
-        actor.sprite.setTexture(...texture(`npc-${actor.variant}-${frame}`)).setFlipX(motion.facingLeft);
+        setFrame(actor.sprite, `npc-${actor.variant}-${frame}`).setFlipX(motion.facingLeft);
         actor.sprite
           .setPosition(...motion.at)
           .setDepth(24 + motion.at[1] * 0.001)
           .setTint(tint);
       }
       for (const boat of this.boats) {
-        const [a, b] = [boat.route[0], boat.route[boat.route.length - 1]];
+        const a = boat.route[0],
+          b = boat.route[boat.route.length - 1];
         const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
         boat.t = (boat.t + (boat.speed * dt) / (2 * length)) % 1;
         const u = smooth(boat.t < 0.5 ? boat.t * 2 : 2 - boat.t * 2);
@@ -792,9 +830,10 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
           flock.from[0] + (flock.to[0] - flock.from[0]) * flock.t,
           flock.from[1] + (flock.to[1] - flock.from[1]) * flock.t + Math.sin(sec * 0.6) * 6,
         );
-        flock.group.each((bird: Phaser.GameObjects.Image) => {
+        for (const child of flock.group.list) {
+          const bird = child as Phaser.GameObjects.Image;
           bird.setScale(1, 0.6 + 0.4 * Math.abs(Math.sin(sec * 4 + bird.x)));
-        });
+        }
       }
       for (const c of this.circlers) {
         const a = c.phase + sec * c.path.speed;
@@ -838,7 +877,7 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
 
     private updateFootball(sec: number, dt: number, tint: number, light: WorldLighting) {
       const f = d.football;
-      const order = [0, 5, 1, 3, 2, 4];
+      const order = PASS_ORDER;
       const pass = sec / 3.6;
       const a = this.players[order[Math.floor(pass) % order.length]]?.home ?? f.center;
       const b = this.players[order[(Math.floor(pass) + 1) % order.length]]?.home ?? f.center;
@@ -855,7 +894,7 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
         const nx = p.sprite.x + (tx - p.sprite.x) * k;
         p.sprite.setFlipX(nx < p.sprite.x);
         const moving = Math.hypot(tx - p.sprite.x, ty - p.sprite.y) > 1;
-        p.sprite.setTexture(...texture(`npc-${p.team ? 'blue' : 'red'}-${moving ? Math.floor(sec * 7 + i) % 4 : 1}`));
+        setFrame(p.sprite, `npc-${p.team ? 'blue' : 'red'}-${moving ? Math.floor(sec * 7 + i) % 4 : 1}`);
         p.sprite
           .setPosition(nx, p.sprite.y + (ty - p.sprite.y) * k)
           .setTint(tint)
@@ -876,6 +915,7 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
           .setAngle(walking ? 0 : Math.sin(sec * 1.5) * 2)
           .setTint(tint);
       }
+
       const [x0, y0, x1, y1] = d.chickens.area;
       for (const c of this.chickens) {
         c.wait -= dt;
@@ -891,11 +931,10 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
         if (dist > 0.3) {
           c.x += (dx / dist) * step;
           c.y += (dy / dist) * step;
-          c.sprite
+          setFrame(c.sprite, `hen-white-${1 + (Math.floor(sec * 6 + c.tx) % 2)}`)
             .setFlipX(dx < 0)
-            .setAngle(0)
-            .setTexture(...texture(`hen-white-${1 + (Math.floor(sec * 6 + c.tx) % 2)}`));
-        } else c.sprite.setAngle(0).setTexture(...texture(`hen-white-${Math.sin(sec * 3 + c.tx) > 0.15 ? 3 : 0}`));
+            .setAngle(0);
+        } else setFrame(c.sprite, `hen-white-${Math.sin(sec * 3 + c.tx) > 0.15 ? 3 : 0}`).setAngle(0);
         c.sprite.setPosition(c.x, c.y).setTint(tint);
       }
     }
@@ -905,7 +944,9 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
       if (this.fishT < 0) {
         this.fishNext -= dt;
         if (this.fishNext > 0) return;
-        this.fishAt = d.fishSpots[Phaser.Math.Between(0, d.fishSpots.length - 1)];
+        const spot = d.fishSpots[Phaser.Math.Between(0, d.fishSpots.length - 1)];
+        if (!spot) return;
+        this.fishAt = spot;
         this.fishT = 0;
         splash.explode(6, this.fishAt[0] - 8, this.fishAt[1]);
       }
@@ -931,7 +972,8 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
       const s0 = sp['airport-plane-v1'];
       if (!plane || !s0) return;
       const [hx, hy] = d.plane.heading;
-      const park = [s0.x + s0.w / 2, s0.y + s0.h / 2];
+      const parkX = s0.x + s0.w / 2,
+        parkY = s0.y + s0.h / 2;
       const T = d.plane.cycle;
       const t = sec % T;
       // Park, accelerate along the runway, climb, then return on a descending approach.
@@ -955,8 +997,8 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
       plane.body.setVisible(visible);
       plane.shadow.setVisible(visible);
       if (!visible) return;
-      const x = park[0] + hx * s;
-      const y = park[1] + hy * s;
+      const x = parkX + hx * s;
+      const y = parkY + hy * s;
       const scale = 1 + alt / 400;
       const fade = approachFade * (alt > 120 ? Math.max(0, 1 - (alt - 120) / 80) : 1);
       plane.body
@@ -978,20 +1020,20 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
     private drawFountains(sec: number, light: WorldLighting) {
       const g = this.waterG;
       g.clear();
-      for (const [i, [x, y]] of d.fountains.entries()) {
+      for (let i = 0; i < d.fountains.length; i++) {
+        const [x, y] = d.fountains[i];
         const pulse = 0.88 + Math.sin(sec * 0.8 + i) * 0.12;
         g.lineStyle(0.8, 0xcfefff, (1 - light.night * 0.7) * 0.65);
-        for (const side of [-1, 1])
+        for (const side of FOUNTAIN_SIDES)
           for (let k = 0; k < 3; k++) {
             const span = (8 + k * 4) * side;
-            const points = [];
-            for (let step = 0; step <= 16; step++) {
+            g.beginPath();
+            g.moveTo(x, y - 3);
+            for (let step = 1; step <= 16; step++) {
               const t = step / 16;
-              points.push(
-                new Phaser.Math.Vector2(x + span * t, y - 3 - Math.sin(t * Math.PI) * (10 + k * 2) * pulse + t * 4),
-              );
+              g.lineTo(x + span * t, y - 3 - Math.sin(t * Math.PI) * (10 + k * 2) * pulse + t * 4);
             }
-            g.strokePoints(points, false);
+            g.strokePath();
           }
       }
     }
@@ -1005,7 +1047,7 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
       if (glow > 0.02)
         for (let k = 0; k < fw.count; k++) {
           const a = (k / fw.count + sec / d.ferrisSeconds) * Math.PI * 2;
-          g.fillStyle([0xff6fb5, 0xffd34d, 0x6fe3ff][k % 3], glow * (0.6 + 0.4 * Math.sin(sec * 1.5 + k)));
+          g.fillStyle(LIGHT_COLORS[k % 3], glow * (0.6 + 0.4 * Math.sin(sec * 1.5 + k)));
           g.fillCircle(fw.center[0] + Math.cos(a) * fw.radius * 0.82, fw.center[1] + Math.sin(a) * fw.radius, 2);
         }
       const [bx, by] = d.towerBeacon;

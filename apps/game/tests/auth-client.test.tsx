@@ -317,3 +317,14 @@ it('shows exactly the eight basic appearance choices without special gear', () =
   expect(html).not.toContain('Cấp tóc');
   expect(html).not.toContain('Ủng');
 });
+
+it('tolerates a blocked sessionStorage property getter before storage methods can be read', () => {
+  let reads = 0;
+  expect(
+    shouldShowGuestPrompt(() => {
+      reads++;
+      throw new Error('SecurityError');
+    }),
+  ).toBe(true);
+  expect(reads).toBe(1);
+});

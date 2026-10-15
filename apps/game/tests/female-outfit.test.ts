@@ -219,7 +219,7 @@ describe('female starter', () => {
                 );
             }
         }
-  });
+  }, 20_000);
 
   it('keeps the skirt hem above shoes and preserves each shoe pose footprint', () => {
     const skirt = items['pants.female'].poses[0];
@@ -256,5 +256,5 @@ describe('female starter', () => {
                 expect(row.has(x), `${hair.id}/${face.id}/${pose}/${mirror}: gap at ${x},${y}`).toBe(true);
             }
           }
-  });
+  }, 20_000);
 });

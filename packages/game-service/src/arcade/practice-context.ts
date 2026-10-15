@@ -1,4 +1,5 @@
 import type { MiniGameId } from '@chibi-town/arcade-games/mini-games-logic';
+import type { RandomSeed } from '@chibi-town/arcade-games/random';
 import { type ArcadeSession, arcadeAllReady } from '@chibi-town/arcade-games/session';
 import { ApiSdkError } from '@chibi-town/contracts';
 import type { ArcadeRoom } from '@chibi-town/contracts/arcade';
@@ -10,13 +11,18 @@ import type { GameServiceOptions } from '../service-types.js';
 export function createPracticeContext(options: GameServiceOptions) {
   const clock = options.clock;
 
-  const randomSeed = () => {
+  const randomSeed = (): RandomSeed => {
+    if (options.randomSeed) return options.randomSeed();
     if (options.random) {
-      const value = options.random();
-      if (!Number.isFinite(value) || value < 0 || value >= 1) throw new ApiSdkError('INVALID_COMMAND');
-      return Math.floor(value * 4294967296);
+      const word = () => {
+        const value = options.random!();
+        if (!Number.isFinite(value) || value < 0 || value >= 1) throw new ApiSdkError('INVALID_COMMAND');
+        return Math.floor(value * 4294967296);
+      };
+
+      return [word(), word(), word(), word()];
     }
-    return globalThis.crypto.getRandomValues(new Uint32Array(1))[0];
+    return Array.from(globalThis.crypto.getRandomValues(new Uint32Array(4))) as [number, number, number, number];
   };
 
   const lobbySource = options.live ? ('live' as const) : ('local' as const);

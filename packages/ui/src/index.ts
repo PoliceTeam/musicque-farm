@@ -77,7 +77,7 @@ export function inventorySlotsMarkup(items: InventorySlotData[], slots = 12) {
     const item = visible[i];
     const tag = item?.key ? 'button' : 'div';
     const active = item && (item.selected ?? i === 0);
-    return `<${tag} class="stock-slot${active ? ' active' : ''}"${item?.key ? ` type="button" data-stock-item="${escapeMarkup(item.key)}" aria-pressed="${Boolean(active)}"` : ''}${item ? ` aria-label="${escapeMarkup(item.label)} · ${item.count}"` : ''}>${item ? `${item.imageUrl ? `<img src="${escapeMarkup(item.imageUrl)}" alt="" draggable="false">` : `<span aria-hidden="true">${escapeMarkup(item.icon ?? '')}</span>`}<b>${item.count}</b>` : ''}</${tag}>`;
+    return `<${tag} class="ui-inventory-slot${active ? ' active' : ''}"${item?.key ? ` type="button" data-stock-item="${escapeMarkup(item.key)}" aria-pressed="${Boolean(active)}"` : ''}${item ? ` aria-label="${escapeMarkup(item.label)} · ${item.count}"` : ''}>${item ? `${item.imageUrl ? `<img src="${escapeMarkup(item.imageUrl)}" alt="" draggable="false">` : `<span aria-hidden="true">${escapeMarkup(item.icon ?? '')}</span>`}<b>${item.count}</b>` : ''}</${tag}>`;
   }).join('');
 }
 

@@ -4,16 +4,16 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "cd ../.. && node tools/runtime/prepare-assets.mjs && cd apps/game && next dev --webpack --hostname 127.0.0.1 --port 5173",
-    "build": "cd ../.. && node tools/runtime/prepare-assets.mjs && cd apps/game && next build --webpack",
+    "dev": "node ../../tools/runtime/run-game-task.mjs dev",
+    "build": "node ../../tools/runtime/run-game-task.mjs build",
     "preview": "next start --hostname 127.0.0.1 --port 5173",
-    "typecheck": "node ../../tools/runtime/prepare-assets.mjs && next typegen && tsc --noEmit",
-    "test": "node ../../tools/runtime/prepare-assets.mjs && node --test ../../tools/runtime/map-assets.test.mjs && vitest run",
+    "typecheck": "node ../../tools/runtime/run-game-task.mjs typecheck",
+    "test": "node ../../tools/runtime/run-game-task.mjs test",
     "check": "pnpm typecheck && pnpm test",
     "lint": "biome check . --formatter-enabled=false",
     "format:check": "biome format .",
     "format": "biome format --write .",
-    "prepare:assets": "node ../../tools/runtime/prepare-assets.mjs"
+    "prepare-assets": "node ../../tools/runtime/prepare-assets.mjs"
   },
   "devDependencies": {
     "@chibi-town/game-service": "workspace:*",
@@ -24,14 +24,15 @@
     "sharp": "^0.35.5",
     "typescript": "^5.9.0",
     "vite": "^7.1.0",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.0",
+    "@chibi-town/arcade-games": "workspace:*",
+    "phaser": "^4.2.1"
   },
   "engines": {
     "node": ">=22.13"
   },
   "dependencies": {
     "@chibi-town/api-sdk": "workspace:*",
-    "@chibi-town/arcade-games": "workspace:*",
     "@chibi-town/arcade-games-react": "workspace:*",
     "@chibi-town/character-core": "workspace:*",
     "@chibi-town/contracts": "workspace:*",

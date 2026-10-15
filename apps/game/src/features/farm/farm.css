@@ -1,3 +1,215 @@
+.game-ui .ui-land-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 6px 14px 6px 8px;
+  border: 2px solid #789796;
+  border-radius: 12px;
+  background: linear-gradient(#345966, #203e4b);
+  color: #fffbea;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow:
+    inset 0 1px #ffffff30,
+    0 3px #18303970;
+}
+.game-ui .ui-land-count {
+  padding: 6px 14px;
+  border-color: #9aaf73;
+  background: linear-gradient(#5b783c, #3e582a);
+}
+@media (max-width: 700px) {
+  .game-ui .ui-land-count {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+}
+.game-ui .ui-game-header .ui-header-counters :is(.ui-land-count) {
+  color: #fffbea;
+  font-size: 14px;
+  font-weight: 800;
+}
+@media (max-width: 700px) {
+  .game-ui .ui-game-header .ui-header-counters :is(.ui-land-count) {
+    font-size: 12px;
+  }
+}
+.game-ui :is(.farm-selection),
+.game-ui :is(#batch) {
+  background: var(--ui-paper);
+  color: var(--ui-ink);
+  border: 2px solid var(--ui-border);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px #fffdf5,
+    0 4px #8a6b4550,
+    0 8px 24px #263a3025;
+}
+.game-ui :is(.farm-selection) h2 {
+  color: var(--ui-ink);
+}
+.game-ui :is(.farm-selection) p,
+.game-ui :is(.farm-selection) small {
+  color: var(--ui-muted);
+}
+.game-ui :is(.farm-tools button),
+.game-ui :is(#unit-expand, #unit-feed, #unit-buy, #unit-collect) {
+  background: linear-gradient(#56783f, #446631);
+  color: #fffbea;
+  border-color: var(--ui-green-dark);
+  box-shadow:
+    inset 0 1px #b9ce9690,
+    0 3px #4d6b3655;
+}
+.game-ui :is(.farm-tools button, #unit-expand, #unit-feed, #unit-buy, #unit-collect):disabled {
+  background: #e8dfcc;
+  color: #675944;
+  border-color: #cebea0;
+  box-shadow: none;
+}
+.game-ui .farm-selection {
+  max-height: calc(100dvh - 88px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.game-ui.farm-style-sample .farm-selection header button {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 2px solid var(--ui-border);
+  background: linear-gradient(#fffbea, #f4e6c7);
+  color: var(--ui-ink);
+}
+.game-ui.farm-style-sample .farm-selection :is(p, small) {
+  color: var(--ui-muted);
+}
+@media (max-width: 600px) {
+  .game-ui.farm-style-sample .ui-header-title {
+    min-width: 0;
+    left: 46%;
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+.game-ui :is(.farm-selection) p {
+  line-height: 1.55;
+}
+.game-ui :is(.farm-tools) {
+  gap: 10px;
+}
+.game-ui.farm-style-sample .farm-selection :is(button, select, p) {
+  font-size: 13px;
+}
+.game-ui.farm-style-sample .farm-selection small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.game-ui.farm-style-sample .farm-tools button span {
+  font-size: 12px;
+  opacity: 1;
+}
+.game-ui.farm-style-sample .farm-selection .ui-button {
+  min-height: var(--ui-control-height);
+  padding: 10px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.game-ui.farm-style-sample .farm-selection .ui-icon-button {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  flex: 0 0 44px;
+  font-size: 22px;
+}
+.game-ui.farm-style-sample .farm-selection {
+  padding: 0;
+  width: min(390px, calc(100vw - 32px));
+  max-height: calc(100dvh - 132px);
+}
+.game-ui.farm-style-sample .farm-selection header {
+  padding: 12px 16px;
+  gap: 16px;
+  margin: 0;
+  border-bottom: 1px solid #d6c49c;
+  background: #f4e8cc;
+}
+.game-ui.farm-style-sample .farm-selection h2 {
+  font-size: 16px;
+  line-height: 1.4;
+}
+.game-ui.farm-style-sample .ui-panel-body p {
+  margin: 0;
+  line-height: 1.6;
+}
+.game-ui.farm-style-sample .ui-panel-body .farm-tools {
+  padding: 0;
+}
+.game-ui.farm-style-sample .ui-panel-body .farm-tools .ui-button {
+  width: 100%;
+}
+@media (max-width: 700px) {
+  .game-ui.farm-style-sample .farm-selection {
+    max-height: calc(100dvh - 160px);
+  }
+}
+.game-ui.farm-style-sample .farm-selection .ui-button:disabled {
+  background: #ece5d5;
+  color: #776c59;
+  border-color: #ccbea3;
+  box-shadow: none;
+  cursor: default;
+}
+.game-ui .farm-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.game-ui .farm-quick-actions .ui-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  padding: 16px;
+  min-height: 96px;
+}
+.game-ui .farm-quick-actions span {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.game-ui .farm-crop-selector {
+  gap: 16px;
+}
+.game-ui .farm-crop-details {
+  display: grid;
+  gap: 8px;
+}
+.game-ui .farm-crop-details p {
+  margin: 0;
+}
+.game-ui .farm-crop-selector select:focus-visible {
+  outline: 2px solid #95702f;
+  outline-offset: 3px;
+}
+.game-ui .farm-selection > header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.game-ui.farm-style-sample .farm-tools .ui-button.primary:enabled {
+  background: linear-gradient(#56783f, #446631);
+  color: #fffbea;
+  border: 2px solid var(--ui-green-dark);
+}
 :root {
   font-family: "Nunito", "Trebuchet MS", system-ui, sans-serif;
   color: #f8f8ed;
@@ -33,13 +245,13 @@ button {
   touch-action: none;
   cursor: pointer;
 }
-.farm-menu {
+.ui-profile-menu {
   position: fixed;
   top: 12px;
   left: 14px;
   z-index: 3;
 }
-.farm-menu summary {
+.ui-profile-menu summary {
   padding: 8px 15px;
   border: 2px solid #fff6d8;
   border-radius: 7px;
@@ -53,10 +265,10 @@ button {
   letter-spacing: 0.4px;
   list-style: none;
 }
-.farm-menu summary::-webkit-details-marker {
+.ui-profile-menu summary::-webkit-details-marker {
   display: none;
 }
-.farm-menu nav {
+.ui-profile-menu nav {
   margin-top: 10px;
   width: 218px;
   padding: 6px;
@@ -65,8 +277,8 @@ button {
   background: #193f55f2;
   box-shadow: 0 4px 10px #153b4960;
 }
-.farm-menu a,
-.farm-menu button {
+.ui-profile-menu a,
+.ui-profile-menu button {
   display: block;
   width: 100%;
   padding: 10px;
@@ -78,17 +290,17 @@ button {
   font-size: 12px;
   font-weight: 700;
 }
-.farm-menu a:hover,
-.farm-menu button:hover {
+.ui-profile-menu a:hover,
+.ui-profile-menu button:hover {
   background: #377490;
 }
-.farm-menu p {
+.ui-profile-menu p {
   padding: 0 10px;
   font-size: 11px;
   line-height: 1.7;
   color: #b8d7e1;
 }
-.farm-title {
+.ui-header-title {
   position: fixed;
   top: 7px;
   left: 50%;
@@ -107,7 +319,7 @@ button {
   text-shadow: 0 2px 0 #193748;
   pointer-events: none;
 }
-.farm-capacity {
+.ui-header-counters {
   position: fixed;
   right: 14px;
   top: 13px;
@@ -121,14 +333,14 @@ button {
   box-shadow: 0 2px 2px #173c4445;
   font-size: 16px;
 }
-.farm-capacity > span {
+.ui-header-counters > span {
   font-size: 18px;
 }
-.farm-capacity strong {
+.ui-header-counters strong {
   color: #ffdf79;
   font-size: 15px;
 }
-.farm-capacity strong span {
+.ui-header-counters strong span {
   color: #d3e5e5;
   font-size: 12px;
   font-weight: 700;
@@ -193,32 +405,32 @@ summary:focus-visible {
   outline-offset: 4px;
 }
 @media (max-width: 600px) {
-  .farm-menu {
+  .ui-profile-menu {
     left: 9px;
     top: 10px;
   }
-  .farm-menu summary {
+  .ui-profile-menu summary {
     padding: 7px 9px;
     font-size: 11px;
   }
-  .farm-title {
+  .ui-header-title {
     top: 7px;
     min-width: 128px;
     padding: 6px 15px;
     font-size: 16px;
   }
-  .farm-capacity {
+  .ui-header-counters {
     top: 12px;
     right: 9px;
     padding: 3px 6px;
   }
-  .farm-capacity > span {
+  .ui-header-counters > span {
     font-size: 13px;
   }
-  .farm-capacity strong {
+  .ui-header-counters strong {
     font-size: 12px;
   }
-  .farm-capacity strong span {
+  .ui-header-counters strong span {
     font-size: 10px;
   }
   .farm-selection {
@@ -226,13 +438,11 @@ summary:focus-visible {
     bottom: 12px;
   }
 }
-
-/* Compact cream and wood UI for the modular farm. */
 .farm-style-sample {
   color: #5d4938;
   background: #88bc64;
 }
-.farm-style-sample .farm-menu summary {
+.farm-style-sample .ui-profile-menu summary {
   background: #fff3d5;
   color: #5b4935;
   border: 2px solid #96724b;
@@ -244,24 +454,24 @@ summary:focus-visible {
   padding: 10px 16px;
   letter-spacing: 0;
 }
-.farm-style-sample .farm-menu nav {
+.farm-style-sample .ui-profile-menu nav {
   background: #fff6df;
   border-color: #aa8758;
   color: #5b4935;
   border-radius: 12px;
 }
-.farm-style-sample .farm-menu a,
-.farm-style-sample .farm-menu button {
+.farm-style-sample .ui-profile-menu a,
+.farm-style-sample .ui-profile-menu button {
   color: #5b4935;
 }
-.farm-style-sample .farm-menu a:hover,
-.farm-style-sample .farm-menu button:hover {
+.farm-style-sample .ui-profile-menu a:hover,
+.farm-style-sample .ui-profile-menu button:hover {
   background: #e8edcf;
 }
-.farm-style-sample .farm-menu p {
+.farm-style-sample .ui-profile-menu p {
   color: #85735c;
 }
-.farm-style-sample .farm-title {
+.farm-style-sample .ui-header-title {
   background: #fff3d8;
   color: #5d4938;
   border: 2px solid #aa8758;
@@ -275,17 +485,17 @@ summary:focus-visible {
   top: -2px;
   font-size: 18px;
 }
-.farm-style-sample .farm-capacity {
+.farm-style-sample .ui-header-counters {
   background: #fff3d8;
   border: 2px solid #aa8758;
   border-radius: 12px;
   box-shadow: 0 3px #8a6a47;
   padding: 7px 10px;
 }
-.farm-style-sample .farm-capacity strong {
+.farm-style-sample .ui-header-counters strong {
   color: #507b3e;
 }
-.farm-style-sample .farm-capacity strong span {
+.farm-style-sample .ui-header-counters strong span {
   color: #85735c;
 }
 .farm-review-note {
@@ -324,7 +534,6 @@ summary:focus-visible {
   color: #5e4933;
   font-size: 15px;
 }
-
 .farm-style-sample .farm-selection p {
   margin: 2px 10px 12px;
   color: #7a7958;
@@ -386,15 +595,15 @@ summary:focus-visible {
   background: #eadcbd;
 }
 @media (max-width: 600px) {
-  .farm-style-sample .farm-menu summary {
+  .farm-style-sample .ui-profile-menu summary {
     padding: 9px 12px;
   }
-  .farm-style-sample .farm-title {
+  .farm-style-sample .ui-header-title {
     min-width: 120px;
     padding: 10px 14px;
     font-size: 15px;
   }
-  .farm-style-sample .farm-capacity {
+  .farm-style-sample .ui-header-counters {
     padding: 7px;
   }
   .farm-review-note {
@@ -408,7 +617,7 @@ summary:focus-visible {
 .farm-style-sample .farm-selection {
   width: min(390px, calc(100vw - 24px));
 }
-.farm-style-sample .farm-capacity {
+.farm-style-sample .ui-header-counters {
   gap: 12px;
   font-size: 12px;
 }
@@ -417,7 +626,7 @@ summary:focus-visible {
   font-weight: 800;
 }
 @media (max-width: 600px) {
-  .farm-style-sample .farm-capacity {
+  .farm-style-sample .ui-header-counters {
     flex-direction: column;
     gap: 1px;
     font-size: 10px;
@@ -427,7 +636,6 @@ summary:focus-visible {
     bottom: 10px;
   }
 }
-
 .farm-style-sample .farm-tools button[hidden] {
   display: none;
 }
@@ -435,7 +643,6 @@ summary:focus-visible {
   font-size: 10px;
   opacity: 0.8;
 }
-
 .farm-style-sample :is(#unit-expand, #unit-feed, #unit-buy) {
   border: 1px solid #ad9565;
   border-radius: 10px;
@@ -457,11 +664,9 @@ summary:focus-visible {
 .farm-style-sample .farm-tools[hidden] {
   display: none;
 }
-
 .farm-style-sample #unit-feed {
   margin: 8px 0 0;
 }
-
 #unit-purchase {
   margin-top: 12px;
   display: flex;
@@ -485,8 +690,8 @@ summary:focus-visible {
   font: inherit;
   font-size: 13px;
 }
-
-:is(#warehouse, #batch, #kitchen) {
+:is(#batch),
+:is(#kitchen) {
   width: min(530px, calc(100vw - 28px));
   border: 3px solid #77b5cb;
   border-radius: 22px;
@@ -522,21 +727,21 @@ dialog button:disabled {
   opacity: 0.5;
   cursor: default;
 }
-.warehouse-tabs {
+.ui-tabs {
   display: flex;
   gap: 8px;
   margin: 18px 0 12px;
 }
-.warehouse-tabs [aria-pressed="true"] {
+.ui-tabs [aria-pressed="true"] {
   background: #fff0bd;
   border-color: #c8a553;
 }
-#warehouse-grid {
+#ui-inventory-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 8px;
 }
-.stock-slot {
+.ui-inventory-slot {
   position: relative;
   aspect-ratio: 1;
   border-radius: 12px;
@@ -545,21 +750,21 @@ dialog button:disabled {
   display: grid;
   place-items: center;
 }
-.stock-slot.active {
+.ui-inventory-slot.active {
   border-color: #ddb650;
   background: #fff9e6;
 }
-.stock-slot span {
+.ui-inventory-slot span {
   font-size: 29px;
 }
-.stock-slot b {
+.ui-inventory-slot b {
   position: absolute;
   top: 3px;
   right: 5px;
   color: #927430;
   font-size: 12px;
 }
-.warehouse-actions {
+.ui-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -584,24 +789,6 @@ dialog small {
   padding: 10px 15px;
   font-size: 12px;
 }
-
-/* Reserve the detail and command rows so switching stock tabs never moves the modal. */
-#warehouse-detail {
-  min-height: 44px;
-  margin: 14px 0;
-}
-#warehouse .warehouse-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  min-height: 52px;
-  align-items: stretch;
-}
-#warehouse {
-  height: fit-content;
-  max-height: calc(100dvh - 28px);
-  overflow-y: auto;
-}
-
 #kitchen select {
   width: 100%;
 }
@@ -620,28 +807,6 @@ dialog small {
   max-height: calc(100dvh - 110px);
   overflow-y: auto;
 }
-
-.chest-upgrade {
-  padding: 10px 12px;
-  border: 1px solid #b49563;
-  border-radius: 12px;
-  background: #fff3d8;
-  margin-bottom: 12px;
-}
-.chest-upgrade p {
-  margin: 6px 0;
-}
-
-#warehouse > small {
-  display: block;
-  margin-top: 14px;
-  line-height: 1.6;
-}
-#warehouse > button {
-  width: 100%;
-  margin-top: 12px;
-}
-
 .game-ui .farm-picture-select {
   position: relative;
   min-width: 0;
@@ -704,20 +869,6 @@ dialog small {
 .game-ui .farm-picture-options [aria-selected="true"] {
   font-weight: 700;
 }
-.game-ui #kitchen .kitchen-recipe-detail li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 8px 0;
-}
-.game-ui #kitchen .kitchen-recipe-detail li img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
-  flex: 0 0 36px;
-}
-
-/* Keep scrolling controls quiet on the farm's cream panels and picture menus. */
 .game-ui :is(dialog:has(.farm-picture-select), .ui-dialog-surface:has(.farm-picture-select), .farm-picture-options) {
   scrollbar-width: thin;
   scrollbar-color: #bda781 transparent;
@@ -756,4 +907,69 @@ dialog small {
     .farm-picture-options
   )::-webkit-scrollbar-thumb:hover {
   background: #9e825b;
+}
+.game-ui #selection-meters {
+  padding: 0 10px;
+}
+.game-ui .kitchen-recipes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.game-ui .kitchen-recipes .ui-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 4px;
+  font-size: 12px;
+  min-height: 88px;
+}
+.game-ui .kitchen-dish-icon {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+@media (max-width: 480px) {
+  .game-ui .kitchen-recipes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-height: 240px;
+  }
+}
+.game-ui .kitchen-recipes {
+  margin: 0;
+  border: 0;
+  min-width: 0;
+}
+.game-ui #kitchen h3:has(.kitchen-dish-icon) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.game-ui #kitchen .kitchen-recipe-detail {
+  margin: 16px 0 0;
+  padding: 16px;
+}
+.game-ui #kitchen .kitchen-recipe-detail p {
+  margin: 0;
+}
+.game-ui #kitchen .kitchen-recipe-detail ul {
+  margin: 0;
+  padding-left: 20px;
+}
+.game-ui #kitchen .kitchen-recipe-detail li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+.game-ui #kitchen .kitchen-recipe-detail li img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex: 0 0 36px;
 }

@@ -1,4 +1,4 @@
-import { separateFarmHerd } from '@/features/farm/_utils/farm-animal-logic';
+import { separateFarmHerd } from '@/features/farm/_utils/farm-herd-logic';
 
 /** Fish paths in local pond coordinates, with space for fins inside the shoreline. */
 export function farmFishPose(width: number, height: number, index: number, time: number) {

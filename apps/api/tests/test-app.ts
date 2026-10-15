@@ -1,8 +1,8 @@
 import { createHttpSdk } from '@chibi-town/api-sdk';
+import type { Adapters } from '@chibi-town/realtime-core';
 import { type AppDependencies, createApp } from '@/app';
 import type { ApiConfig } from '@/config';
 import { openDatabase } from '@/infrastructure/database/database';
-import type { SharedState } from '@/infrastructure/realtime/shared-state';
 
 export const testConfig: ApiConfig = {
   databaseUrl: '',
@@ -20,7 +20,7 @@ export async function createTestApp(
     logger?: AppDependencies['logger'];
     config?: Partial<ApiConfig>;
     fetch?: typeof fetch;
-    shared?: SharedState;
+    adapters?: Adapters;
     database?: Awaited<ReturnType<typeof openDatabase>>;
   } = {},
 ) {
@@ -30,7 +30,7 @@ export async function createTestApp(
   const { app, tables } = await createApp({
     db,
     logger: options.logger,
-    shared: options.shared,
+    adapters: options.adapters,
     config: { ...testConfig, ...options.config },
 
     clock: () => now,

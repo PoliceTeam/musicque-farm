@@ -1,3 +1,4 @@
+import type { RandomSeed } from '@chibi-town/arcade-games/random';
 import type { ArcadeSession } from '@chibi-town/arcade-games/session';
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import type { ArcadeGameId } from '@chibi-town/game-content/arcade-catalog';
@@ -7,6 +8,7 @@ export const TABLE_TURN_LIMIT_MS = 60_000;
 
 export type TableMatch = {
   id: string;
+  seed?: RandomSeed;
   roomId: number;
   tableId?: number;
   revision: number;
@@ -19,6 +21,7 @@ export type TableSeat = { playerId: string; name: string; username?: string | nu
 /** A table of people. Seat order is join order; seat 0 is the host. Stored once on the server, not per player. */
 export type TableRecord<M extends TableMatch = TableMatch> = {
   gameId: ArcadeGameId;
+  departedPlayerIds?: string[];
   turnStartedAt?: number;
   lastSteps?: { revision: number; seats: unknown[][] };
   match: M;
@@ -36,7 +39,7 @@ export type TableGame<M extends TableMatch = TableMatch> = {
   finished?(match: M): boolean;
   settlement?: 'house';
   minPlayers: number;
-  create(id: string, roomId: number, tableId: number, seed: number): M;
+  create(id: string, roomId: number, tableId: number, seed: RandomSeed): M;
   validCommand(command: unknown): boolean;
   action(command: unknown): { type: string };
   /** Applies one seat's action; throws `Error(code)` for an illegal one. */

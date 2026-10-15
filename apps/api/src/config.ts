@@ -1,6 +1,7 @@
 export type ApiConfig = {
   databaseUrl: string;
   redisUrl?: string;
+  redisCluster?: boolean;
   host: string;
   port: number;
   webOrigin: string;
@@ -19,6 +20,7 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
   return {
     databaseUrl: env.DATABASE_URL,
     redisUrl: env.REDIS_URL || undefined,
+    redisCluster: env.REDIS_CLUSTER === 'true',
     host,
     port,
     webOrigin: (env.WEB_ORIGIN ?? 'http://127.0.0.1:5173').replace(/\/$/, ''),

@@ -12,11 +12,13 @@ import type { ExecuteFarm } from '@/features/farm/_components/farm-unit-panel';
 
 export function FarmBatchDialog({
   snapshot,
+  now = snapshot?.serverTime ?? 0,
   pending,
   execute,
   onClose,
 }: {
   snapshot?: Snapshot;
+  now?: number;
   pending: boolean;
   execute: ExecuteFarm;
   onClose: () => void;
@@ -27,7 +29,6 @@ export function FarmBatchDialog({
   const [cropId, setCropId] = useState<CropId>('tomato');
   const definition = FARM_CROPS[cropId];
   const seedCount = state ? (cropId === 'strawberry' ? state.inventory.seed : (state.seeds[cropId] ?? 0)) : 0;
-  const now = snapshot?.serverTime ?? 0;
   const feeding = state
     ? FARM_UNITS.filter((unit) => farmUnitAnimals(state, unit).length && farmFoodPercent(state, unit, now) <= 25)
     : [];

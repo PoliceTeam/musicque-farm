@@ -1,4 +1,5 @@
 import { DIAMOND_RULES, validSavedArcadeSeat } from '@chibi-town/game-content/arcade-catalog';
+import { isRandomSeed, normalizeSeed, type RandomSeed, random } from './random.js';
 import { type ArcadeSession, validArcadeSession } from './session.js';
 import type { TableSnapshot } from './table-snapshot.js';
 export const GEM_TYPES = ['attack', 'heal', 'mana', 'score', 'shield', 'luck'] as const;
@@ -9,7 +10,7 @@ export type GemBattle = {
   roomId: number;
   tableId?: number;
   session?: ArcadeSession;
-  seed: number;
+  seed: RandomSeed;
   board: Gem[];
   player: GemFighter;
   bot: GemFighter;
@@ -50,11 +51,6 @@ export function gemPublicResult(result: GemPublicResult): GemPublicResult {
 }
 
 const SIZE = DIAMOND_RULES.size;
-
-function random(state: { seed: number }) {
-  state.seed = (Math.imul(state.seed, 1664525) + 1013904223) >>> 0;
-  return state.seed / 4294967296;
-}
 
 /** Merge intersecting runs, so T/L shapes qualify but separate triples do not. */
 export function gemMatchGroups(board: readonly Gem[]): number[][] {
@@ -111,7 +107,7 @@ export function validGemMoves(board: readonly Gem[]) {
   return moves;
 }
 
-function freshBoard(state: { seed: number }) {
+function freshBoard(state: { seed: RandomSeed }) {
   for (let attempt = 0; attempt < 128; attempt++) {
     const board: Gem[] = [];
     for (let i = 0; i < SIZE * SIZE; i++) {
@@ -127,8 +123,8 @@ function freshBoard(state: { seed: number }) {
   throw new Error('BOARD_UNAVAILABLE');
 }
 
-export function createGemBattle(id: string, roomId: number, seed: number, tableId = 0): GemBattle {
-  const state = { seed: seed >>> 0 };
+export function createGemBattle(id: string, roomId: number, seed: RandomSeed, tableId = 0): GemBattle {
+  const state = { seed: normalizeSeed(seed) };
   const board = freshBoard(state);
   return {
     id,
@@ -436,9 +432,7 @@ export function playGemAction(source: GemBattle, action: GemAction): GemResult {
 
 export function isGemBattle(value: unknown): value is GemBattle {
   const battle = value as GemBattle;
-  return (
-    isGemBattleSnapshot(value) && Number.isSafeInteger(battle.seed) && battle.seed >= 0 && battle.seed <= 4294967295
-  );
+  return isGemBattleSnapshot(value) && isRandomSeed(battle.seed);
 }
 
 export function isGemBattleSnapshot(value: unknown): value is GemBattleSnapshot {

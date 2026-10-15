@@ -1,5 +1,5 @@
 import type { RecipeId } from '@chibi-town/game-content/farm-recipes';
-import { farmAssetUrl } from './farm-assets';
+import { farmAssetUrl } from '@/features/farm/_utils/farm-assets';
 
 export const DESSERT_REFERENCE_IDS: Partial<Record<RecipeId, true>> = {
   starfruitYogurt: true,

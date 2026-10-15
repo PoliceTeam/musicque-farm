@@ -1,3 +1,4 @@
+import type { Coordination } from '@chibi-town/realtime-core';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { createAttemptLimiter } from '@/_utils/attempt-limiter';
 import { HttpError } from '@/_utils/http-errors';
@@ -5,6 +6,7 @@ import {
   createSession,
   deleteSession,
   GUEST_SESSION_SECONDS,
+  hashSessionToken,
   type PlayerAccount,
   readSession,
   SESSION_COOKIE,
@@ -12,7 +14,6 @@ import {
 } from '@/_utils/session-auth';
 import type { ApiConfig } from '@/config';
 import type { Database } from '@/infrastructure/database/database';
-import type { SharedState } from '@/infrastructure/realtime/shared-state';
 import { type GoogleClient, readGoogleProfile, startGoogleSignIn } from '@/modules/auth/google-oauth';
 import {
   accountWithSetup,
@@ -32,7 +33,8 @@ export function createAuthController(deps: {
   config: ApiConfig;
   clock: () => number;
   fetch: typeof fetch;
-  shared: SharedState;
+  shared: Coordination;
+  revokeSession: (sessionId: string) => Promise<void>;
 }) {
   const { db, config, clock } = deps;
   const cookie = { path: '/', httpOnly: true, sameSite: 'lax', secure: config.secureCookies } as const;
@@ -87,19 +89,23 @@ export function createAuthController(deps: {
       .trim()
       .toLowerCase()
       .slice(0, 254);
-    if ((await byEmail.blocked(email, clock())) || (await byAddress.blocked(request.ip, clock())))
-      throw new HttpError(429, 'TOO_MANY_ATTEMPTS');
-    try {
-      const player = await loginPlayer(db, request.body);
-      await byEmail.clear(email);
-      return await signIn(reply, player);
-    } catch (error) {
-      if (error instanceof HttpError && error.code === 'INVALID_CREDENTIALS') {
-        await byEmail.fail(email, clock());
-        await byAddress.fail(request.ip, clock());
-      }
-      throw error;
-    }
+    return deps.shared.exclusive(`login-attempt-address:${request.ip}`, () =>
+      deps.shared.exclusive(`login-attempt-email:${email}`, async () => {
+        if ((await byEmail.blocked(email, clock())) || (await byAddress.blocked(request.ip, clock())))
+          throw new HttpError(429, 'TOO_MANY_ATTEMPTS');
+        try {
+          const player = await loginPlayer(db, request.body);
+          await byEmail.clear(email);
+          return await signIn(reply, player);
+        } catch (error) {
+          if (error instanceof HttpError && error.code === 'INVALID_CREDENTIALS') {
+            await byEmail.fail(email, clock());
+            await byAddress.fail(request.ip, clock());
+          }
+          throw error;
+        }
+      }),
+    );
   };
 
   async function updateUsername(request: FastifyRequest) {
@@ -120,8 +126,14 @@ export function createAuthController(deps: {
     return { player: await completeCharacterSetup(db, current, request.body, clock()) };
   };
 
+  async function revokeCookie(request: FastifyRequest) {
+    const token = request.cookies[SESSION_COOKIE];
+    await deleteSession(db, token);
+    if (token) await deps.revokeSession(hashSessionToken(token));
+  }
+
   const logout = async (request: FastifyRequest, reply: FastifyReply) => {
-    await deleteSession(db, request.cookies[SESSION_COOKIE]);
+    await revokeCookie(request);
     reply.clearCookie(SESSION_COOKIE, cookie);
     return { ok: true };
   };
@@ -153,7 +165,9 @@ export function createAuthController(deps: {
         current,
         clock(),
       );
-      if (player.id !== current?.id) await signIn(reply, player);
+      if (player.id !== current?.id) await revokeCookie(request);
+      if (player.id !== current?.id || !(await readSession(db, request.cookies[SESSION_COOKIE], clock())))
+        await signIn(reply, player);
       return reply.redirect(`${config.webOrigin}/${player.registrationBonusGranted ? '?auth=registered' : ''}`);
     } catch (error) {
       if (!(error instanceof HttpError)) request.log.error(error);

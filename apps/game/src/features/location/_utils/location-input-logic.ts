@@ -1,0 +1,87 @@
+import type { MapDefinition } from '@chibi-town/game-content';
+import { moveInLocation } from '@/features/location/_utils/location-logic';
+
+const attractionIds = ['atm', 'arcade', 'hall', 'auction', 'prizes', 'racing'] as const;
+export type Attraction = (typeof attractionIds)[number];
+export type LocationInputState = {
+  x: number;
+  y: number;
+  target?: [number, number];
+  dx: number;
+  moving: boolean;
+  position: [number, number];
+  delta: [number, number];
+};
+
+export function createLocationInputState(map: MapDefinition): LocationInputState {
+  return { x: map.spawn[0], y: map.spawn[1], dx: 0, moving: false, position: [...map.spawn], delta: [0, 0] };
+}
+
+export function updateLocationInput(
+  map: MapDefinition,
+  state: LocationInputState,
+  direction: readonly [number, number] | undefined,
+  seconds: number,
+  blocked: boolean,
+) {
+  let dx = direction?.[0] ?? 0,
+    dy = direction?.[1] ?? 0;
+  if (blocked) {
+    dx = 0;
+    dy = 0;
+  } else if (dx || dy) state.target = undefined;
+  else if (state.target) {
+    dx = state.target[0] - state.x;
+    dy = state.target[1] - state.y;
+    if (Math.hypot(dx, dy) < 3) {
+      state.target = undefined;
+      dx = 0;
+      dy = 0;
+    }
+  }
+  const distance = Math.hypot(dx, dy);
+  if (distance) {
+    const travel = state.target ? Math.min(distance, 100 * seconds) : 100 * seconds;
+    state.position[0] = state.x;
+    state.position[1] = state.y;
+    state.delta[0] = (dx / distance) * travel;
+    state.delta[1] = (dy / distance) * travel;
+    moveInLocation(map, state.position, state.delta, state.position);
+    state.x = state.position[0];
+    state.y = state.position[1];
+  }
+  state.dx = dx;
+  state.moving = distance > 0;
+}
+
+export function locationInputAt(map: MapDefinition, x: number, y: number) {
+  const sign = map.layers?.find((layer) => layer.id === 'zone-sign');
+  if (map.channels && sign && x >= sign.x && x <= sign.x + sign.width && y >= sign.y && y <= sign.y + sign.height)
+    return { kind: 'channels' } as const;
+  for (const portal of map.portals)
+    if (
+      portal.target === 'world' &&
+      portal.entrance &&
+      Math.abs(x - portal.entrance[0]) <= 36 &&
+      y >= portal.entrance[1] - 52 &&
+      y <= portal.entrance[1] + 12
+    )
+      return { kind: 'exit' } as const;
+  if (map.regionId === 'fun')
+    for (const layer of map.layers ?? []) {
+      if (
+        (attractionIds.includes(layer.id as Attraction) || layer.id.startsWith('wheel-')) &&
+        ((x >= layer.x && x <= layer.x + layer.width && y >= layer.y && y <= layer.y + layer.height) ||
+          (layer.entrance &&
+            Math.abs(x - layer.entrance[0]) <= 28 &&
+            y >= layer.entrance[1] &&
+            y <= layer.entrance[1] + 44))
+      )
+        return {
+          kind: 'attraction',
+          id: layer.id.startsWith('wheel-') ? 'prizes' : (layer.id as Attraction),
+          destination: layer.destination,
+        } as const;
+    }
+  return { kind: 'move' } as const;
+}

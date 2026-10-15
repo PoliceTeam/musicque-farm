@@ -4,8 +4,8 @@ export function GameHeader({ profile, title, children }: { profile: ReactNode; t
   return (
     <header className="ui-game-header">
       {profile}
-      <h1 className="farm-title">{title}</h1>
-      <aside className="farm-capacity ui-wallet" aria-label="Tài nguyên">
+      <h1 className="ui-header-title">{title}</h1>
+      <aside className="ui-header-counters ui-wallet" aria-label="Tài nguyên">
         {children}
       </aside>
     </header>

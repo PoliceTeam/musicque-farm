@@ -1,6 +1,9 @@
+import { topTwoPayout } from '@chibi-town/arcade-games/table-payout';
 import { legalTienPlays, type TienSnapshot } from '@chibi-town/arcade-games/tien-len-logic';
 import { ApiSdkError, type GameSdk } from '@chibi-town/contracts';
+import { eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { arcadeTables } from '@/infrastructure/database/schema';
 import { IDLE_LIMIT_MS, TURN_LIMIT_MS } from '@/modules/arcade/tables';
 import { createTestApp } from './test-app.js';
 
@@ -287,24 +290,157 @@ describe('Tiến lên tables of people', () => {
     );
   });
 
-  it('gives the stake of a player who walks out to those who stayed and frees the table', async () => {
-    const seats = await players(3);
-    await deal(seats, 100);
-    const quitter = await view(seats[1]);
-    const left = await seats[1].sdk.leaveArcadeTable({
+  async function setFirstPlace(seats: Seat[]) {
+    const [row] = await t.db.select().from(arcadeTables);
+    const match = row.record.match as import('@chibi-town/arcade-games/tien-len-logic').TienMatch;
+    match.played.push(...match.hands[0]);
+    match.hands[0] = [];
+    match.placements = [0];
+    match.winner = 0;
+    match.turn = 1;
+    match.opening = false;
+    await t.db.update(arcadeTables).set({ record: row.record }).where(eq(arcadeTables.id, row.id));
+    return view(seats[0]);
+  }
+
+  async function leave(seat: Seat) {
+    const mine = await view(seat);
+    return seat.sdk.leaveArcadeTable({
       gameId: 'tien-len',
-      matchId: quitter.id,
-      revision: quitter.revision,
+      matchId: mine.id,
+      revision: mine.revision,
       requestId: requestId(),
     });
-    expect(left).toMatchObject({ coins: 79_900, coinDelta: -100 });
-    expect(await Promise.all(seats.map(coins))).toEqual([80_050, 79_900, 80_050]);
-    for (const seat of seats) {
-      const lobby = await seat.sdk.getTienLobby();
-      expect(lobby.activeMatch).toBeUndefined();
-      expect(lobby.availableCoins).toBe(await coins(seat));
-      expect(lobby.rooms[0].tables[4]).toMatchObject({ occupants: 0, status: 'empty' });
-    }
+  }
+
+  async function expectRankedSettlement(seats: Seat[], active: Seat[], losers: number[]) {
+    await playOut(active);
+    const [row] = await t.db.select().from(arcadeTables);
+    const match = row.record.match as import('@chibi-town/arcade-games/tien-len-logic').TienMatch;
+    expect(match.placements).toHaveLength(2);
+    for (const loser of losers) expect(match.placements).not.toContain(loser);
+    const deltas = (await Promise.all(seats.map(coins))).map((value) => value - 80000);
+    expect(deltas).toEqual(
+      topTwoPayout(100, match.placements![0], match.placements![1], seats.length).slice(0, seats.length),
+    );
+    expect(deltas.reduce((sum, value) => sum + value, 0)).toBe(0);
+    for (const seat of seats) expect((await seat.sdk.getTienLobby()).availableCoins).toBe(await coins(seat));
+  }
+
+  it.each([3, 4])(
+    'keeps an unranked %i-player game playing after a forfeit without moving any wallet',
+    async (count) => {
+      const seats = await players(count);
+      await deal(seats, 100);
+      const [before] = await t.db.select().from(arcadeTables);
+      const beforeMatch = before.record.match as import('@chibi-town/arcade-games/tien-len-logic').TienMatch;
+      expect(await leave(seats[0])).toMatchObject({ coins: 80000, coinDelta: -100 });
+      const [row] = await t.db.select().from(arcadeTables);
+      const match = row.record.match as import('@chibi-town/arcade-games/tien-len-logic').TienMatch;
+      expect(match.status).toBe('playing');
+      expect(match.placements ?? []).toEqual([]);
+      expect(match.forfeited).toEqual([0]);
+      expect(match.hands[0]).toEqual(beforeMatch.hands[0]);
+      expect(match.played).toEqual(beforeMatch.played);
+      expect(await Promise.all(seats.map(coins))).toEqual(seats.map(() => 80000));
+      expect((await seats[0].sdk.getTienLobby()).activeMatch).toBeUndefined();
+      for (const seat of seats) expect((await seat.sdk.getTienLobby()).availableCoins).toBe(79900);
+      const snapshot = await view(seats[1]);
+      expect(snapshot.forfeited).toEqual([count - 1]);
+      expect(JSON.stringify(snapshot)).not.toContain('"hands"');
+      expect(JSON.stringify(snapshot)).not.toContain('"seed"');
+      expect((await seats[1].sdk.getTienLobby()).rooms[0].tables[4].occupants).toBe(count - 1);
+      expect(await code(seats[0].sdk.startTienRoom({ roomId: 0, tableId: 8, requestId: requestId() }))).toBe(
+        'MATCH_IN_PROGRESS',
+      );
+      await expectRankedSettlement(seats, seats.slice(1), [0]);
+    },
+  );
+
+  it.each([false, true])(
+    'continues a four-player table after first place and a timeout (winner departed=%s)',
+    async (departed) => {
+      const seats = await players(4);
+      await deal(seats, 100);
+      await setFirstPlace(seats);
+      if (departed) expect((await leave(seats[0])).coinDelta).toBe(0);
+      t.advance(TURN_LIMIT_MS + 1);
+      await t.tables.sweep();
+      expect(await Promise.all(seats.map(coins))).toEqual([80000, 80000, 80000, 80000]);
+      const [row] = await t.db.select().from(arcadeTables);
+      expect(row.record.match).toMatchObject({ status: 'playing', placements: [0], forfeited: [1], turn: 2 });
+      expect(row.record.turnStartedAt).toBe(t.clock());
+      expect((await seats[1].sdk.getTienLobby()).activeMatch).toBeUndefined();
+      await expectRankedSettlement(seats, seats.slice(2), [1]);
+      expect((await seats[0].sdk.getTienLobby()).wins).toBe(1);
+    },
+  );
+
+  it.each(['leave', 'timeout'] as const)(
+    'settles a three-player table with first place known on %s',
+    async (reason) => {
+      const seats = await players(3);
+      await deal(seats, 100);
+      await setFirstPlace(seats);
+      if (reason === 'leave') expect(await leave(seats[1])).toMatchObject({ coins: 79900, coinDelta: -100 });
+      else {
+        t.advance(TURN_LIMIT_MS + 1);
+        await t.tables.sweep();
+      }
+      const deltas = (await Promise.all(seats.map(coins))).map((value) => value - 80000);
+      expect(deltas).toEqual([140, -100, -40]);
+      expect(deltas.reduce((sum, value) => sum + value, 0)).toBe(0);
+      expect(await t.db.select().from(arcadeTables)).toHaveLength(0);
+    },
+  );
+
+  it('awards a two-player forfeit to the other player immediately', async () => {
+    const seats = await players(2);
+    await deal(seats, 100);
+    expect(await leave(seats[0])).toMatchObject({ coins: 79900, coinDelta: -100 });
+    expect(await Promise.all(seats.map(coins))).toEqual([79900, 80100]);
+    expect(await t.db.select().from(arcadeTables)).toHaveLength(0);
+    expect((await seats[1].sdk.getTienLobby()).wins).toBe(1);
+  });
+
+  it('never promotes forfeited players when repeated departures leave a single survivor', async () => {
+    const seats = await players(4);
+    await deal(seats, 100);
+    for (const seat of seats.slice(0, 3)) expect((await leave(seat)).coinDelta).toBe(-100);
+    const deltas = (await Promise.all(seats.map(coins))).map((value) => value - 80000);
+    expect(deltas).toEqual([-100, -100, -100, 300]);
+    expect(deltas.reduce((sum, value) => sum + value, 0)).toBe(0);
+    expect(await t.db.select().from(arcadeTables)).toHaveLength(0);
+  });
+
+  it('keeps a departed winner paid when the others finish, then restarts with the remaining players', async () => {
+    const seats = await players(3);
+    await deal(seats, 100);
+    const [row] = await t.db.select().from(arcadeTables);
+    const match = row.record.match as import('@chibi-town/arcade-games/tien-len-logic').TienMatch;
+    match.played.push(...match.hands[0]);
+    match.hands[0] = [];
+    match.placements = [0];
+    match.winner = 0;
+    match.turn = 1;
+    match.opening = false;
+    const mine = await view(seats[0]);
+    await t.db.update(arcadeTables).set({ record: row.record }).where(eq(arcadeTables.id, row.id));
+    await seats[0].sdk.leaveArcadeTable({
+      gameId: 'tien-len',
+      matchId: mine.id,
+      revision: mine.revision,
+      requestId: requestId(),
+    });
+    const playing = seats.slice(1);
+    const views = await playOut(playing);
+    expect(views[0].status).toBe('finished');
+    expect(await coins(seats[0])).toBe(80140);
+    expect((await seats[0].sdk.getTienLobby()).availableCoins).toBe(80140);
+    const restarted = await seats[1].sdk.startTienRoom({ roomId: 0, tableId: 4, requestId: requestId() });
+    expect(restarted.players?.map((player) => player.id)).toEqual(seats.slice(1).map((seat) => seat.id));
+    expect(restarted.session?.playerCount).toBe(2);
+    expect(restarted.session?.hostId).toBe(seats[1].id);
   });
 
   it('lets players leave a waiting table for free and hands the table to the next player', async () => {

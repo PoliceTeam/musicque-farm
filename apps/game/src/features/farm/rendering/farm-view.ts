@@ -2,8 +2,8 @@
 
 import { seededRandom } from '@chibi-town/character-core/random';
 import { scenerySheet } from '@/assets/asset-catalog';
-import { FENCE_Y, FIELD, HORIZON, PATH_TOP, TILE, TREE, WORLD } from '@/devtools/town/_utils/town-map';
 import { cropArt } from '@/features/farm/rendering/crop-art';
+import { FENCE_Y, FIELD, HORIZON, PATH_TOP, TILE, TREE, WORLD } from '@/game/movement/town-map';
 import { DETAIL, PieceCache } from '@/game/rendering/canvas-renderer';
 import { ellipse, linear, radial, rounded, shape, stroke } from '@/game/rendering/vector-art';
 

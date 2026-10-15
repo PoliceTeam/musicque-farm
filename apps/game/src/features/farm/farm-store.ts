@@ -11,7 +11,7 @@ export function createFarmStore(sdk: GameSdk, map = { regionId: 'farm', mapId: '
 
   function apply(snapshot: Snapshot) {
     const previous = store.getState().snapshot;
-    if (!previous || snapshot.revision >= previous.revision) store.setState({ snapshot, error: undefined });
+    if (!previous || snapshot.revision > previous.revision) store.setState({ snapshot, error: undefined });
   }
 
   let retry: { fingerprint: string; command: Command } | undefined;
@@ -20,7 +20,7 @@ export function createFarmStore(sdk: GameSdk, map = { regionId: 'farm', mapId: '
 
     async refresh() {
       const [player, snapshot] = await Promise.all([store.getState().player ?? sdk.getPlayer(), sdk.getMap(map)]);
-      store.setState({ player });
+      if (store.getState().player !== player) store.setState({ player });
       apply(snapshot);
     },
 
@@ -43,7 +43,7 @@ export function createFarmStore(sdk: GameSdk, map = { regionId: 'farm', mapId: '
         apply(result);
         return result;
       } catch (error) {
-        store.setState({ error: error instanceof Error ? error.message : 'Không thể thực hiện thao tác.' });
+        store.setState({ error: error instanceof Error ? error.message : 'ACTION_FAILED' });
         throw error;
       } finally {
         store.setState({ pending: false });

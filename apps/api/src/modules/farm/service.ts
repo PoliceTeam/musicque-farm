@@ -13,17 +13,17 @@ export function createFarmService(deps: { db: Database; clock: () => number }) {
   return {
     getInventory(player: PlayerAccount, trace?: TransactionTrace) {
       const rules = createFarmRules({ player, clock });
-      return withPlayerDocument(db, player.id, rules.getInventory(), trace);
+      return withPlayerDocument(db, player.id, rules.getInventory(), trace, clock);
     },
 
     getMap(player: PlayerAccount, input: MapSnapshotInput, trace?: TransactionTrace) {
       const rules = createFarmRules({ player, clock });
-      return withPlayerDocument(db, player.id, rules.getMap(input), trace);
+      return withPlayerDocument(db, player.id, rules.getMap(input), trace, clock);
     },
 
     execute(player: PlayerAccount, command: FarmCommand, trace?: TransactionTrace) {
       const operation = createCommandService({ player, clock }).execute(command);
-      return withPlayerDocument(db, player.id, operation, trace);
+      return withPlayerDocument(db, player.id, operation, trace, clock);
     },
   };
 }

@@ -1,6 +1,5 @@
 import { Action } from '@chibi-town/character-core/animation-logic';
 import type { Outfit } from '@chibi-town/character-core/character-types';
-import { createTownState, type TownState, updateTownEffects } from '@/devtools/town/_utils/town-logic';
 import {
   FARM_SPAWN,
   FARM_WALK_AREA,
@@ -8,10 +7,11 @@ import {
   type FarmUnitLevels,
   farmFeaturesFor,
   farmObstaclesFor,
-} from '@/features/farm/_utils/farm-map-data';
+} from '@/features/farm/_utils/farm-layout';
 import { farmRoute, farmSegmentClear } from '@/features/farm/_utils/farm-path-logic';
 import { type Area, stepWalker } from '@/game/movement/movement-logic';
 import { stepPet } from '@/game/movement/pet-follow-logic';
+import { createTownState, type TownState, updateTownEffects } from '@/game/movement/town-logic';
 
 export type FarmWalkState = { town: TownState; route: FarmPoint[]; obstacles: Area[] };
 

@@ -1,20 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import type { SdkErrorCode } from '@chibi-town/contracts';
+import { decodeRealtimeCommand } from '@chibi-town/contracts/realtime';
+import { type Adapters, createMemoryAdapters, createRealtimeService } from '@chibi-town/realtime-core';
+import { createFastifyWsTransport } from '@chibi-town/realtime-fastify-ws';
+import { createRedisAdapters } from '@chibi-town/realtime-redis';
 import cookie from '@fastify/cookie';
-import websocket from '@fastify/websocket';
 import Fastify, { type FastifyServerOptions } from 'fastify';
 import { HttpError, sdkErrorStatus } from '@/_utils/http-errors';
 import type { PlayerAccount } from '@/_utils/session-auth';
-import { registerRealtimeRoutes } from '@/application/realtime-routes';
+import { hashSessionToken, readSessionHash, readSessionState, SESSION_COOKIE } from '@/_utils/session-auth';
 import type { ApiConfig } from '@/config';
 import type { Database } from '@/infrastructure/database/database';
-import { createRealtimeHub } from '@/infrastructure/realtime/realtime-hub';
-import {
-  createMemorySharedState,
-  createRedisSharedState,
-  type SharedState,
-} from '@/infrastructure/realtime/shared-state';
-import { arcadeChannel, arcadeModule, createArcadeService } from '@/modules/arcade';
+import { arcadeChannel, arcadeModule, createArcadeService, registerArcadeRealtime } from '@/modules/arcade';
 import { createTableService, lobbyTopic } from '@/modules/arcade/tables';
 import { authModule, createSessionHook } from '@/modules/auth';
 import { commandsModule } from '@/modules/commands';
@@ -22,10 +19,10 @@ import { createFarmService, farmModule } from '@/modules/farm';
 import { createInventoryService, inventoryModule } from '@/modules/inventory';
 
 import { createPlayerService, playerModule, withPlayerDocument } from '@/modules/player';
-import { createChannelPresence, createWorldService, worldModule } from '@/modules/world';
+import { createChannelPresence, createWorldService, registerWorldRealtime, worldModule } from '@/modules/world';
 
 export type AppDependencies = {
-  shared?: SharedState;
+  adapters?: Adapters;
   db: Database;
   config: ApiConfig;
   clock?: () => number;
@@ -49,7 +46,6 @@ export async function createApp(deps: AppDependencies) {
     trustProxy: config.trustProxy,
   });
   await app.register(cookie);
-  await app.register(websocket, { options: { maxPayload: 4096 } });
 
   /** Only the game origin may call with cookies; everything else gets no CORS headers. */
   app.addHook('onRequest', async (request, reply) => {
@@ -85,25 +81,68 @@ export async function createApp(deps: AppDependencies) {
   });
   app.setNotFoundHandler((_request, reply) => reply.code(404).send({ code: 'NOT_FOUND' }));
 
-  const shared =
-    deps.shared ?? (config.redisUrl ? await createRedisSharedState(config.redisUrl) : createMemorySharedState(clock));
-  const presence = createChannelPresence(undefined, shared);
-  const hub = createRealtimeHub(shared);
+  if (process.env.NODE_ENV === 'production' && !config.redisUrl)
+    app.log.warn(
+      'REDIS_URL is unset: realtime/presence coordination is limited to this API instance; configure Redis before running multiple instances.',
+    );
+
+  const adapters =
+    deps.adapters ??
+    (config.redisUrl
+      ? await createRedisAdapters(config.redisUrl, 'chibi:', { cluster: config.redisCluster })
+      : createMemoryAdapters(clock));
+  const transport = await createFastifyWsTransport(app, {
+    path: '/api/ws',
+
+    async authenticate(request) {
+      if (request.headers.origin !== config.webOrigin) throw new HttpError(401, 'UNAUTHENTICATED');
+      const token = request.cookies[SESSION_COOKIE];
+      const session = await readSessionState(db, token, clock());
+      if (!session) throw new HttpError(401, 'UNAUTHENTICATED');
+      return {
+        playerId: session.player.id,
+        sessionId: hashSessionToken(token!),
+        expiresAt: session.expiresAt,
+        context: session.player,
+      };
+    },
+  });
+  const realtime = createRealtimeService({
+    ...adapters,
+    transport,
+    clock,
+
+    decode: (raw) => decodeRealtimeCommand(JSON.parse(raw)),
+
+    async validateSession(connection) {
+      const session = await readSessionHash(db, connection.identity.sessionId, clock());
+      return session?.player.id === connection.identity.playerId ? session.expiresAt : undefined;
+    },
+
+    onError: (error) => app.log.error(error),
+
+    goneAfterMs: deps.goneAfterMs,
+
+    onGone: (playerId) => void tables.releaseWaiting(playerId).catch((error) => app.log.error(error)),
+  });
+  const presence = createChannelPresence(realtime.presence);
   app.addHook('onClose', async () => {
-    hub.close();
-    if (!deps.shared) await shared.close();
+    await realtime.close();
+    if (!deps.adapters) await adapters.close();
   });
 
   /** Arcade tables belong to the entertainment-street channel the player last chose. */
   const watchedLobby = async (player: PlayerAccount, gameId: string) =>
-    lobbyTopic(gameId, await withPlayerDocument(db, player.id, arcadeChannel));
+    lobbyTopic(gameId, await withPlayerDocument(db, player.id, arcadeChannel, undefined, clock));
 
-  const tables = createTableService({ db, clock, hub });
+  const tables = createTableService({ db, clock, realtime, logger: app.log });
   const player = createPlayerService({ db, clock });
   const farm = createFarmService({ db, clock });
   const inventory = createInventoryService({ db, clock });
   const world = createWorldService({ db, clock, presence });
   const arcade = createArcadeService({ db, clock, tables });
+  registerWorldRealtime(realtime, world, clock);
+  registerArcadeRealtime(realtime, watchedLobby);
   const sweepMs = deps.sweepMs ?? 5000;
   if (sweepMs > 0) {
     const timer = setInterval(() => void tables.sweep().catch((error) => app.log.error(error)), sweepMs);
@@ -111,7 +150,14 @@ export async function createApp(deps: AppDependencies) {
   }
   await app.register(
     async (api) => {
-      await api.register(authModule, { db, config, clock, fetch: deps.fetch ?? fetch, shared });
+      await api.register(authModule, {
+        db,
+        config,
+        clock,
+        fetch: deps.fetch ?? fetch,
+        shared: adapters.coordination,
+        revokeSession: realtime.revokeSession,
+      });
       await api.register(async (protectedApi) => {
         protectedApi.decorateRequest('player', null);
         protectedApi.addHook('preHandler', createSessionHook({ db, clock, presence }));
@@ -121,19 +167,6 @@ export async function createApp(deps: AppDependencies) {
         await protectedApi.register(worldModule, { service: world });
         await protectedApi.register(arcadeModule, { service: arcade });
         await protectedApi.register(commandsModule, { farm, inventory });
-      });
-      registerRealtimeRoutes(api, {
-        db,
-        config,
-        clock,
-        hub,
-        presence,
-        shared,
-        world,
-        lobbyTopic: watchedLobby,
-        goneAfterMs: deps.goneAfterMs ?? 20_000,
-
-        onGone: (playerId) => void tables.releaseWaiting(playerId).catch((error) => app.log.error(error)),
       });
     },
     { prefix: '/api' },

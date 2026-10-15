@@ -22,16 +22,37 @@ describe('remote players in a map channel', () => {
     others.apply({ type: 'map.join', player: player('me') });
     expect([...others.players.keys()]).toEqual(['a', 'b']);
     others.apply({ type: 'map.leave', id: 'a' });
-    others.apply({ type: 'map.move', id: 'gone', x: 1, y: 1 });
+    others.apply({ type: 'map.moves', moves: [{ id: 'gone', x: 1, y: 1 }] });
     expect([...others.players.keys()]).toEqual(['b']);
+    others.apply({ type: 'reconnected' });
+    expect(others.players.size).toBe(0);
     others.apply({ type: 'map.state', mapId: 'street', channelId: 1, players: [] });
     expect(others.players.size).toBe(0);
+  });
+
+  it('applies every position in a batch, ignoring self and unknown players', () => {
+    const others = createRemotePlayers('me');
+    others.apply({ type: 'map.state', mapId: 'street', channelId: 0, players: [player('a'), player('b')] });
+    others.apply({
+      type: 'map.moves',
+      moves: [
+        { id: 'a', x: 10, y: 20 },
+        { id: 'b', x: 30, y: 40 },
+        { id: 'me', x: 5, y: 5 },
+        { id: 'missing', x: 1, y: 1 },
+      ],
+    });
+    expect([...others.players.values()].map((value) => value.target)).toEqual([
+      [10, 20],
+      [30, 40],
+    ]);
+    expect(others.players.size).toBe(2);
   });
 
   it('walks towards a reported position at walking speed and stops there', () => {
     const others = createRemotePlayers('me');
     others.apply({ type: 'map.join', player: player('a', 100, 100) });
-    others.apply({ type: 'map.move', id: 'a', x: 40, y: 100 });
+    others.apply({ type: 'map.moves', moves: [{ id: 'a', x: 40, y: 100 }] });
     others.step(0.25);
     const walker = others.players.get('a')!;
     expect([walker.x, walker.y]).toEqual([75, 100]);
@@ -44,7 +65,7 @@ describe('remote players in a map channel', () => {
   it('places a far-away player directly instead of running across the map', () => {
     const others = createRemotePlayers('me');
     others.apply({ type: 'map.join', player: player('a', 0, 0) });
-    others.apply({ type: 'map.move', id: 'a', x: 900, y: 0 });
+    others.apply({ type: 'map.moves', moves: [{ id: 'a', x: 900, y: 0 }] });
     others.step(0.016);
     expect(others.players.get('a')!.x).toBe(900);
   });
@@ -73,15 +94,34 @@ describe('realtime messages', () => {
       expect(decodeRealtimeCommand(bad)).toBeUndefined();
   });
 
+  it('validates a whole move batch before delivering it', () => {
+    expect(decodeRealtimeEvent({ type: 'map.moves', moves: [{ id: 'a', x: 1, y: 2, extra: true }] })).toEqual({
+      type: 'map.moves',
+      moves: [{ id: 'a', x: 1, y: 2 }],
+    });
+    for (const moves of [
+      null,
+      {},
+      [null],
+      [
+        { id: 'a', x: 1, y: 2 },
+        { id: 'b', x: -1, y: 0 },
+      ],
+      Array.from({ length: 1001 }, () => ({ id: 'a', x: 0, y: 0 })),
+    ])
+      expect(decodeRealtimeEvent({ type: 'map.moves', moves })).toBeUndefined();
+  });
+
   it('drops malformed events before they reach listeners', () => {
     expect(decodeRealtimeEvent({ type: 'map.join', player: { ...player('a'), outfit: null } })).toBeUndefined();
     expect(decodeRealtimeEvent({ type: 'map.state', mapId: 'm', channelId: 0, players: [{}] })).toBeUndefined();
+    expect(decodeRealtimeEvent({ type: 'reconnected' })).toBeUndefined();
     expect(decodeRealtimeEvent({ type: 'match', gameId: 'phom' })).toEqual({ type: 'match', gameId: 'phom' });
   });
 });
 
 describe('realtime client', () => {
-  function harness() {
+  function harness(random = () => 0.5) {
     const sockets: {
       sent: string[];
       readyState: number;
@@ -94,6 +134,7 @@ describe('realtime client', () => {
     const client = createRealtimeClient({
       url: 'ws://api.test/api/ws',
       retryMs: 100,
+      random,
 
       schedule: (task, ms) => timers.push({ task, ms }),
 
@@ -154,6 +195,42 @@ describe('realtime client', () => {
     timers[2].task();
     open(3);
     expect(sockets[3].sent).toEqual([]);
+  });
+
+  it('emits reconnected once after reopening and adds jitter to retry delays', () => {
+    const { client, sockets, timers, open, drop } = harness(() => 0.25);
+    const seen: string[] = [];
+    client.subscribe((event) => seen.push(event.type));
+    open(0);
+    expect(seen).toEqual([]);
+    drop(0);
+    expect(timers[0].ms).toBe(75);
+    timers[0].task();
+    open(1);
+    expect(seen).toEqual(['reconnected']);
+    sockets[0].onmessage?.({ data: '{"type":"match","gameId":"chess"}' });
+    expect(seen).toEqual(['reconnected']);
+    client.close();
+    sockets[1].onopen?.();
+    expect(seen).toEqual(['reconnected']);
+  });
+
+  it('delivers a validated move batch as one notification', () => {
+    const { client, sockets, open } = harness();
+    open(0);
+    const seen: unknown[] = [];
+    client.subscribe((event) => seen.push(event));
+    const batch = {
+      type: 'map.moves',
+      moves: [
+        { id: 'a', x: 10, y: 20 },
+        { id: 'b', x: 30, y: 40 },
+      ],
+    };
+    sockets[0].onmessage?.({ data: JSON.stringify(batch) });
+    sockets[0].onmessage?.({ data: JSON.stringify({ type: 'map.moves', moves: [null] }) });
+    expect(seen).toEqual([batch]);
+    client.close();
   });
 
   it('delivers valid events to listeners until they unsubscribe or the client closes', () => {

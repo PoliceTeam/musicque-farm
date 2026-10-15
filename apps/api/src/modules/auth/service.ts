@@ -12,7 +12,7 @@ import { HttpError } from '@/_utils/http-errors';
 import { hashPassword, verifyPassword } from '@/_utils/password';
 import type { PlayerAccount } from '@/_utils/session-auth';
 import type { Database } from '@/infrastructure/database/database';
-import { identities, playerDocuments, players } from '@/infrastructure/database/schema';
+import { identities, playerDocuments, players, sessions } from '@/infrastructure/database/schema';
 import { saveStarterOutfit } from '@/modules/character';
 
 export type ExternalProfile = {
@@ -234,6 +234,10 @@ export async function signInWithProvider(
       const player =
         existing ??
         (current?.guest ? await upgradeGuest(tx, current.id, values, now) : await insertPlayer(tx, values, now));
+      if (existing) {
+        await tx.update(players).set({ passwordHash: null }).where(eq(players.id, existing.id));
+        await tx.delete(sessions).where(eq(sessions.playerId, existing.id));
+      }
       await tx.insert(identities).values({ provider: profile.provider, subject: profile.subject, playerId: player.id });
       return { ...player, registrationBonusGranted: !existing };
     });
