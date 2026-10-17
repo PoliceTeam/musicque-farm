@@ -263,6 +263,8 @@ describe('Tiến lên tables of people', () => {
     await third.sdk.startTienRoom({ roomId: 1, tableId: 0, requestId: requestId() });
     expect(await start(host)).toBe('NOT_ALLOWED');
     expect(await ready(third)).toBe('resolved');
+    // Host starts directly; only other members' readiness is required.
+    expect(await ready(host, false)).toBe('resolved');
     expect(await start(host)).toBe('resolved');
     expect((await view(third)).counts).toEqual([13, 13, 13, 0]);
   });

@@ -34,7 +34,21 @@ export async function openDatabase(databaseUrl: string): Promise<OpenDatabase> {
   }
   const pool = new pg.Pool({ connectionString: databaseUrl });
   const db = drizzle(pool, { schema });
-  await migrate(db, { migrationsFolder });
+  // API and worker may start together; serialize DDL on one dedicated PostgreSQL connection.
+  const migrationConnection = await pool.connect();
+  try {
+    await migrationConnection.query('select pg_advisory_lock(76324903)');
+    try {
+      await migrate(drizzle(migrationConnection, { schema }), { migrationsFolder });
+    } finally {
+      await migrationConnection.query('select pg_advisory_unlock(76324903)');
+    }
+  } catch (error) {
+    migrationConnection.release();
+    await pool.end();
+    throw error;
+  }
+  migrationConnection.release();
   return {
     db,
 

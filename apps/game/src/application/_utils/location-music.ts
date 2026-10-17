@@ -6,7 +6,7 @@ export function locationMusic(route: string, definition?: Pick<MapDefinition, 's
     return { musicUrl: '/chibi-assets/map/audio/chibi-town-loop.mp3', loopSeconds: 76.8, musicEnabled: false };
   if (definition?.scene === 'farm' || route === '/farm')
     return { musicUrl: '/chibi-assets/audio/music/farm-meadow-loop.mp3', loopSeconds: 48 };
-  if (definition?.regionId === 'fun')
+  if (definition?.regionId === 'fun' || route === '/pet-racing')
     return { musicUrl: '/chibi-assets/audio/music/entertainment-fairground-loop.mp3', loopSeconds: 40 };
   return { musicUrl: '/chibi-assets/map/audio/chibi-town-loop.mp3', loopSeconds: 76.8 };
 }

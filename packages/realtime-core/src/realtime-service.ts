@@ -11,10 +11,10 @@ import {
 } from './_utils/connection-policy.js';
 import type { Bus, Connection, Coordination, Event, Store, Transport } from './ports.js';
 import { createPresenceService } from './presence.js';
+import { createRealtimePublisher, type RealtimeEnvelope as Envelope, playerTopic } from './publisher.js';
 import { createRoomService } from './rooms.js';
 
 type Handler = { run(connection: Connection, command: Event): Promise<void>; expensive?: boolean; coalesce?: boolean };
-type Envelope = { data?: string; except?: string; close?: boolean };
 
 export function createRealtimeService(deps: {
   transport: Transport;
@@ -29,6 +29,7 @@ export function createRealtimeService(deps: {
   goneAfterMs?: number;
 }) {
   const { bus, store, clock } = deps;
+  const publisher = createRealtimePublisher(bus);
   let shuttingDown = false;
   const rooms = createRoomService(
     store,
@@ -47,8 +48,6 @@ export function createRealtimeService(deps: {
   const shutdownHandlers = new Set<() => void | Promise<void>>();
   const leaseDeadlines = new Map<string, number>();
   const goneTimers = new Set<ReturnType<typeof setTimeout>>();
-
-  const playerTopic = (id: string) => `player:${id}`;
 
   const sessionTopic = (id: string) => `session:${id}`;
 
@@ -100,10 +99,6 @@ export function createRealtimeService(deps: {
         () => {},
       );
     }
-  }
-
-  async function publish<T extends Event>(topic: string, event: T, except?: string) {
-    await bus.publish(topic, JSON.stringify({ data: JSON.stringify(event), except } satisfies Envelope));
   }
 
   const detach = deps.transport.accept((connection) => {
@@ -284,7 +279,7 @@ export function createRealtimeService(deps: {
   return {
     rooms,
     presence,
-    publish,
+    ...publisher,
     subscribe,
     unsubscribe,
 
@@ -308,11 +303,6 @@ export function createRealtimeService(deps: {
 
     onHeartbeat(handler: (connection: Connection) => Promise<void>) {
       heartbeatHandlers.add(handler);
-    },
-
-    async notifyPlayers<T extends Event>(ids: string[], event: T) {
-      const envelope = JSON.stringify({ data: JSON.stringify(event) } satisfies Envelope);
-      await Promise.all([...new Set(ids)].map((id) => bus.publish(playerTopic(id), envelope)));
     },
 
     async revokeSession(id: string) {

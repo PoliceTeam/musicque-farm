@@ -1,0 +1,34 @@
+{
+  "name": "@chibi-town/jobs",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./bullmq": {
+      "types": "./dist/bullmq.d.ts",
+      "default": "./dist/bullmq.js"
+    }
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check . --formatter-enabled=false",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "@types/node": "^22.20.5",
+    "vitest": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "bullmq": "5.80.10",
+    "ioredis": "5.11.1"
+  }
+}

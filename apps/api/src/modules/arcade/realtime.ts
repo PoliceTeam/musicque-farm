@@ -1,11 +1,13 @@
 import type { RealtimeCommand } from '@chibi-town/contracts/realtime';
 import type { RealtimeService } from '@chibi-town/realtime-core';
 import type { PlayerAccount } from '@/_utils/session-auth';
+import { registerPetRaceRealtime } from '@/modules/arcade/pet-racing';
 
 export function registerArcadeRealtime(
   realtime: RealtimeService,
   lobbyTopic: (player: PlayerAccount, gameId: string) => Promise<string>,
 ) {
+  registerPetRaceRealtime(realtime);
   const watching = new Map<string, string>();
   realtime.handle<Extract<RealtimeCommand, { type: 'lobby.watch' }>>(
     'lobby.watch',

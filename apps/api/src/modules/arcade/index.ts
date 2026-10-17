@@ -10,5 +10,5 @@ export const arcadeModule: FastifyPluginAsync<{ service: ArcadeService }> = asyn
 };
 
 export { arcadeChannel } from '@/modules/arcade/arcade-channel';
-
+export { PET_RACE_TOPIC } from '@/modules/arcade/pet-racing';
 export { registerArcadeRealtime } from '@/modules/arcade/realtime';

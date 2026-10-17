@@ -18,13 +18,17 @@ services:
     networks:
       - internal
 
-  # Optional coordination for multiple API instances:
-  # start with `docker compose --profile realtime up -d`, set REDIS_URL=redis://redis:6379.
-  # A single API instance may leave REDIS_URL empty and omit this profile.
   redis:
     image: redis:7-alpine
-    profiles: ['realtime']
     restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - internal
 
@@ -38,12 +42,42 @@ services:
       DATABASE_URL: postgres://${DATABASE_USERNAME:-chibi}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME:-chibi_town}
       WEB_ORIGIN: ${PUBLIC_URL:?PUBLIC_URL is required}
       PUBLIC_API_URL: ${PUBLIC_URL}/api
-      REDIS_URL: ${REDIS_URL:-}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      BACKGROUND_JOBS_MODE: worker
       TRUST_PROXY: 'true'
+      PET_RACE_RESET_ENABLED: ${PET_RACE_RESET_ENABLED:-true}
+      PET_RACE_RESET_TIME: ${PET_RACE_RESET_TIME:-00:00}
+      PET_RACE_RESET_TIMEZONE: ${PET_RACE_RESET_TIMEZONE:-Asia/Ho_Chi_Minh}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    mem_limit: 256m
+    networks:
+      - internal
+
+  worker:
+    image: chibi-town-api:latest
+    pull_policy: never
+    restart: unless-stopped
+    command: ['node', 'dist/worker.js']
+    healthcheck:
+      disable: true
+    environment:
+      DATABASE_URL: postgres://${DATABASE_USERNAME:-chibi}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME:-chibi_town}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      BACKGROUND_JOBS_MODE: worker
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
+      PET_RACE_RESET_ENABLED: ${PET_RACE_RESET_ENABLED:-true}
+      PET_RACE_RESET_TIME: ${PET_RACE_RESET_TIME:-00:00}
+      PET_RACE_RESET_TIMEZONE: ${PET_RACE_RESET_TIMEZONE:-Asia/Ho_Chi_Minh}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     mem_limit: 256m
     networks:
@@ -66,3 +100,4 @@ networks:
 
 volumes:
   pgdata:
+  redisdata:

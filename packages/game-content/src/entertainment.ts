@@ -8,31 +8,31 @@ const layers: MapLayer[] = [
 ];
 
 function prop(id: string, asset: string, x: number, y: number, width: number, height: number, depth = y + height) {
-  layers.push({ id, asset: `entertainment:${asset}`, x, y, width, height, depth });
+  layers.push({ id, asset: asset.includes(':') ? asset : `entertainment:${asset}`, x, y, width, height, depth });
 }
 
 prop('sky', 'sky', 0, 0, 1680, 520, -10);
 for (const [index, x] of [-30, 545, 1120].entries())
-  prop(`skyline-${index}`, 'skyline', x, 270, 630, (630 * 101) / 265, -8);
+  prop(`skyline-${index}`, 'scenery:skyline', x, 270, 630, (630 * 101) / 265, -8);
 for (const [index, x, y, width] of [
   [0, 70, 100, 260],
   [1, 470, 220, 190],
   [2, 880, 80, 230],
   [3, 1270, 190, 290],
 ]) {
-  prop(`cloud-${index}`, 'cloud', x, y, width, (width * 72) / 175, -9);
+  prop(`cloud-${index}`, 'scenery:cloud', x, y, width, (width * 72) / 175, -9);
   layers[layers.length - 1].drift = { distance: 32 + index * 7, seconds: 100 + index * 15 };
 }
 prop('plaza', 'plaza', 0, 520, 1680, 310, 0);
 for (let x = 0; x < 1680; x += 120) {
   prop(`road-${x}`, 'road', x, 830, 120, 110, 1);
-  prop(`curb-${x}`, 'curb', x, 819, 120, 26, 2);
+  prop(`curb-${x}`, 'scenery:curb', x, 819, 120, 26, 2);
 }
 for (const x of [185, 740, 1270])
   layers.push({ id: `lane-${x}`, color: 0xe6e5dc, x, y: 878, width: 210, height: 15, depth: 2 });
 for (const [i, x] of [-80, 120, 490, 850, 1100, 1570].entries()) {
   const height = i % 2 ? 206 : 219;
-  prop(`back-tree-${i}`, i % 2 ? 'tree-alt' : 'tree', x, 539 - height, i % 2 ? 170 : 240, height, 530);
+  prop(`back-tree-${i}`, i % 2 ? 'scenery:tree-alt' : 'scenery:tree', x, 539 - height, i % 2 ? 170 : 240, height, 530);
 }
 prop('pole-left', 'utility-pole', 294, 102, 43, 440, 531);
 prop('pole-right', 'utility-pole', 1194, 102, 43, 440, 531);
@@ -54,20 +54,20 @@ for (let x = 0; x < 1680; x += 84) {
   const shrub = x % 168 === 0;
   const width = shrub ? 60 : 76;
   const height = shrub ? (width * 46) / 51 : (width * 61) / 84;
-  prop(`shop-border-${x}`, shrub ? 'shrubs' : 'flower-patch', x - 10, 550 - height, width, height, 549);
+  prop(`shop-border-${x}`, shrub ? 'scenery:shrubs' : 'scenery:flower-patch', x - 10, 550 - height, width, height, 549);
 }
 prop('billboard', 'billboard', 610, 608, 370, (370 * 152) / 369);
 for (const [index, x] of [260, 610, 943, 1184].entries()) {
-  prop(`shop-evergreen-${index}`, 'evergreen', x - 15, 412, 65, 115, 548);
-  prop(`shop-flowers-${index}`, 'flower-patch', x - 35, 500, 90, 43, 550);
+  prop(`shop-evergreen-${index}`, 'scenery:evergreen', x - 15, 412, 65, 115, 548);
+  prop(`shop-flowers-${index}`, 'scenery:flower-patch', x - 35, 500, 90, 43, 550);
 }
 for (const x of [292, 1104]) {
-  prop(`lamp-${x}`, 'lamp', x, 572, 57, 244);
-  prop(`flowers-${x}`, 'flower-patch', x - 60, 768, 110, 54);
+  prop(`lamp-${x}`, 'scenery:lamp', x, 572, 57, 244);
+  prop(`flowers-${x}`, 'scenery:flower-patch', x - 60, 768, 110, 54);
 }
 for (const [index, x] of [185, 500, 995, 1510].entries()) {
-  prop(`front-evergreen-${index}`, 'evergreen', x, 655 + (index % 2) * 12, 80, 145 - (index % 2) * 12);
-  prop(`front-flowers-${index}`, 'flower-patch', x - 34, 756, 112, 55);
+  prop(`front-evergreen-${index}`, 'scenery:evergreen', x, 655 + (index % 2) * 12, 80, 145 - (index % 2) * 12);
+  prop(`front-flowers-${index}`, 'scenery:flower-patch', x - 34, 756, 112, 55);
 }
 prop('bin', 'bin', 18, 757, 45, 70);
 // Preserve the source 64:114 aspect ratio; keep the base on the sidewalk.

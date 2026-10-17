@@ -8,6 +8,7 @@ export type ArcadeHost = {
   sdk: GameSdk;
   /** Live table and lobby events; absent when the game runs on a local save. */
   realtime?: GameRealtime;
+  account?: { guest: boolean; request: () => void };
   assets: Readonly<Record<string, string>>;
   Avatar: ComponentType<ArcadeAvatarProps>;
   navigate: (url: string) => void;

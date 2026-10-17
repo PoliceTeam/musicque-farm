@@ -72,6 +72,15 @@ describe('remote players in a map channel', () => {
 });
 
 describe('realtime messages', () => {
+  it('validates race notifications and strips outcome data', () => {
+    expect(decodeRealtimeCommand({ type: 'pet-race.watch' })).toEqual({ type: 'pet-race.watch' });
+    expect(decodeRealtimeCommand({ type: 'pet-race.unwatch' })).toEqual({ type: 'pet-race.unwatch' });
+    const event = { type: 'pet-race.changed', roundId: 'race-123', phase: 'betting' };
+    expect(decodeRealtimeEvent({ ...event, winner: 3 })).toEqual(event);
+    expect(decodeRealtimeEvent({ ...event, phase: 'invalid' })).toBeUndefined();
+    expect(decodeRealtimeEvent({ ...event, roundId: '../private' })).toBeUndefined();
+  });
+
   it('accepts well-formed commands and rejects everything else', () => {
     expect(decodeRealtimeCommand({ type: 'map.move', x: 1, y: 2, extra: true })).toEqual({
       type: 'map.move',
@@ -195,6 +204,26 @@ describe('realtime client', () => {
     timers[2].task();
     open(3);
     expect(sockets[3].sent).toEqual([]);
+  });
+
+  it('replays the race subscription independently of map and lobby watches', () => {
+    const { client, sockets, timers, open, drop } = harness();
+    open(0);
+    client.send({ type: 'lobby.watch', gameId: 'chess' });
+    client.send({ type: 'pet-race.watch' });
+    drop(0);
+    timers[0].task();
+    open(1);
+    expect(sockets[1].sent.map((raw) => JSON.parse(raw))).toEqual([
+      { type: 'lobby.watch', gameId: 'chess' },
+      { type: 'pet-race.watch' },
+    ]);
+    client.send({ type: 'pet-race.unwatch' });
+    drop(1);
+    timers[1].task();
+    open(2);
+    expect(sockets[2].sent.map((raw) => JSON.parse(raw))).toEqual([{ type: 'lobby.watch', gameId: 'chess' }]);
+    client.close();
   });
 
   it('emits reconnected once after reopening and adds jitter to retry delays', () => {

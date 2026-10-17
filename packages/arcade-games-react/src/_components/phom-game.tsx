@@ -7,13 +7,16 @@ import { Button, Dialog } from '@chibi-town/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ArcadeGameProps } from '../_utils/arcade-game-props.js';
+import { readArcadeRoute, useArcadeTableRoute } from '../_utils/arcade-route.js';
 import { clearTable } from '../_utils/clear-table.js';
 import { unseenTableSteps } from '../_utils/table-updates.js';
 import { useArcadeLive } from '../_utils/use-arcade-live.js';
 import { useTableSession } from '../_utils/use-table-session.js';
 import { useArcadeHost } from '../host.js';
+import { ArcadeActionProvider, ArcadeActions, ArcadeActionTarget, ArcadeFooterTimer } from './arcade-actions.js';
 import { ArcadeDirectory } from './arcade-directory.js';
 import { CoinChange } from './coin-change.js';
+import { GameResultEffect } from './game-result-effect.js';
 import { useLeaveTable } from './leave-table-dialog.js';
 import { PhomTable } from './phom-table.js';
 import { TableSettings } from './table-settings.js';
@@ -23,8 +26,6 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
   const { sdk } = useArcadeHost();
   const [lobby, setLobby] = useState<PhomLobby>();
   const [match, setMatch] = useState<PhomSnapshot>();
-  const [roomId, setRoomId] = useState<number>();
-  const [atTable, setAtTable] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -35,6 +36,7 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
   const command = useRef<PhomCommand | undefined>(undefined);
   const roomRequest = useRef<ArcadeTableStart | undefined>(undefined);
 
+  const { roomId, atTable, setRoomId, setAtTable } = useArcadeTableRoute('phom');
   const session = useTableSession();
   const { alive, locked, stale, loading } = session;
 
@@ -85,6 +87,12 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
         }
         confirmed.current = l.activeMatch;
         setMatch(l.activeMatch);
+        const route = readArcadeRoute();
+        if (
+          route.table !== undefined &&
+          (!l.activeMatch || l.activeMatch.roomId !== route.room || (l.activeMatch.tableId ?? 0) !== route.table)
+        )
+          setAtTable(false);
         setError(closed ? t('arcadeTableClosed') : '');
       }
     } catch {
@@ -124,8 +132,7 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
       if (!alive.current) return;
       confirmed.current = next;
       setMatch(next);
-      setAtTable(true);
-      setRoomId(next.roomId);
+      setAtTable(true, next.tableId ?? 0, next.roomId);
       setSelected([]);
       roomRequest.current = undefined;
       setRetry(false);
@@ -197,6 +204,8 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
   }
 
   const leaving = useLeaveTable({
+    onLeft: () => void load(),
+
     disabled: busy,
     gameId: 'phom',
     match: atTable ? confirmed.current : undefined,
@@ -222,15 +231,19 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
     interceptNavigation: false,
   });
   return (
-    <>
+    <ArcadeActionProvider>
       <CoinChange coins={coins} audio={audio} />
-      <section className="arcade-main arcade-main--tien">
+      <GameResultEffect match={atTable ? match : undefined} />
+      <section
+        className={`arcade-main arcade-main--tien ${atTable && match?.status === 'playing' ? 'arcade-main--phom-playing' : ''}`}
+      >
         {!atTable && (
           <>
             {!lobby && <p role="status">{error || t('arcadeLoading')}</p>}
             {!lobby && error && <Button onClick={() => void load()}>{t('retry')}</Button>}
             {lobby && (
               <ArcadeDirectory
+                gameId={'phom'}
                 gameName={t('arcadeGameNames.phom')}
                 rooms={lobby.rooms}
                 roomId={roomId}
@@ -277,75 +290,61 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
             event={event}
             actions={
               match.status === 'playing' && (
-                <>
-                  {match.phase === 'receive' && (
-                    <>
-                      <Button
-                        disabled={busy || retry || match.turn !== 0 || !canEatPhom(match)}
-                        onClick={() => void send({ type: 'eat' })}
-                      >
-                        {t('phomEat')}
-                      </Button>
-                      <Button
-                        variant="primary"
-                        disabled={busy || retry || match.turn !== 0}
-                        onClick={() => void send({ type: 'draw' })}
-                      >
-                        {t('phomDraw')}
-                      </Button>
-                    </>
-                  )}
-                  {match.phase === 'discard' && (
-                    <>
-                      {match.session?.mode === 'practice' && (
-                        <Button
-                          disabled={busy || retry || match.turn !== 0}
-                          onClick={() => {
-                            const rubbish = match.laid[0] ? match.hand : solvePhom(match.hand, match.eaten[0]).rubbish;
-                            setSelected(
-                              rubbish.length ? [rubbish.reduce((a, b) => (phomRank(a) > phomRank(b) ? a : b))] : [],
-                            );
-                          }}
-                        >
-                          {t('arcadeHint')}
-                        </Button>
-                      )}
-                      <Button
-                        variant="primary"
-                        disabled={busy || retry || match.turn !== 0 || !canPlay}
-                        onClick={() => void send({ type: 'discard', card: selected[0] })}
-                      >
-                        {t('tienPlay')}
-                      </Button>
-                    </>
-                  )}
-                  {match.phase === 'lay' && (
+                <ArcadeActions>
+                  {match.session?.mode === 'practice' && (
                     <Button
-                      variant="primary"
-                      disabled={busy || retry || match.turn !== 0}
-                      onClick={() => void send({ type: 'lay' })}
+                      disabled={busy || retry || match.turn !== 0 || match.phase !== 'discard'}
+                      onClick={() => {
+                        const rubbish = match.laid[0] ? match.hand : solvePhom(match.hand, match.eaten[0]).rubbish;
+                        setSelected(
+                          rubbish.length ? [rubbish.reduce((a, b) => (phomRank(a) > phomRank(b) ? a : b))] : [],
+                        );
+                      }}
                     >
-                      {t('phomLay')}
+                      {t('arcadeHint')}
                     </Button>
                   )}
-                  {match.phase === 'send' && (
-                    <>
-                      <Button
-                        disabled={busy || retry || match.turn !== 0 || !sendTargets.length}
-                        onClick={() => void send({ type: 'send', ...sendTargets[0] })}
-                      >
-                        {t('phomSend')}
-                      </Button>
-                      <Button
-                        variant="primary"
-                        disabled={busy || retry || match.turn !== 0}
-                        onClick={() => void send({ type: 'done' })}
-                      >
-                        {t('phomDone')}
-                      </Button>
-                    </>
-                  )}
-                </>
+                  <Button
+                    disabled={busy || retry || match.turn !== 0 || match.phase !== 'receive' || !canEatPhom(match)}
+                    onClick={() => void send({ type: 'eat' })}
+                  >
+                    {t('phomEat')}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    disabled={busy || retry || match.turn !== 0 || match.phase !== 'receive'}
+                    onClick={() => void send({ type: 'draw' })}
+                  >
+                    {t('phomDraw')}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    disabled={busy || retry || match.turn !== 0 || match.phase !== 'discard' || !canPlay}
+                    onClick={() => void send({ type: 'discard', card: selected[0] })}
+                  >
+                    {t('tienPlay')}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    disabled={busy || retry || match.turn !== 0 || match.phase !== 'lay'}
+                    onClick={() => void send({ type: 'lay' })}
+                  >
+                    {t('phomLay')}
+                  </Button>
+                  <Button
+                    disabled={busy || retry || match.turn !== 0 || match.phase !== 'send' || !sendTargets.length}
+                    onClick={() => void send({ type: 'send', ...sendTargets[0] })}
+                  >
+                    {t('phomSend')}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    disabled={busy || retry || match.turn !== 0 || match.phase !== 'send'}
+                    onClick={() => void send({ type: 'done' })}
+                  >
+                    {t('phomDone')}
+                  </Button>
+                </ArcadeActions>
               )
             }
             toggle={(card) => {
@@ -358,7 +357,7 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
             {error}
           </p>
         )}
-        <div className="arcade-local-actions">
+        <ArcadeActions>
           {atTable && match?.status === 'waiting' && !match.session && (
             <Button
               variant="primary"
@@ -383,9 +382,11 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
               {t('retry')}
             </Button>
           )}
-        </div>
+        </ArcadeActions>
       </section>
-      <footer className="arcade-footer">
+      <footer
+        className={`arcade-footer ${atTable && match?.status === 'playing' ? 'arcade-footer--phom-playing' : ''}`}
+      >
         <Button
           disabled={busy || leaving.busy || legacyLeaving.busy}
           onClick={() => {
@@ -408,7 +409,9 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
           <span aria-hidden="true">❮</span>
           <span>{t(atTable ? 'arcadeBackTables' : roomId !== undefined ? 'arcadeBackRooms' : 'arcadeCatalog')}</span>
         </Button>
+        <ArcadeActionTarget />
         <div className="arcade-footer-actions">
+          <ArcadeFooterTimer match={atTable ? match : undefined} />
           <Button onClick={() => setHelp(true)}>{t('arcadeHelp')}</Button>
         </div>
       </footer>
@@ -423,6 +426,6 @@ export function PhomGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
           <p>{t('phomHelp5')}</p>
         </Dialog>
       )}
-    </>
+    </ArcadeActionProvider>
   );
 }

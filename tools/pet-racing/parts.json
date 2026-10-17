@@ -1,0 +1,50 @@
+[
+  {
+    "key": "bench",
+    "box": [
+      78,
+      238,
+      615,
+      375
+    ]
+  },
+  {
+    "key": "turf",
+    "box": [
+      648,
+      258,
+      693,
+      283
+    ],
+    "source": "racing-atlas-user-v1.png"
+  },
+  {
+    "key": "dirt",
+    "box": [
+      575,
+      258,
+      626,
+      283
+    ],
+    "source": "racing-atlas-user-v1.png"
+  },
+  {
+    "key": "fence",
+    "box": [
+      20,
+      766,
+      276,
+      915
+    ]
+  },
+  {
+    "key": "track-curb",
+    "source": "racing-atlas-user-v1.png",
+    "box": [
+      576,
+      320,
+      855,
+      338
+    ]
+  }
+]

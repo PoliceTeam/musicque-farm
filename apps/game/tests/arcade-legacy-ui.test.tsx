@@ -56,6 +56,35 @@ it('shows host controls and an affordable xu limit for a new waiting wager table
   expect(html).toContain('Chủ bàn: Bé Chibi');
   expect(html).toContain('max="1000"');
   expect(html).toContain('Số xu cược');
-  expect(html).toContain('Sẵn sàng');
+  expect(html).toContain('Áp dụng mức cược');
   expect(html).toContain('Kích khỏi bàn');
+});
+
+it('practice shows only setup and start, without bot readiness or member management', () => {
+  const html = renderToStaticMarkup(
+    <ArcadeHostProvider host={host}>
+      <I18nextProvider i18n={createGameI18n()}>
+        <TableSettings
+          gameId="tien-len"
+          match={{
+            id: 'practice',
+            revision: 0,
+            status: 'waiting',
+            session: { hostId: 'local-player', mode: 'practice', stake: 0, difficulty: 'medium', configured: false },
+          }}
+          playerId="local-player"
+          name="Bé Chibi"
+          coins={1000}
+          changed={async () => {}}
+          onStart={async () => {}}
+        />
+      </I18nextProvider>
+    </ArcadeHostProvider>,
+  );
+  expect(html).toContain('Số người');
+  expect(html).toContain('Độ khó');
+  expect(html).toContain('Bắt đầu');
+  expect(html).not.toContain('Sẵn sàng');
+  expect(html).not.toContain('arcade-members');
+  expect(html).not.toContain('Kích khỏi bàn');
 });

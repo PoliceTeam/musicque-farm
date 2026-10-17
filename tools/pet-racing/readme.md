@@ -1,0 +1,9 @@
+# Modular Pet Racing scenery
+
+The runtime no longer loads a full-background image. `parts.json` records deterministic crops. Bench and front fence use retained `source/race-ground-v2.png`; turf, dirt and track curb use the user-supplied `source/racing-atlas-user-v1.png`. The optional per-part `source` selects the authoring image. Only clean material patches are used from the atlas; its character, pet and text/button artwork is not substituted. Run `python3 tools/pet-racing/export-assets.py`; Pillow exports native-size lossless WebP parts into `apps/game/src/assets/pet-racing/`. The original generated source and prompt remain as authoring provenance; the old full-screen runtime export is removed.
+
+`race-scene-layout.ts` calculates six lanes, start/finish, spectator seating and garden from the actual viewport. `race-view.ts` composes raster props in Phaser: shared clouds, skyline, trees and planting from `assets/common/scenery`, then independent benches, dirt, textured lanes and front fence. Lane/finish markings are native draw operations, so they remain aligned with pet motion. Common images use the same resource cache as the entertainment street and are released on scene exit. Canvas resize changes the layout rather than scaling/cropping a single composition.
+
+Character/pet artwork remains unchanged. Bench aspect ratio is retained; spectators are distributed onto actual bench seats. Moved common artwork is byte-identical to the previous street assets. The new composition is a proposal awaiting user review; tests/build are not artwork approval.
+
+The screen keeps the common location header. Its teal control dock separates navigation, phase/countdown and the gold betting action. A newly settled winning receipt displays the actual credited amount, finite confetti and the existing success sound; reopening history does not replay the celebration. Reduced-motion settings hide confetti. No client animation determines the payout.

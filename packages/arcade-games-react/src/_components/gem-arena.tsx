@@ -164,7 +164,6 @@ export function GemArena({
             {step.luckReward && <span>{t('arcadeLuckReward', { reward: t(`arcadeGems.${step.luckReward}`) })}</span>}
           </div>
         )}
-        <p className="gem-tip">{t('arcadeBoardTip')}</p>
       </section>
       <div className="gem-board-controls">
         <div className="gem-board-frame">

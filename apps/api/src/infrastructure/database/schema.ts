@@ -1,3 +1,4 @@
+import { DEFAULT_RACE_CONFIG } from '@chibi-town/contracts/pet-racing';
 import type {
   CharacterCosmeticInstance,
   CosmeticGrant,
@@ -9,6 +10,7 @@ import {
   boolean,
   check,
   foreignKey,
+  index,
   integer,
   json,
   pgTable,
@@ -167,5 +169,46 @@ export const characterGrants = pgTable(
       columns: [table.playerId, table.characterId],
       foreignColumns: [characterInventories.playerId, characterInventories.characterId],
     }).onDelete('cascade'),
+  ],
+);
+
+/** One immutable outcome per global clock slot; never exposed while wagering is open. */
+export const petRaceRounds = pgTable('pet_race_rounds', {
+  announcedPhase: integer('announced_phase').notNull().default(-1),
+  id: text('id').primaryKey(),
+  record: json('record').$type<import('@chibi-town/game-service/arcade/pet-racing-round').PetRaceRound>().notNull(),
+});
+
+/** Settlement queue; money and idempotency remain in the locked player document. */
+export const petRaceBets = pgTable(
+  'pet_race_bets',
+  {
+    roundId: text('round_id')
+      .notNull()
+      .references(() => petRaceRounds.id),
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+    settled: boolean('settled').notNull().default(false),
+  },
+  (table) => [
+    primaryKey({ columns: [table.roundId, table.playerId] }),
+    index('pet_race_pending').on(table.settled, table.endsAt),
+  ],
+);
+
+/** One editable configuration; each new round persists an immutable copy of its derived odds. */
+export const petRaceConfig = pgTable(
+  'pet_race_config',
+  {
+    id: text('id').primaryKey().default('default'),
+    chances: json('chances').$type<number[]>().notNull().default(DEFAULT_RACE_CONFIG.chances),
+    returnRateBps: integer('return_rate_bps').notNull().default(DEFAULT_RACE_CONFIG.returnRateBps),
+    lastResetDay: text('last_reset_day'),
+  },
+  (table) => [
+    check('pet_race_config_singleton', sql`${table.id} = 'default'`),
+    check('pet_race_config_return_rate', sql`${table.returnRateBps} > 0 AND ${table.returnRateBps} <= 10000`),
   ],
 );

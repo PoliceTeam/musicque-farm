@@ -86,7 +86,10 @@ it('blocks start until everyone is ready and lets a host kick ready or unready m
     difficulty: 'medium',
   });
   m = (await sdk.getTienLobby()).activeMatch!;
-  await sdk.updateArcadeMember(command({ type: 'ready', ready: false }, 'unready-host'));
+  await sdk.updateArcadeMember({
+    ...command({ type: 'ready', ready: false }, 'unready-bot'),
+    action: { type: 'ready', memberId: 'local-bot-1', ready: false },
+  });
   m = (await sdk.getTienLobby()).activeMatch!;
   await expect(
     sdk.playTien({ matchId: m.id, revision: m.revision, requestId: 'too-early', action: { type: 'start' } }),
@@ -94,7 +97,10 @@ it('blocks start until everyone is ready and lets a host kick ready or unready m
   await expect(
     sdk.updateArcadeMember(command({ type: 'kick', memberId: 'local-player' }, 'kick-self')),
   ).rejects.toMatchObject({ code: 'NOT_ALLOWED' });
-  await sdk.updateArcadeMember(command({ type: 'ready', ready: true }, 'ready-again'));
+  await sdk.updateArcadeMember({
+    ...command({ type: 'ready', ready: true }, 'ready-again'),
+    action: { type: 'ready', memberId: 'local-bot-1', ready: true },
+  });
   m = (await sdk.getTienLobby()).activeMatch!;
   const result = await sdk.playTien({
     matchId: m.id,

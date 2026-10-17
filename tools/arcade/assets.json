@@ -1,5 +1,16 @@
 [
   {
+    "key": "card-table",
+    "file": "card-table.webp",
+    "source": "game-ui-atlas-user.png",
+    "box": [
+      758,
+      384,
+      1272,
+      641
+    ]
+  },
+  {
     "key": "felt",
     "file": "felt.webp",
     "source": "diamond-reference.png",
@@ -162,6 +173,292 @@
       68,
       1809,
       181
+    ]
+  },
+  {
+    "key": "chess-piece-wk",
+    "file": "chess-piece-wk.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      30,
+      0,
+      150,
+      187
+    ]
+  },
+  {
+    "key": "chess-piece-wq",
+    "file": "chess-piece-wq.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      155,
+      0,
+      265,
+      187
+    ]
+  },
+  {
+    "key": "chess-piece-wb",
+    "file": "chess-piece-wb.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      274,
+      0,
+      378,
+      187
+    ]
+  },
+  {
+    "key": "chess-piece-wn",
+    "file": "chess-piece-wn.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      386,
+      0,
+      503,
+      187
+    ]
+  },
+  {
+    "key": "chess-piece-wr",
+    "file": "chess-piece-wr.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      515,
+      0,
+      635,
+      187
+    ]
+  },
+  {
+    "key": "chess-piece-wp",
+    "file": "chess-piece-wp.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      650,
+      0,
+      765,
+      187
+    ]
+  },
+  {
+    "key": "chess-piece-bk",
+    "file": "chess-piece-bk.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      30,
+      190,
+      150,
+      360
+    ]
+  },
+  {
+    "key": "chess-piece-bq",
+    "file": "chess-piece-bq.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      155,
+      190,
+      265,
+      360
+    ]
+  },
+  {
+    "key": "chess-piece-bb",
+    "file": "chess-piece-bb.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      274,
+      190,
+      378,
+      360
+    ]
+  },
+  {
+    "key": "chess-piece-bn",
+    "file": "chess-piece-bn.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      386,
+      190,
+      503,
+      360
+    ]
+  },
+  {
+    "key": "chess-piece-br",
+    "file": "chess-piece-br.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      515,
+      190,
+      635,
+      360
+    ]
+  },
+  {
+    "key": "chess-piece-bp",
+    "file": "chess-piece-bp.webp",
+    "source": "chess-atlas-user.png",
+    "box": [
+      650,
+      190,
+      765,
+      360
+    ]
+  },
+  {
+    "key": "xiangqi-piece-rk",
+    "file": "xiangqi-piece-rk.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      35,
+      20,
+      159,
+      151
+    ]
+  },
+  {
+    "key": "xiangqi-piece-ra",
+    "file": "xiangqi-piece-ra.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      159,
+      20,
+      283,
+      151
+    ]
+  },
+  {
+    "key": "xiangqi-piece-re",
+    "file": "xiangqi-piece-re.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      280,
+      20,
+      404,
+      151
+    ]
+  },
+  {
+    "key": "xiangqi-piece-rr",
+    "file": "xiangqi-piece-rr.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      402,
+      20,
+      526,
+      151
+    ]
+  },
+  {
+    "key": "xiangqi-piece-rh",
+    "file": "xiangqi-piece-rh.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      523,
+      20,
+      647,
+      151
+    ]
+  },
+  {
+    "key": "xiangqi-piece-rc",
+    "file": "xiangqi-piece-rc.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      644,
+      20,
+      768,
+      151
+    ]
+  },
+  {
+    "key": "xiangqi-piece-rp",
+    "file": "xiangqi-piece-rp.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      764,
+      20,
+      888,
+      151
+    ]
+  },
+  {
+    "key": "xiangqi-piece-bk",
+    "file": "xiangqi-piece-bk.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      35,
+      150,
+      159,
+      280
+    ]
+  },
+  {
+    "key": "xiangqi-piece-ba",
+    "file": "xiangqi-piece-ba.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      159,
+      150,
+      283,
+      280
+    ]
+  },
+  {
+    "key": "xiangqi-piece-be",
+    "file": "xiangqi-piece-be.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      280,
+      150,
+      404,
+      280
+    ]
+  },
+  {
+    "key": "xiangqi-piece-br",
+    "file": "xiangqi-piece-br.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      402,
+      150,
+      526,
+      280
+    ]
+  },
+  {
+    "key": "xiangqi-piece-bh",
+    "file": "xiangqi-piece-bh.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      523,
+      150,
+      647,
+      280
+    ]
+  },
+  {
+    "key": "xiangqi-piece-bc",
+    "file": "xiangqi-piece-bc.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      644,
+      150,
+      768,
+      280
+    ]
+  },
+  {
+    "key": "xiangqi-piece-bp",
+    "file": "xiangqi-piece-bp.webp",
+    "source": "xiangqi-atlas-user.png",
+    "box": [
+      764,
+      150,
+      888,
+      280
     ]
   }
 ]

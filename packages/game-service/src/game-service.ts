@@ -3,6 +3,7 @@ import { createCommandService } from './application/command-service.js';
 import { createDiamondService } from './arcade/diamond-service.js';
 import { createMemberService } from './arcade/member-service.js';
 import { createMiniService } from './arcade/mini-service.js';
+import { createPetRacingService } from './arcade/pet-racing-service.js';
 import { createPhomService } from './arcade/phom-service.js';
 import { createPracticeContext } from './arcade/practice-context.js';
 import { createSettingsService } from './arcade/settings-service.js';
@@ -20,6 +21,7 @@ export function createGameService(options: GameServiceOptions): GameService {
   const practice = createPracticeContext(options);
   return {
     ...createPlayerService(options),
+    ...createPetRacingService(options),
     ...createWorldService(options),
     ...createFarmService(options),
     ...createMiniService(practice),

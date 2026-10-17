@@ -1,4 +1,5 @@
 import type { ArcadeMemberCommand, ArcadeTableCommand, ArcadeTableSettings } from '@chibi-town/contracts/arcade-table';
+import type { RaceBet } from '@chibi-town/contracts/pet-racing';
 import type { ArcadeGameId } from '@chibi-town/game-content/arcade-catalog';
 import { tableGames } from '@chibi-town/game-service';
 import type { FastifyInstance } from 'fastify';
@@ -6,6 +7,8 @@ import type { createArcadeController } from '@/modules/arcade/controller';
 import type { ArcadePlay, ArcadeStart } from '@/modules/arcade/practice';
 
 export function registerArcadeRoutes(app: FastifyInstance, controller: ReturnType<typeof createArcadeController>) {
+  app.get('/arcade/pet-racing', controller.getPetRace);
+  app.post<{ Body: RaceBet }>('/arcade/pet-racing/bet', controller.betPetRace);
   app.get('/arcade', (request) => controller.getLobby(request, 'diamonds'));
   for (const gameId of Object.keys(tableGames) as ArcadeGameId[]) {
     const path = ['chess', 'chinese-chess', 'bau-cua', 'slots'].includes(gameId)

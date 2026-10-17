@@ -34,6 +34,7 @@ import {
   validMiniCommand,
   validMiniStart,
 } from '@chibi-town/contracts/mini-games';
+import { decodeRaceLobby, validateRaceBet } from '@chibi-town/contracts/pet-racing';
 import { decodePhomLobby, decodePhomResult, decodePhomSnapshot, validPhomCommand } from '@chibi-town/contracts/phom';
 import {
   decodeTienLobby,
@@ -105,6 +106,13 @@ export function createHttpSdk(options: {
   };
 
   return {
+    getPetRace: async () => decodeRaceLobby(await request('/arcade/pet-racing')),
+
+    betPetRace: async (input) => {
+      validateRaceBet(input);
+      return decodeRaceLobby(await request('/arcade/pet-racing/bet', input));
+    },
+
     getMiniLobby: async (gameId) => {
       if (!isMiniGameId(gameId)) throw new ApiSdkError('INVALID_COMMAND');
       const lobby = decodeArcade(decodeMiniLobby, await request(`/arcade/mini/${gameId}`));

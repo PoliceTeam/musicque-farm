@@ -312,7 +312,7 @@
 .game-ui .ui-game-header {
   position: fixed;
   z-index: 4;
-  inset: 16px 16px auto;
+  inset: 16px var(--ui-location-gutter, 16px) auto;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -415,7 +415,7 @@
 }
 @media (max-width: 700px) {
   .game-ui .ui-game-header {
-    inset: 8px 8px auto;
+    inset: 8px var(--ui-location-gutter, 8px) auto;
     gap: 8px;
     flex-wrap: wrap;
   }
@@ -553,6 +553,15 @@
   padding: 10px 12px;
   font-size: 14px;
   line-height: 1.4;
+}
+/* Numeric fields use the same control surface as other shared form fields. */
+.game-ui .ui-form-field input[type="number"] {
+  appearance: textfield;
+}
+.game-ui .ui-form-field input[type="number"]::-webkit-inner-spin-button,
+.game-ui .ui-form-field input[type="number"]::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
 }
 .game-ui .ui-stack,
 .game-ui .ui-section,
@@ -995,4 +1004,18 @@
   flex-wrap: wrap;
   gap: 12px;
   padding: 6px;
+}
+
+/* Shared horizontal alignment for location headers and their screen controls. */
+.ui-location-layout {
+  --ui-location-gutter: 16px;
+}
+@media (max-width: 700px) {
+  .ui-location-layout {
+    --ui-location-gutter: 8px;
+  }
+}
+
+.ui-location-layout .ui-profile-info > strong {
+  color: #94630c;
 }

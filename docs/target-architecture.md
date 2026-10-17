@@ -204,3 +204,8 @@ Arcade dùng `packages/arcade-games` cho luật/bot/session thuần TypeScript v
 - `useTableSession` trong arcade React giữ lock/alive/stale/loading, replay counter và timer có cleanup; nội dung replay và nhịp từng game vẫn ở component. Shared UI dùng class `ui-*` cho header/menu/tab/inventory controls; selector riêng farm/kho/world map nằm trong stylesheet feature.
 
 Kiểm chứng Phase 5: test store/revision, clock crop, input farm/location, runtime/portal lifecycle, routing production, world renderer và table session. Chưa kiểm tra trực quan farm, location, world map, arcade trong môi trường này: dev server bị `listen EPERM 127.0.0.1:5173`, browser tích hợp không khả dụng và Computer Use chưa được phép dùng Chrome. Test/mock không thay thế kiểm tra trực quan.
+
+
+## Asset môi trường dùng chung
+
+`apps/game/src/assets/common/scenery/` giữ mây, skyline, cây, bụi hoa, curb và đèn dùng lại giữa các scene. `tools/scenery/assets.json` là manifest, generated `sceneryUrls` cung cấp URL có hash; `game/rendering/map-assets.ts` chia sẻ cache/lease ảnh theo URL thật cho map và standalone scene. Không chép lại common asset vào thư mục từng feature. Asset riêng của công trình/trường đua giữ cạnh nhóm tương ứng; nguồn và cấu hình export nằm trong tools. Pet Racing dùng scene ghép nhiều lớp và geometry theo viewport, không scale một ảnh nền nguyên khối. Xem `tools/scenery/readme.md` và `tools/pet-racing/readme.md`.

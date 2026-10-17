@@ -1,6 +1,7 @@
 import { Button } from '@chibi-town/ui/react';
 import type { CSSProperties, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useArcadeHost } from '../host.js';
 import { chanceSymbol } from './chance-symbol.js';
 
 const faces = [0, 1, 2, 3, 4, 5] as const;
@@ -37,6 +38,7 @@ export function ChanceTable({
 }) {
   const { t } = useTranslation('common');
   const bau = gameId === 'bau-cua';
+  const { assets } = useArcadeHost();
   return (
     <div className={`chance-table ${bau ? 'bau-table' : 'slot-machine'}`}>
       {!bau && (
@@ -45,6 +47,9 @@ export function ChanceTable({
         </div>
       )}
       <fieldset className={bau ? 'bau-dice-tray' : 'slot-window'} aria-label={t('miniRollResult')}>
+        {bau && assets['card-table'] && (
+          <img className="bau-tray-art" src={assets['card-table']} alt="" draggable={false} />
+        )}
         {[0, 1, 2].map((column) => {
           const value = roll?.[column] ?? column;
           return (
@@ -128,7 +133,6 @@ export function ChanceTable({
         )}
         {actions}
       </div>
-      <p className="mini-payout-help">{t(bau ? 'miniBauPayout' : 'miniSlotsPayout')}</p>
     </div>
   );
 }

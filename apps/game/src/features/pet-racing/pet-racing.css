@@ -1,0 +1,531 @@
+body {
+  margin: 0;
+  overflow: hidden;
+}
+.pet-race-page {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(#4fbdf1 0%, #7acaf1 45%, #5d9a45 80%, #376336 100%);
+  color: var(--ui-ink);
+}
+.pet-race-screen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  box-sizing: border-box;
+}
+.pet-race-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.pet-race-viewport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.pet-race-dock {
+  flex: none;
+  display: grid;
+  gap: 8px;
+  padding: 8px var(--ui-location-gutter, 16px) 12px;
+  background: linear-gradient(#345c3600, #24462bb3);
+}
+.pet-race-dock > .pet-race-receipts {
+  width: 100%;
+  justify-self: center;
+  padding-top: 0;
+}
+.pet-race-dock > .pet-race-footer {
+  width: 100%;
+  justify-self: center;
+  padding-top: 0;
+  color: #fff7df;
+}
+@media (max-width: 700px) {
+  .pet-race-dock {
+    padding: 8px var(--ui-location-gutter, 8px);
+    gap: 8px;
+  }
+}
+
+.pet-race-receipts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 10px;
+  font-size: 12px;
+}
+.pet-race-receipts > section {
+  flex: 1 1 250px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: #fff7df;
+}
+.pet-race-bet-receipt {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.pet-race-bet-receipt > strong {
+  color: var(--ui-green-dark);
+}
+.pet-race-receipt-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.game-ui .pet-race-receipt-heading > button {
+  min-height: 26px;
+  padding: 2px 8px;
+  font-size: 11px;
+}
+.pet-race-settlement > p {
+  margin: 0 0 6px;
+  font-size: 12px;
+}
+.pet-race-money {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.pet-race-money dt {
+  font-size: 11px;
+}
+.pet-race-money dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 800;
+}
+.pet-race-money [data-outcome="win"] dd {
+  color: #326530;
+}
+.pet-race-money [data-outcome="loss"] dd {
+  color: #96392a;
+}
+.pet-race-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #3eaaee;
+}
+.pet-race-canvas {
+  position: absolute;
+  inset: 0;
+}
+.pet-race-canvas canvas {
+  display: block;
+  image-rendering: pixelated;
+  max-width: 100%;
+  max-height: 100%;
+}
+.pet-race-wallet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pet-race-wallet svg {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+.pet-race-countdown {
+  position: absolute;
+  inset: 35% 0 auto;
+  text-align: center;
+  color: #ffdc69;
+  font-size: clamp(45px, 8vw, 100px);
+  font-weight: 900;
+  text-shadow: 2px 4px #654319;
+}
+.pet-race-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+.pet-race-footer > button {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.pet-race-footer > span {
+  font-size: 13px;
+  text-align: center;
+}
+.game-ui dialog.pet-race-bet-dialog {
+  width: min(740px, 96vw);
+  padding: 16px;
+}
+.game-ui dialog.pet-race-result-dialog {
+  width: min(530px, 96vw);
+}
+.game-ui .pet-race-bet-dialog > .ui-dialog-body {
+  display: grid;
+  gap: 10px;
+  padding: 0 4px 0 0;
+}
+.game-ui .pet-race-bet-dialog > .ui-dialog-header {
+  padding: 0 0 8px;
+}
+.game-ui .pet-race-bet-dialog > .ui-dialog-footer {
+  padding: 12px 0 0;
+}
+.pet-race-bet-dialog .ui-dialog-body > p {
+  margin: 0;
+}
+.pet-race-round-status {
+  font-weight: 800;
+}
+.pet-race-bet-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+.pet-race-detail {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.pet-race-selected {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pet-race-selected h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.pet-race-selected > canvas {
+  flex: none;
+  width: 64px;
+  height: 56px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.game-ui .pet-race-detail .ui-facts {
+  gap: 4px 12px;
+  padding: 8px 12px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.pet-race-amounts {
+  display: flex;
+  gap: 4px;
+}
+.game-ui .pet-race-amounts > button {
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.pet-race-detail p,
+.pet-race-detail .pet-race-wallet,
+.pet-race-rules {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.pet-race-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+.game-ui .pet-race-choices > button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 88px;
+  padding: 6px;
+  font-size: 12px;
+  text-align: center;
+}
+.game-ui .pet-race-choices > button[aria-pressed="true"] {
+  border-color: var(--ui-green-dark);
+  background: #e0ebc8;
+  box-shadow: inset 0 0 0 1px var(--ui-green-dark);
+}
+.pet-race-choices canvas,
+.pet-race-rankings canvas {
+  flex: none;
+  width: 52px;
+  height: 44px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.pet-race-choices strong,
+.pet-race-choices small,
+.pet-race-rankings small {
+  display: block;
+}
+.pet-race-rankings {
+  padding-left: 26px;
+}
+.pet-race-rankings li {
+  padding: 6px;
+  border-bottom: 1px solid var(--ui-border);
+}
+.pet-race-rankings li[data-selected="true"] {
+  background: #e0ebc8;
+  border-radius: 6px;
+}
+.pet-race-rankings li > * {
+  display: inline-block;
+  vertical-align: middle;
+}
+.pet-race-rankings li > strong {
+  float: right;
+  padding-top: 12px;
+  font-size: 12px;
+}
+.pet-race-rankings small {
+  font-size: 11px;
+}
+.pet-race-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  color: #873d2d;
+}
+@media (max-width: 550px) {
+  .pet-race-bet-layout {
+    gap: 10px;
+  }
+  .pet-race-selected {
+    gap: 6px;
+  }
+  .pet-race-selected > canvas {
+    width: 44px;
+    height: 44px;
+  }
+  .pet-race-selected h3 {
+    font-size: 14px;
+  }
+  .game-ui .pet-race-choices > button {
+    gap: 4px;
+    padding: 5px;
+    font-size: 11px;
+  }
+  .pet-race-choices canvas {
+    width: 38px;
+    height: 36px;
+  }
+  .pet-race-choices small {
+    font-size: 10px;
+  }
+  .pet-race-footer {
+    flex-wrap: wrap;
+  }
+  .pet-race-footer > span {
+    order: -1;
+    width: 100%;
+  }
+}
+
+.pet-race-footer > button:first-child {
+  margin-left: 0;
+}
+@media (min-width: 901px) {
+  .pet-race-dock .pet-race-last-receipt {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .pet-race-dock .pet-race-receipt-heading {
+    flex: 0 0 210px;
+    margin: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .pet-race-dock .pet-race-settlement {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* A distinct control deck, using the same button hierarchy as the arcade footer. */
+.pet-race-dock {
+  position: relative;
+  z-index: 2;
+  gap: 10px;
+  padding: 12px var(--ui-location-gutter, 16px) 16px;
+  border-top: 3px solid #b6f2de;
+  background: linear-gradient(#278e91, #14646c 12%, #104f5b 75%, #103e4b);
+  box-shadow:
+    0 -4px #173f4555,
+    inset 0 1px #ecfff360;
+}
+.pet-race-dock > .pet-race-footer {
+  min-height: 50px;
+  gap: 16px;
+}
+.pet-race-footer > span {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+  line-height: 1.4;
+}
+.pet-race-footer > span > small {
+  font-size: 10px;
+  color: #a8e5d8;
+  letter-spacing: 1.3px;
+}
+.pet-race-footer > span > strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+.game-ui .pet-race-footer > .ui-button {
+  min-width: 128px;
+  min-height: 48px;
+  padding: 10px 20px;
+  border: 2px solid #123e51;
+  background: linear-gradient(#4bacc2, #24728e);
+  color: #f0fffd;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow:
+    inset 0 1px #c4f5ff,
+    0 3px #092d3e;
+}
+.game-ui .pet-race-footer > .ui-button.primary:enabled {
+  border-color: #694f1a;
+  color: #3f341b;
+  background: linear-gradient(#ffe49a, #efbe59);
+  box-shadow:
+    inset 0 1px #fff9dc,
+    0 3px #755b26;
+}
+.game-ui .pet-race-footer > .ui-button:disabled {
+  color: #adc9cb;
+  border-color: #294e59;
+  background: #365c66;
+  box-shadow: inset 0 1px #ffffff15;
+}
+.pet-race-dock .pet-race-receipts > section {
+  background: #eaf8eb;
+  border-color: #6ea8a0;
+  box-shadow: 0 2px #083f4a55;
+}
+.pet-race-victory {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 16px 10px;
+  margin-bottom: 14px;
+  border: 2px solid #d9b54d;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at top, #fff4b5, #fffbe9 65%);
+  color: #674317;
+  text-align: center;
+}
+.pet-race-victory > strong {
+  font-size: 19px;
+}
+.pet-race-victory > span {
+  font-size: 13px;
+}
+.pet-race-victory .pet-race-victory-star {
+  font-size: 38px;
+  line-height: 1;
+  color: #d89b18;
+  text-shadow:
+    0 2px #fff,
+    0 0 18px #ffda58;
+}
+.pet-race-victory-credit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 800;
+  color: #337346;
+}
+.pet-race-victory-credit svg {
+  width: 26px;
+  height: 26px;
+}
+.pet-race-confetti {
+  position: absolute;
+  inset: -12px;
+  overflow: hidden;
+  border-radius: 12px;
+  pointer-events: none;
+}
+.pet-race-confetti > i {
+  position: absolute;
+  top: -18px;
+  left: var(--confetti-x);
+  width: 7px;
+  height: 12px;
+  background: var(--confetti-color);
+  opacity: 0;
+  animation: pet-race-confetti-fall 2.8s var(--confetti-delay) ease-out both;
+}
+.pet-race-confetti > i:nth-child(3n) {
+  border-radius: 50%;
+  width: 9px;
+  height: 9px;
+}
+@keyframes pet-race-confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  8% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--confetti-drift), 220px, 0) rotate(540deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pet-race-confetti {
+    display: none;
+  }
+}
+@media (max-width: 550px) {
+  .pet-race-dock {
+    padding: 10px var(--ui-location-gutter, 8px) 12px;
+  }
+  .pet-race-dock > .pet-race-footer {
+    gap: 10px;
+  }
+  .game-ui .pet-race-footer > .ui-button {
+    min-width: 112px;
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .pet-race-footer > span > strong {
+    font-size: 12px;
+  }
+  .pet-race-victory > strong {
+    font-size: 16px;
+  }
+}

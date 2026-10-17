@@ -7,11 +7,14 @@ import {
   validArcadeSettings,
   validArcadeTableCommand,
 } from '@chibi-town/contracts/arcade-table';
+import type { RaceBet } from '@chibi-town/contracts/pet-racing';
 import { ARCADE_PRACTICE_ROOM_ID, type ArcadeGameId } from '@chibi-town/game-content/arcade-catalog';
 import { createGameService } from '@chibi-town/game-service';
 import type { PlayerAccount } from '@/_utils/session-auth';
+import type { PetRaceResetConfig } from '@/config';
 import type { Database } from '@/infrastructure/database/database';
 import { arcadeChannel } from '@/modules/arcade/arcade-channel';
+import { createSharedPetRacingService } from '@/modules/arcade/pet-racing';
 import {
   type ArcadePlay,
   type ArcadeStart,
@@ -25,8 +28,14 @@ import { randomSeed } from '@/modules/arcade/random-seed';
 import type { TableService } from '@/modules/arcade/tables';
 import { type TransactionTrace, withPlayerDocument, withPlayerTransaction } from '@/modules/player';
 
-export function createArcadeService(deps: { db: Database; clock: () => number; tables: TableService }) {
+export function createArcadeService(deps: {
+  db: Database;
+  clock: () => number;
+  tables: TableService;
+  petRaceReset?: PetRaceResetConfig;
+}) {
   const { db, clock, tables } = deps;
+  const petRaces = createSharedPetRacingService(db, clock, deps.petRaceReset);
 
   const practiceFor = (player: PlayerAccount) => createGameService({ player, clock, randomSeed, live: true });
 
@@ -37,6 +46,18 @@ export function createArcadeService(deps: { db: Database; clock: () => number; t
   }
 
   return {
+    takePetRacePhase: petRaces.phaseChange,
+    initializePetRaces: petRaces.initialize,
+    sweepPetRaces: petRaces.sweep,
+
+    getPetRace(player: PlayerAccount, trace?: TransactionTrace) {
+      return petRaces.get(player, trace);
+    },
+
+    betPetRace(player: PlayerAccount, input: RaceBet, trace?: TransactionTrace) {
+      return petRaces.bet(player, input, trace);
+    },
+
     async getLobby(player: PlayerAccount, gameId: ArcadeGameId, trace?: TransactionTrace) {
       const read = practiceLobby(practiceFor(player), gameId);
       const saved = await withPlayerDocument(

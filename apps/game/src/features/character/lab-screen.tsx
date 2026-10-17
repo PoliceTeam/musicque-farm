@@ -104,7 +104,6 @@ export function LabScreen({ audio }: { audio: ReturnType<typeof createGameAudio>
         {t('character.back')}
       </Link>
       <h1>{t('character.title')}</h1>
-      <p className="muted">{t('character.description')}</p>
       {error && <p role="alert">{error}</p>}
       <div className="row">
         <div>

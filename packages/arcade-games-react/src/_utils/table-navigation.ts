@@ -6,6 +6,7 @@ export function guardTableBack(
   requestLeave: (navigateBack: () => void) => void,
 ) {
   const key = '__arcadeTableBack';
+  const guardedUrl = browser.location.href;
   const marker = browser.history.state?.[key] ?? crypto.randomUUID();
   const lease = Symbol();
   guards.set(browser, lease);
@@ -39,7 +40,7 @@ export function guardTableBack(
     queueMicrotask(() => {
       if (guards.get(browser) !== lease) return;
       guards.delete(browser);
-      if (armed && browser.history.state?.[key] === marker) {
+      if (armed && browser.location.href === guardedUrl && browser.history.state?.[key] === marker) {
         armed = false;
         browser.history.back();
       }

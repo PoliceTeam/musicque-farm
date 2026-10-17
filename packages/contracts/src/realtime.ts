@@ -1,6 +1,7 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import { sanitizeOutfit } from '@chibi-town/character-core/outfit-logic';
 import { ARCADE_GAMES, type ArcadeGameId } from '@chibi-town/game-content/arcade-catalog';
+import type { RacePhase } from './pet-racing.js';
 
 /** Another player standing in the same map channel. */
 export type MapPlayer = {
@@ -17,6 +18,7 @@ export type MapPlayer = {
  * hidden information (other hands) never travels on a shared message.
  */
 export type RealtimeEvent =
+  | { type: 'pet-race.changed'; roundId: string; phase: RacePhase }
   | { type: 'lobby'; gameId: ArcadeGameId }
   | { type: 'match'; gameId: ArcadeGameId }
   | { type: 'map.state'; mapId: string; channelId: number; players: MapPlayer[] }
@@ -24,6 +26,8 @@ export type RealtimeEvent =
   | { type: 'map.moves'; moves: { id: string; x: number; y: number }[] }
   | { type: 'map.leave'; id: string };
 export type RealtimeCommand =
+  | { type: 'pet-race.watch' }
+  | { type: 'pet-race.unwatch' }
   | { type: 'lobby.watch'; gameId: ArcadeGameId }
   | { type: 'lobby.unwatch' }
   | { type: 'map.enter'; regionId: string; mapId: string; x: number; y: number }
@@ -32,7 +36,7 @@ export type RealtimeCommand =
 /** Local lifecycle notification; never decoded from a server message. Reload snapshots after reconnect. */
 export type RealtimeNotification = RealtimeEvent | { type: 'reconnected' };
 export interface GameRealtime {
-  /** Commands sent while disconnected are dropped; `map.enter` and `lobby.watch` are replayed on reconnect. */
+  /** Commands sent while disconnected are dropped; `map.enter`, `lobby.watch` and `pet-race.watch` are replayed on reconnect. */
   send(command: RealtimeCommand): void;
   subscribe(listener: (event: RealtimeNotification) => void): () => void;
   close(): void;
@@ -67,6 +71,8 @@ export function decodeRealtimeCommand(value: unknown): RealtimeCommand | undefin
   switch (command.type) {
     case 'lobby.watch':
       return gameId(command.gameId) ? { type: command.type, gameId: command.gameId } : undefined;
+    case 'pet-race.watch':
+    case 'pet-race.unwatch':
     case 'lobby.unwatch':
     case 'map.leave':
       return { type: command.type };
@@ -85,6 +91,11 @@ export function decodeRealtimeEvent(value: unknown): RealtimeEvent | undefined {
   const event = value as RealtimeEvent;
   if (!event || typeof event !== 'object') return undefined;
   switch (event.type) {
+    case 'pet-race.changed':
+      return /^race-\d{1,12}$/.test(event.roundId ?? '') &&
+        ['betting', 'countdown', 'racing', 'results'].includes(event.phase)
+        ? { type: event.type, roundId: event.roundId, phase: event.phase }
+        : undefined;
     case 'lobby':
     case 'match':
       return gameId(event.gameId) ? { type: event.type, gameId: event.gameId } : undefined;

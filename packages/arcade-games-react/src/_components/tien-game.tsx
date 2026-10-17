@@ -7,13 +7,16 @@ import { Button, Dialog } from '@chibi-town/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ArcadeGameProps } from '../_utils/arcade-game-props.js';
+import { readArcadeRoute, useArcadeTableRoute } from '../_utils/arcade-route.js';
 import { clearTable } from '../_utils/clear-table.js';
 import { unseenTableSteps } from '../_utils/table-updates.js';
 import { useArcadeLive } from '../_utils/use-arcade-live.js';
 import { useTableSession } from '../_utils/use-table-session.js';
 import { useArcadeHost } from '../host.js';
+import { ArcadeActionProvider, ArcadeActions, ArcadeActionTarget, ArcadeFooterTimer } from './arcade-actions.js';
 import { ArcadeDirectory } from './arcade-directory.js';
 import { CoinChange } from './coin-change.js';
+import { GameResultEffect } from './game-result-effect.js';
 import { useLeaveTable } from './leave-table-dialog.js';
 import { TableSettings } from './table-settings.js';
 import { TienTable } from './tien-table.js';
@@ -23,8 +26,6 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
   const { sdk } = useArcadeHost();
   const [lobby, setLobby] = useState<TienLobby>();
   const [match, setMatch] = useState<TienSnapshot>();
-  const [roomId, setRoomId] = useState<number>();
-  const [atTable, setAtTable] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -35,6 +36,7 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
   const command = useRef<TienCommand | undefined>(undefined);
   const roomRequest = useRef<ArcadeTableStart | undefined>(undefined);
 
+  const { roomId, atTable, setRoomId, setAtTable } = useArcadeTableRoute('tien-len');
   const session = useTableSession();
   const { alive, locked, stale, loading } = session;
 
@@ -77,6 +79,12 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
         }
         confirmed.current = l.activeMatch;
         setMatch(l.activeMatch);
+        const route = readArcadeRoute();
+        if (
+          route.table !== undefined &&
+          (!l.activeMatch || l.activeMatch.roomId !== route.room || (l.activeMatch.tableId ?? 0) !== route.table)
+        )
+          setAtTable(false);
         setError(closed ? t('arcadeTableClosed') : '');
         if (closed) {
           setAtTable(false);
@@ -122,8 +130,7 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
       if (!alive.current) return;
       confirmed.current = next;
       setMatch(next);
-      setAtTable(true);
-      setRoomId(next.roomId);
+      setAtTable(true, next.tableId ?? 0, next.roomId);
       setSelected([]);
       roomRequest.current = undefined;
       setRetry(false);
@@ -194,6 +201,8 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
   }
 
   const leaving = useLeaveTable({
+    onLeft: () => void load(),
+
     disabled: busy,
     gameId: 'tien-len',
     match: atTable ? confirmed.current : undefined,
@@ -219,8 +228,9 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
     interceptNavigation: false,
   });
   return (
-    <>
+    <ArcadeActionProvider>
       <CoinChange coins={coins} audio={audio} />
+      <GameResultEffect match={atTable ? match : undefined} />
       <section className="arcade-main arcade-main--tien">
         {!atTable && (
           <>
@@ -228,6 +238,7 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
             {!lobby && error && <Button onClick={() => void load()}>{t('retry')}</Button>}
             {lobby && (
               <ArcadeDirectory
+                gameId={'tien-len'}
                 gameName={t('arcadeGameNames.tien-len')}
                 rooms={lobby.rooms}
                 roomId={roomId}
@@ -274,10 +285,10 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
             event={event}
             actions={
               match.status === 'playing' && (
-                <>
+                <ArcadeActions>
                   {match.session?.mode === 'practice' && (
                     <Button
-                      disabled={busy || retry}
+                      disabled={busy || retry || match.turn !== 0}
                       onClick={() => {
                         const hint = legalTienPlays(match.hand, match.pile, match.opening, match.openingCard ?? 0)[0];
                         setSelected(hint?.cards ?? []);
@@ -300,7 +311,7 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
                   >
                     {t('tienPass')}
                   </Button>
-                </>
+                </ArcadeActions>
               )
             }
             toggle={(card) => {
@@ -316,7 +327,7 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
             {error}
           </p>
         )}
-        <div className="arcade-local-actions">
+        <ArcadeActions>
           {atTable && match?.status === 'waiting' && !match.session && (
             <Button variant="primary" disabled={busy || retry} onClick={() => void send({ type: 'start' })}>
               {t('tienStart')}
@@ -337,7 +348,7 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
               {t('retry')}
             </Button>
           )}
-        </div>
+        </ArcadeActions>
       </section>
       <footer className="arcade-footer">
         <Button
@@ -362,7 +373,9 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
           <span aria-hidden="true">❮</span>
           <span>{t(atTable ? 'arcadeBackTables' : roomId !== undefined ? 'arcadeBackRooms' : 'arcadeCatalog')}</span>
         </Button>
+        <ArcadeActionTarget />
         <div className="arcade-footer-actions">
+          <ArcadeFooterTimer match={atTable ? match : undefined} />
           <Button onClick={() => setHelp(true)}>{t('arcadeHelp')}</Button>
         </div>
       </footer>
@@ -377,6 +390,6 @@ export function TienGame({ player, back, coins, refreshWallet, audio }: ArcadeGa
           <p>{t('tienHelp5')}</p>
         </Dialog>
       )}
-    </>
+    </ArcadeActionProvider>
   );
 }

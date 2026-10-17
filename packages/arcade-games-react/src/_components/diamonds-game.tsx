@@ -14,6 +14,7 @@ import { Button, Dialog } from '@chibi-town/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ArcadeGameProps } from '../_utils/arcade-game-props.js';
+import { readArcadeRoute, useArcadeTableRoute } from '../_utils/arcade-route.js';
 import { clearTable } from '../_utils/clear-table.js';
 import { GEM_REPLAY_TIMING, type GemReplay } from '../_utils/gem-replay.js';
 import { roomNumber } from '../_utils/room-number.js';
@@ -21,21 +22,29 @@ import { unseenTableSteps } from '../_utils/table-updates.js';
 import { useArcadeLive } from '../_utils/use-arcade-live.js';
 import { useTableSession } from '../_utils/use-table-session.js';
 import { useArcadeHost } from '../host.js';
+import { ArcadeActionProvider, ArcadeActions, ArcadeActionTarget, ArcadeFooterTimer } from './arcade-actions.js';
 import { ArcadeDirectory } from './arcade-directory.js';
 import { CoinChange } from './coin-change.js';
+import { GameResultEffect } from './game-result-effect.js';
 import { GemArena } from './gem-arena.js';
 import { GemImage } from './gem-image.js';
 import { useLeaveTable } from './leave-table-dialog.js';
 import { TableSettings } from './table-settings.js';
 
-type View = 'rooms' | 'tables' | 'battle';
-
 export function DiamondsGame({ audio, player, coins, back, refreshWallet }: ArcadeGameProps) {
   const { t } = useTranslation('common');
   const { sdk } = useArcadeHost();
   const [lobby, setLobby] = useState<ArcadeLobby>();
-  const [roomId, setRoomId] = useState(0);
-  const [view, setView] = useState<View>('rooms');
+  const route = useArcadeTableRoute('diamonds');
+  const roomId = route.roomId ?? 0;
+  const setRoomId = route.setRoomId;
+  const view = route.atTable ? 'battle' : route.roomId === undefined ? 'rooms' : 'tables';
+
+  const setView = (value: 'rooms' | 'tables') => {
+    if (value === 'rooms') route.setRoomId(undefined);
+    else route.setAtTable(false);
+  };
+
   const [battle, setBattle] = useState<GemBattleSnapshot>();
   const confirmed = useRef<GemBattleSnapshot | undefined>(undefined);
   const [busy, setBusy] = useState(false);
@@ -121,6 +130,14 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
         }
         confirmed.current = next.activeBattle;
         setBattle(next.activeBattle);
+        const location = readArcadeRoute();
+        if (
+          location.table !== undefined &&
+          (!next.activeBattle ||
+            next.activeBattle.roomId !== location.room ||
+            (next.activeBattle.tableId ?? 0) !== location.table)
+        )
+          route.setAtTable(false);
         setError(closed ? t('arcadeTableClosed') : '');
         setCanRetry(false);
         lastCommand.current = undefined;
@@ -165,8 +182,7 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
       if (!alive.current) return;
       confirmed.current = next;
       setBattle(next);
-      setRoomId(next.roomId);
-      setView('battle');
+      route.setAtTable(true, next.tableId ?? 0, next.roomId);
       setCanRetry(false);
       lastCommand.current = undefined;
       setSelected(undefined);
@@ -285,6 +301,8 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
   }
 
   const leaving = useLeaveTable({
+    onLeft: () => setReload((value) => value + 1),
+
     disabled: busy,
     gameId: 'diamonds',
     match: view === 'battle' ? confirmed.current : undefined,
@@ -322,7 +340,7 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
     interceptNavigation: false,
   });
   const battleActions = (
-    <div className="arcade-local-actions">
+    <ArcadeActions>
       {view === 'battle' && battle && (
         <>
           {battle.status === 'waiting' && !battle.session && (
@@ -348,7 +366,7 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
             battle.status === 'playing' &&
             battle.session?.mode === 'practice' && (
               <Button
-                disabled={busy || battle.status !== 'playing'}
+                disabled={busy || canRetry || battle.turn !== 0 || battle.status !== 'playing'}
                 onClick={() => {
                   const move = validGemMoves(battle.board)[0];
                   if (move) setHinted([move.from, move.to]);
@@ -361,13 +379,7 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
           {battle.status === 'playing' && (
             <Button
               variant="primary"
-              disabled={
-                busy ||
-                canRetry ||
-                battle.turn === 1 ||
-                battle.status !== 'playing' ||
-                battle.player.mana < DIAMOND_RULES.skillCost
-              }
+              disabled={busy || canRetry || battle.turn !== 0 || battle.player.mana < DIAMOND_RULES.skillCost}
               onClick={() => void send({ type: 'skill' })}
             >
               {t('arcadeSkill', { cost: DIAMOND_RULES.skillCost })}
@@ -375,11 +387,12 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
           )}
         </>
       )}
-    </div>
+    </ArcadeActions>
   );
   return (
-    <>
+    <ArcadeActionProvider>
       <CoinChange coins={coins} audio={audio} />
+      <GameResultEffect match={view === 'battle' ? battle : undefined} />
       <section className={`arcade-main ${view === 'battle' ? 'arcade-main--battle' : ''}`}>
         {!lobby && (
           <section className="arcade-load">
@@ -390,6 +403,7 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
         {lobby && (view === 'rooms' || view === 'tables') && (
           <>
             <ArcadeDirectory
+              gameId={'diamonds'}
               gameName={t('arcadeGameNames.diamonds')}
               rooms={lobby.rooms}
               roomId={view === 'tables' ? roomId : undefined}
@@ -470,7 +484,9 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
             {t(view === 'battle' ? 'arcadeBackTables' : view === 'tables' ? 'arcadeBackRooms' : 'arcadeCatalog')}
           </span>
         </Button>
+        <ArcadeActionTarget />
         <div className="arcade-footer-actions">
+          <ArcadeFooterTimer match={view === 'battle' ? battle : undefined} />
           <Button onClick={() => setHelp(true)}>{t('arcadeHelp')}</Button>
         </div>
       </footer>
@@ -494,6 +510,6 @@ export function DiamondsGame({ audio, player, coins, back, refreshWallet }: Arca
           <p>{t('arcadeSkillHelp')}</p>
         </Dialog>
       )}
-    </>
+    </ArcadeActionProvider>
   );
 }

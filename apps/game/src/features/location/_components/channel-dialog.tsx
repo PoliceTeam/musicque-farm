@@ -86,7 +86,6 @@ export function ChannelDialog({
         </div>
       }
     >
-      <p>{t('channelsDescription')}</p>
       {directory?.source === 'mock' && <p className="channel-mock-note">{t('channelsMock')}</p>}
       {loading && <p role="status">{t('channelsLoading')}</p>}
       {error && <p role="alert">{error}</p>}

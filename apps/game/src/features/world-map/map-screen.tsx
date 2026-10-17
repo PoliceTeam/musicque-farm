@@ -268,7 +268,7 @@ export function MapScreen({
                 />
               </label>
               <p>{t('mapCurrentPhase', { phase: t(`mapTimeModes.${worldTimePhase(hour)}`) })}</p>
-              <p>{t('mapTimeHint')}</p>
+              {mode !== 'real' && <p>{t('mapTimeHint')}</p>}
               <AudioSettings audio={audio} />
             </div>
           </details>

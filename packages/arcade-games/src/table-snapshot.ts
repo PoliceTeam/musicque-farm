@@ -8,7 +8,7 @@ export type TableSnapshot<Step> = {
   lastSteps?: { revision: number; steps: Step[] };
 };
 
-/** A repeated display name is disambiguated by the immutable account handle. */
+/** Public gameplay labels use the display name; the handle remains account metadata. */
 export function tablePlayerName(player: { name: string; username?: string | null } | undefined): string | undefined {
-  return player ? `${player.name}${player.username ? ` @${player.username}` : ''}` : undefined;
+  return player?.name;
 }

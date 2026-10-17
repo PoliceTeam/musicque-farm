@@ -7,6 +7,7 @@ import { Button, FormField, Select } from '@chibi-town/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useArcadeHost } from '../host.js';
+import { ArcadeActions } from './arcade-actions.js';
 import { ArcadeAvatar } from './arcade-avatar.js';
 import { TurnCountdown } from './turn-countdown.js';
 export type TableInfo = {
@@ -19,7 +20,7 @@ export type TableInfo = {
   session?: ArcadeSession;
 };
 
-export function TableSettings({
+function TableSettingsContent({
   gameId,
   match,
   playerId,
@@ -110,6 +111,7 @@ export function TableSettings({
       request.current = undefined;
       await changed();
       setDirty(false);
+      return true;
     } catch (failure) {
       const code = failure instanceof Error ? failure.message : '';
       if (code === 'REQUEST_CONFLICT') {
@@ -148,10 +150,65 @@ export function TableSettings({
   }
 
   const members = arcadeMembers(session);
+  if (practice && match.status !== 'waiting') return null;
+  if (practice)
+    return (
+      <section className="arcade-table-settings arcade-practice-settings">
+        <div className="arcade-settings-fields">
+          {['tien-len', 'phom'].includes(gameId) && (
+            <Select
+              label={t('tienPlayerCount')}
+              value={playerCount}
+              disabled={busy || locked}
+              items={([2, 3, 4] as const).map((count) => ({ value: count, label: t('tienPlayers', { count }) }))}
+              onChange={(count) => {
+                setPlayerCount(count);
+                setDirty(true);
+                request.current = undefined;
+              }}
+            />
+          )}
+          {!chance && (
+            <Select
+              label={t('arcadeDifficulty')}
+              value={difficulty}
+              disabled={busy || locked}
+              items={(['easy', 'medium', 'hard'] as const).map((value) => ({
+                value,
+                label: t(`arcadeDifficulties.${value}`),
+              }))}
+              onChange={(value) => {
+                setDifficulty(value);
+                setDirty(true);
+                request.current = undefined;
+              }}
+            />
+          )}
+          {onStart && (
+            <ArcadeActions>
+              <Button
+                variant="primary"
+                disabled={busy || locked}
+                onClick={() => {
+                  void (async () => {
+                    if (await save()) await onStart();
+                  })();
+                }}
+              >
+                {t(gameId === 'bau-cua' ? 'miniRoll' : gameId === 'slots' ? 'miniSpin' : 'tienStart')}
+              </Button>
+            </ArcadeActions>
+          )}
+        </div>
+        {error && <p role="alert">{error}</p>}
+      </section>
+    );
   return (
     <section className="arcade-table-settings">
       <p>
-        <strong>{t('arcadeHost', { name: memberName(session.hostId, 0) })}</strong>
+        <strong className={isHost ? 'is-self' : undefined}>
+          {t('arcadeHost', { name: memberName(session.hostId, 0) })}
+        </strong>
         <span>
           {t(practice ? 'arcadePracticeFree' : 'arcadeStakeAmount', {
             stake: live && chance ? (members.find((m) => m.id === playerId)?.stake ?? session.stake) : session.stake,
@@ -164,13 +221,6 @@ export function TableSettings({
             pool: session.stake * (session.playerCount ?? 4),
             first: topTwoPayout(session.stake, 0, 1, session.playerCount ?? 4)[0] + session.stake,
             second: topTwoPayout(session.stake, 0, 1, session.playerCount ?? 4)[1] + session.stake,
-            rule: t(
-              (session.playerCount ?? 4) === 2
-                ? 'tienPayoutTwo'
-                : session.playerCount === 3
-                  ? 'tienPayoutThree'
-                  : 'tienPayoutFour',
-            ),
           })}
         </p>
       )}
@@ -188,16 +238,6 @@ export function TableSettings({
       )}
       {match.status === 'waiting' && (isHost || (live && chance)) && session.mode !== 'casual' && (
         <>
-          <p>
-            {t(
-              practice
-                ? ['bau-cua', 'slots'].includes(gameId)
-                  ? 'miniChanceSetup'
-                  : 'arcadeChooseDifficulty'
-                : 'arcadeHostStakeLimit',
-              { coins },
-            )}
-          </p>
           <div className="arcade-settings-fields">
             {practice && ['tien-len', 'phom'].includes(gameId) && (
               <Select
@@ -245,31 +285,37 @@ export function TableSettings({
                 }}
               />
             )}
-            <Button
-              variant="primary"
-              disabled={busy || locked || (!practice && (!Number.isSafeInteger(stake) || stake < 1 || stake > coins))}
-              onClick={() => void save()}
-            >
-              {t('arcadeSetReady')}
-            </Button>
-            {onStart && isHost && (
+            <ArcadeActions>
               <Button
                 variant="primary"
-                disabled={
-                  busy ||
-                  locked ||
-                  dirty ||
-                  !(live && chance ? members.length > 0 && members.every((m) => m.ready) : arcadeAllReady(session))
-                }
-                onClick={() => void onStart()}
+                disabled={busy || locked || (!practice && (!Number.isSafeInteger(stake) || stake < 1 || stake > coins))}
+                onClick={() => void save()}
               >
-                {t(gameId === 'bau-cua' ? 'miniRoll' : gameId === 'slots' ? 'miniSpin' : 'tienStart')}
+                {t(isHost ? 'arcadeSaveSettings' : 'arcadeSetReady')}
               </Button>
+            </ArcadeActions>
+            {onStart && isHost && (
+              <ArcadeActions>
+                <Button
+                  variant="primary"
+                  disabled={
+                    busy ||
+                    locked ||
+                    dirty ||
+                    !(live && chance
+                      ? members.length > 0 && members.every((m) => m.id === session.hostId || m.ready)
+                      : arcadeAllReady(session))
+                  }
+                  onClick={() => void onStart()}
+                >
+                  {t(gameId === 'bau-cua' ? 'miniRoll' : gameId === 'slots' ? 'miniSpin' : 'tienStart')}
+                </Button>
+              </ArcadeActions>
             )}
           </div>
           <ul className="arcade-members">
             {members.map((m, index) => (
-              <li key={m.id}>
+              <li key={m.id} data-self={m.id === playerId}>
                 {chance && players?.find((entry) => entry.id === m.id)?.outfit && (
                   <ArcadeAvatar
                     outfit={players.find((entry) => entry.id === m.id)!.outfit!}
@@ -280,7 +326,9 @@ export function TableSettings({
                 {chance && (
                   <TurnCountdown match={match} active={m.id === session.hostId} prominent={m.id === playerId} />
                 )}
-                <strong>{t(m.ready && !(m.id === playerId && dirty) ? 'tienReady' : 'arcadeNotReady')}</strong>
+                <strong>
+                  {t(m.id === session.hostId ? 'arcadeHostBadge' : m.ready ? 'tienReady' : 'arcadeNotReady')}
+                </strong>
                 {chance && !live && index !== 0 && (
                   <div className="arcade-member-bet">
                     {!practice && (
@@ -352,12 +400,15 @@ export function TableSettings({
               {t('arcadeInviteBot')}
             </Button>
           )}
-          {((!live && members[0]?.ready && !dirty) ||
-            (live && chance && members.find((m) => m.id === playerId)?.ready)) && (
-            <Button disabled={busy || locked} onClick={() => void member({ type: 'ready', ready: false })}>
-              {t('arcadeCancelReady')}
-            </Button>
-          )}
+          {!isHost &&
+            ((!live && members[0]?.ready && !dirty) ||
+              (live && chance && members.find((m) => m.id === playerId)?.ready)) && (
+              <ArcadeActions>
+                <Button disabled={busy || locked} onClick={() => void member({ type: 'ready', ready: false })}>
+                  {t('arcadeCancelReady')}
+                </Button>
+              </ArcadeActions>
+            )}
           {members.length < 2 && !(live && chance) && <p role="status">{t('arcadeNeedMembers')}</p>}
         </>
       )}
@@ -365,7 +416,7 @@ export function TableSettings({
         <>
           <ul className="arcade-members">
             {members.map((m, index) => (
-              <li key={m.id}>
+              <li key={m.id} data-self={m.id === playerId}>
                 {chance && players?.find((entry) => entry.id === m.id)?.outfit && (
                   <ArcadeAvatar
                     outfit={players.find((entry) => entry.id === m.id)!.outfit!}
@@ -376,27 +427,43 @@ export function TableSettings({
                 {chance && (
                   <TurnCountdown match={match} active={m.id === session.hostId} prominent={m.id === playerId} />
                 )}
-                <strong>{t(m.ready ? 'tienReady' : 'arcadeNotReady')}</strong>
+                <strong>
+                  {t(m.id === session.hostId ? 'arcadeHostBadge' : m.ready ? 'tienReady' : 'arcadeNotReady')}
+                </strong>
               </li>
             ))}
           </ul>
           {session.configured ? (
-            <Button
-              variant={members.find((m) => m.id === playerId)?.ready ? 'default' : 'primary'}
-              disabled={busy || locked || session.stake > coins}
-              onClick={() => void member({ type: 'ready', ready: !members.find((m) => m.id === playerId)?.ready })}
-            >
-              {members.find((m) => m.id === playerId)?.ready
-                ? t('arcadeCancelReady')
-                : t('arcadeConfirmStake', { stake: session.stake })}
-            </Button>
+            <ArcadeActions>
+              <Button
+                variant={members.find((m) => m.id === playerId)?.ready ? 'default' : 'primary'}
+                disabled={busy || locked || session.stake > coins}
+                onClick={() => void member({ type: 'ready', ready: !members.find((m) => m.id === playerId)?.ready })}
+              >
+                {members.find((m) => m.id === playerId)?.ready
+                  ? t('arcadeCancelReady')
+                  : t('arcadeConfirmStake', { stake: session.stake })}
+              </Button>
+            </ArcadeActions>
           ) : (
             <p role="status">{t('arcadeHostChoosing')}</p>
           )}
-          <p>{t(session.stake > coins ? 'arcadeNoCoins' : 'arcadeWaitHost')}</p>
+          {session.stake > coins && <p role="status">{t('arcadeNoCoins')}</p>}
         </>
       )}
       {error && <p role="alert">{error}</p>}
     </section>
+  );
+}
+
+/** Render from the current snapshot so starting and restoring a round use the same layout. */
+export function TableSettings(props: Parameters<typeof TableSettingsContent>[0]) {
+  if (props.match.session?.mode === 'practice' && props.match.status !== 'waiting') return null;
+  return (
+    <div className="arcade-settings-slot">
+      <div>
+        <TableSettingsContent {...props} />
+      </div>
+    </div>
   );
 }

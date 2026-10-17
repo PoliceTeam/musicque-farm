@@ -1,0 +1,1 @@
+ALTER TABLE "pet_race_rounds" ADD COLUMN "announced_phase" integer DEFAULT -1 NOT NULL;

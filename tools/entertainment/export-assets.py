@@ -5,6 +5,9 @@ import json
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'apps/game/src/assets/entertainment'
 OUT.mkdir(parents=True, exist_ok=True)
+COMMON = {'lamp', 'cloud', 'tree', 'tree-alt', 'curb', 'shrubs', 'skyline', 'flower-patch', 'evergreen'}
+COMMON_OUT = ROOT / 'apps/game/src/assets/common/scenery'
+COMMON_OUT.mkdir(parents=True, exist_ok=True)
 # Source rectangles deliberately retain the supplied art and alpha.
 SLICES = {
  'atm': (3, (8, 303, 205, 492)),
@@ -40,9 +43,10 @@ SLICES = {
 }
 
 for stale in OUT.glob('*.webp'):
- if stale.stem not in SLICES:
+ if stale.stem not in SLICES or stale.stem in COMMON:
   stale.unlink()
 manifest=[]
+common_manifest=[]
 for key, (version, box) in SLICES.items():
  im=Image.open(ROOT / f'docs/art/entertainment/entertainment-atlas-v{version}.png').crop(box)
  if key == 'hall':
@@ -96,7 +100,9 @@ for key, (version, box) in SLICES.items():
  if key == 'zone-sign':
   # Preserve the rim and post; remove lettering baked into the supplied sign.
   ImageDraw.Draw(im).rectangle((10, 12, 47, 55), fill=(253, 253, 253, 254))
- im.save(OUT / f'{key}.webp', lossless=True, exact=True)
- manifest.append({'key':key, 'file':f'{key}.webp', 'source':version, 'box':box})
+ im.save((COMMON_OUT if key in COMMON else OUT) / f'{key}.webp', lossless=True, exact=True)
+ (common_manifest if key in COMMON else manifest).append({'key':key, 'file':f'{key}.webp', 'source':version, 'box':box})
 ( ROOT / 'tools/entertainment/assets.json').write_text(json.dumps(manifest, indent=2)+'\n')
 print(f'Exported {len(manifest)} assets')
+
+(ROOT / 'tools/scenery/assets.json').write_text(json.dumps(common_manifest, indent=2)+'\n')

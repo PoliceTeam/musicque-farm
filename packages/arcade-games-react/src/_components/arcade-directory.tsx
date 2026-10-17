@@ -3,9 +3,11 @@ import type { ArcadeRoom } from '@chibi-town/contracts/arcade';
 import { ARCADE_PRACTICE_ROOM_ID } from '@chibi-town/game-content/arcade-catalog';
 import { useTranslation } from 'react-i18next';
 import { roomNumber } from '../_utils/room-number.js';
+import { useArcadeHost } from '../host.js';
 
 export function ArcadeDirectory({
   gameName,
+  gameId,
   rooms,
   roomId,
   active,
@@ -15,6 +17,7 @@ export function ArcadeDirectory({
   leaveLegacy,
 }: {
   gameName: string;
+  gameId: string;
   rooms: readonly ArcadeRoom[];
   roomId?: number;
   active?: { roomId: number; tableId?: number; session?: ArcadeSession };
@@ -24,6 +27,8 @@ export function ArcadeDirectory({
   leaveLegacy?: () => void;
 }) {
   const { t } = useTranslation('common');
+  const { account } = useArcadeHost();
+  const restricted = !!account?.guest && gameId !== 'bau-cua' && gameId !== 'slots';
   const room = rooms.find((entry) => entry.id === roomId);
   const legacy = !!active && !active.session;
   return (
@@ -35,7 +40,9 @@ export function ArcadeDirectory({
             : t('arcadeBeginnerRoomNumber', { id: roomNumber(room.id) })
           : t('arcadeGameRooms', { game: gameName })}
       </h2>
-      <p className="arcade-subtitle">{t(room ? 'arcadeChooseTable' : 'arcadeRoomDirectoryIntro')}</p>
+      {room && room.id !== ARCADE_PRACTICE_ROOM_ID && restricted && (
+        <p className="arcade-guest-access">{t('arcadeGuestRestriction')}</p>
+      )}
       {active && (
         <p className="arcade-resume">
           {t('arcadeActiveSeat', { room: roomNumber(active.roomId), table: (active.tableId ?? 0) + 1 })}
@@ -72,6 +79,14 @@ export function ArcadeDirectory({
                 <h3 className="arcade-room-group-title">
                   {t(kind === 'practice' ? 'arcadePracticeRoom' : 'arcadeBeginnerRoom')}
                 </h3>
+                {kind === 'beginner' && restricted && (
+                  <div className="arcade-guest-access">
+                    <p>{t('arcadeGuestRestriction')}</p>
+                    <button className="ui-button" type="button" onClick={() => account?.request()}>
+                      {t('arcadeGuestAction')}
+                    </button>
+                  </div>
+                )}
                 <div className="arcade-room-list">
                   {groupRooms.map((entry) => {
                     const occupied = entry.tables.filter((table) => table.occupants > 0).length;
@@ -82,7 +97,10 @@ export function ArcadeDirectory({
                         type="button"
                         key={entry.id}
                         disabled={busy}
-                        onClick={() => selectRoom(entry.id)}
+                        onClick={() => {
+                          if (restricted && kind === 'beginner') account?.request();
+                          else selectRoom(entry.id);
+                        }}
                         aria-label={t('arcadeRoomChoice', {
                           kind: t(kind === 'practice' ? 'arcadePracticeRoom' : 'arcadeBeginnerRoom'),
                           room: roomNumber(entry.id),
@@ -93,7 +111,15 @@ export function ArcadeDirectory({
                         <span className="arcade-room-number">{roomNumber(entry.id)}</span>
                         <span className="arcade-room-title">
                           <span>{t('arcadeRoomTables', { count: entry.tables.length })}</span>
-                          <small>{t(kind === 'practice' ? 'arcadePracticeFree' : 'arcadeWagerGame')}</small>
+                          <small>
+                            {t(
+                              kind === 'practice'
+                                ? 'arcadePracticeFree'
+                                : restricted
+                                  ? 'arcadeGuestLocked'
+                                  : 'arcadeWagerGame',
+                            )}
+                          </small>
                         </span>
                         <span
                           className="arcade-room-capacity"
@@ -122,7 +148,10 @@ export function ArcadeDirectory({
                 className={`arcade-table-card ${continuing ? 'is-active' : ''}`}
                 type="button"
                 disabled={busy || (!!active && !continuing)}
-                onClick={() => join(room.id, table.id)}
+                onClick={() => {
+                  if (restricted && room.id !== ARCADE_PRACTICE_ROOM_ID) account?.request();
+                  else join(room.id, table.id);
+                }}
                 aria-label={t('arcadeTableLabel', {
                   table: table.id + 1,
                   occupied: table.occupants,

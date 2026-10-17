@@ -16,7 +16,7 @@ import {
   updateTableMember,
   viewTable,
 } from '@chibi-town/game-service';
-import type { RealtimeService } from '@chibi-town/realtime-core';
+import type { RealtimePublisher } from '@chibi-town/realtime-core';
 import { and, eq } from 'drizzle-orm';
 import type { FastifyBaseLogger } from 'fastify';
 import type { PlayerAccount } from '@/_utils/session-auth';
@@ -39,7 +39,7 @@ export const lobbyTopic = (gameId: string, channel: number) => `lobby:${gameId}:
 export function createTableService(deps: {
   db: Database;
   clock: () => number;
-  realtime: RealtimeService;
+  realtime: RealtimePublisher;
   logger: Pick<FastifyBaseLogger, 'error'>;
 }) {
   const { db, clock, realtime } = deps;

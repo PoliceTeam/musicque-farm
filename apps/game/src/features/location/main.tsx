@@ -93,7 +93,11 @@ export function Screen({
 
       onChannels: () => setChannelDialog(true),
 
-      onAttraction: setAttraction,
+      onAttraction: (value) => {
+        if (value === 'racing') navigation.push('/play/fun/pet-racing');
+        else setAttraction(value);
+      },
+
       navigate: navigation.push,
 
       onError: () => setError(labels.current('locationLoadFailed')),
@@ -141,7 +145,12 @@ export function Screen({
           ))}
         {error && <p role="alert">{error}</p>}
       </nav>
-      {definition?.regionId === 'fun' && <div className="location-hint">{t('entertainmentHint')}</div>}
+      {definition?.regionId === 'fun' && (
+        <details className="location-hint">
+          <summary>{t('locationControls')}</summary>
+          <p>{t('entertainmentHint')}</p>
+        </details>
+      )}
       {channelDialog && definition?.channels && (
         <ChannelDialog
           map={{ regionId: definition.regionId, mapId: definition.id }}
@@ -149,7 +158,7 @@ export function Screen({
           onClose={() => setChannelDialog(false)}
         />
       )}
-      {attraction && (
+      {attraction && attraction !== 'racing' && (
         <Dialog title={t(`attractions.${attraction}`)} onClose={() => setAttraction(undefined)} closeLabel={t('close')}>
           <p>{t('entertainmentPreview')}</p>
         </Dialog>

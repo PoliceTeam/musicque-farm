@@ -60,7 +60,7 @@ export function createSettingsService(context: PracticeContext): Pick<GameServic
         }
         match.session.members = arcadeMembers(match.session).map((m) => ({
           ...m,
-          ready: m.id === localHostId ? true : m.ready,
+          ready: match.session!.mode === 'practice' || m.id === localHostId ? true : m.ready,
         }));
         if (input.playerCount && input.playerCount !== match.session.members.length) {
           match.session.members = Array.from({ length: input.playerCount }, (_, index) => ({

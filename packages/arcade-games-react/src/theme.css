@@ -278,22 +278,34 @@
   left: 0;
   right: 0;
   min-height: 76px;
-  padding: 12px 24px;
-  display: flex;
+  padding: 12px var(--ui-location-gutter, 16px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   background: linear-gradient(#b77830, #945120 12%, #ab6728 70%, #753b19);
   border-top: 3px solid #deb563;
   box-shadow: 0 -4px #193c2d50;
 }
+.arcade-footer-game-actions,
 .arcade-footer-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
 }
+.arcade-footer-actions {
+  justify-self: end;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+.arcade-footer-game-actions {
+  justify-self: center;
+  justify-content: center;
+  min-width: 0;
+}
 .game-ui .arcade-footer > .ui-button {
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -301,6 +313,7 @@
   flex-shrink: 0;
 }
 .game-ui .arcade-footer > .ui-button,
+.game-ui .arcade-footer-game-actions > .ui-button,
 .game-ui .arcade-footer-actions > .ui-button {
   border-color: #633115;
   color: #fff3cc;
@@ -311,6 +324,7 @@
   font-size: 14px;
   min-height: 46px;
 }
+.game-ui .arcade-footer-game-actions > .ui-button.primary:enabled,
 .game-ui .arcade-footer-actions > .ui-button.primary:enabled {
   background: linear-gradient(#638840, #3e612b);
   border-color: #283f1d;
@@ -658,7 +672,7 @@
     margin-bottom: 20px;
   }
   .arcade-footer {
-    padding: 10px 12px;
+    padding: 10px var(--ui-location-gutter, 8px);
     min-height: 70px;
     gap: 8px;
   }
@@ -666,6 +680,7 @@
     font-size: 12px;
     padding: 9px 10px;
   }
+  .arcade-footer-game-actions,
   .arcade-footer-actions {
     gap: 6px;
   }
@@ -764,7 +779,7 @@
   overflow: auto;
   scrollbar-gutter: stable both-edges;
 }
-.arcade-main--tien > .arcade-table-settings {
+.arcade-main--tien > .arcade-settings-slot {
   max-width: 900px;
   margin: 0 auto 12px;
 }
@@ -782,7 +797,7 @@
 }
 .tien-table-surface {
   position: absolute;
-  top: 124px;
+  top: var(--table-top, 124px);
   left: 50%;
   width: min(520px, calc(100% - 220px));
   height: var(--table-height);
@@ -931,7 +946,7 @@
   clip-path: inset(50%);
 }
 .tien-table-scene.is-waiting .tien-table-surface {
-  top: 124px;
+  top: var(--table-top, 124px);
 }
 .tien-hand {
   position: absolute;
@@ -950,13 +965,14 @@
 @media (min-width: 641px) {
   .tien-table-scene {
     --table-height: 190px;
+    --table-top: 116px;
   }
   .tien-table-scene.is-waiting {
     height: 430px;
     min-height: 430px;
   }
   .tien-table-scene .tien-table-surface {
-    top: 116px;
+    top: var(--table-top, 124px);
   }
   .tien-table-scene .tien-seat--east,
   .tien-table-scene .tien-seat--west {
@@ -965,8 +981,8 @@
   .tien-seat strong {
     padding-block: 2px;
   }
-  .arcade-main--tien > .arcade-table-settings {
-    padding: 8px 16px;
+  .arcade-main--tien > .arcade-settings-slot {
+    padding: 0;
     margin-bottom: 4px;
   }
   .tien-table-scene:not(.is-waiting) {
@@ -1113,6 +1129,7 @@
 @media (max-width: 640px) {
   .tien-table-scene {
     --table-height: 170px;
+    --table-top: 124px;
     height: 530px;
     min-height: 530px;
   }
@@ -1164,7 +1181,7 @@
     top: 155px;
   }
   .tien-table-scene.is-waiting .tien-table-surface {
-    top: 124px;
+    top: var(--table-top, 124px);
   }
   .tien-table-scene.is-waiting .tien-table-center {
     top: 156px;
@@ -1656,12 +1673,12 @@
 }
 @media (min-width: 641px) {
   .phom-table-scene:not(.is-waiting) {
-    --table-height: 170px;
+    --table-height: 190px;
     height: 480px;
     min-height: 480px;
   }
   .phom-table-scene:not(.is-waiting) .tien-table-surface {
-    top: 104px;
+    top: var(--table-top, 124px);
   }
   .phom-table-scene:not(.is-waiting) .tien-seat--north {
     top: -6px;
@@ -1683,12 +1700,12 @@
 
 @media (min-width: 641px) {
   .phom-table-scene.is-finished {
-    --table-height: 150px;
+    --table-height: 190px;
     height: 440px;
     min-height: 440px;
   }
   .phom-table-scene.is-finished .tien-table-surface {
-    top: 100px;
+    top: var(--table-top, 124px);
   }
   .phom-table-scene.is-finished .tien-seat--north {
     top: -8px;
@@ -1738,7 +1755,7 @@
 .arcade-main--mini {
   overflow: auto;
 }
-.arcade-main--mini > .arcade-table-settings {
+.arcade-main--mini > .arcade-settings-slot {
   max-width: 1000px;
   margin: 0 auto 12px;
 }
@@ -1852,48 +1869,6 @@
   z-index: 1;
   outline: 3px solid #2a6eb2;
   outline-offset: -3px;
-}
-.is-xiangqi .mini-square {
-  background-color: #dfbe82;
-  background-image:
-    linear-gradient(
-      transparent calc(50% - 1px),
-      #8b582a calc(50% - 1px),
-      #8b582a calc(50% + 1px),
-      transparent calc(50% + 1px)
-    ),
-    linear-gradient(
-      90deg,
-      transparent calc(50% - 1px),
-      #8b582a calc(50% - 1px),
-      #8b582a calc(50% + 1px),
-      transparent calc(50% + 1px)
-    );
-}
-.is-xiangqi .mini-square.is-dark {
-  background-color: #dfbe82;
-}
-.is-xiangqi .mini-square.has-piece > span {
-  display: grid;
-  place-items: center;
-  width: 84%;
-  height: 84%;
-  border-radius: 50%;
-  background: #ffe4ab;
-  border: 2px solid currentColor;
-  box-shadow:
-    inset 0 0 0 2px #ba874b,
-    0 2px #8b582a;
-  font-size: clamp(18px, 3vw, 28px);
-  text-shadow: none;
-}
-.is-xiangqi .mini-square.is-player {
-  color: #a82622;
-  text-shadow: none;
-}
-.is-xiangqi .mini-square.is-bot {
-  color: #243530;
-  text-shadow: none;
 }
 .mini-river-label,
 .mini-board-help {
@@ -2116,21 +2091,7 @@
   line-height: 1;
 }
 
-/* Keep turn actions beside the hand, within the playing area. */
-.card-hand-actions {
-  position: absolute;
-  bottom: 4px;
-  right: 0;
-  width: 124px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.game-ui .card-hand-actions > .ui-button {
-  min-height: 40px;
-  padding: 8px 10px;
-  font-size: 14px;
-}
+/* Keep the hand below the table; turn controls render in the footer. */
 @media (max-width: 899px) {
   .tien-table-scene.has-hand-actions {
     height: 586px;
@@ -2148,14 +2109,6 @@
   }
   .phom-table-scene.has-hand-actions .tien-turn-message {
     bottom: 156px;
-  }
-  .card-hand-actions {
-    left: 0;
-    right: 0;
-    width: auto;
-    flex-direction: row;
-    justify-content: center;
-    flex-wrap: wrap;
   }
 }
 @media (max-width: 640px) {
@@ -2476,17 +2429,6 @@
     display: none;
   }
 }
-.arcade-local-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin: 12px auto;
-}
-.arcade-local-actions:empty {
-  display: none;
-}
 .chance-controls {
   gap: 10px;
   flex-wrap: wrap;
@@ -2496,9 +2438,6 @@
   max-width: min(560px, calc(100dvh - 340px));
   margin-inline: auto;
   min-width: 0;
-}
-.gem-board-controls .arcade-local-actions {
-  margin: 12px 0 0;
 }
 @media (max-width: 640px) {
   .gem-board-controls {
@@ -2638,5 +2577,401 @@
 @media (prefers-reduced-motion: reduce) {
   .arcade-house-results li {
     animation: none;
+  }
+}
+
+/* User-supplied capsule table, shared by the card games. */
+.tien-table-scene .tien-table-surface.has-artwork {
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: none;
+  filter: drop-shadow(0 5px 3px #09261e50);
+}
+.tien-table-surface.has-artwork::before {
+  display: none;
+}
+.mini-board {
+  container-type: inline-size;
+  border: 9px solid #85512c;
+  border-radius: 5px;
+  box-shadow:
+    0 4px 0 #472e20,
+    0 8px 20px #06261c55,
+    inset 0 0 0 1px #ffe8b0;
+}
+.game-ui .mini-board.is-chess .mini-square.is-light {
+  background: #f3e3c2;
+}
+.game-ui .mini-board.is-chess .mini-square.is-dark {
+  background: #8caa89;
+}
+.mini-board.is-chess .mini-square > span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+.mini-square[data-file]::after,
+.mini-square[data-rank]::before {
+  position: absolute;
+  z-index: 3;
+  font: 700 9px / 1 sans-serif;
+  text-shadow: none;
+  color: #304b34;
+  pointer-events: none;
+}
+.mini-square[data-file]::after {
+  content: attr(data-file);
+  right: 3px;
+  bottom: 2px;
+}
+.mini-square[data-rank]::before {
+  content: attr(data-rank);
+  left: 3px;
+  top: 2px;
+}
+.game-ui .mini-board.is-xiangqi .mini-square {
+  background: transparent;
+  color: #283435;
+  text-shadow: none;
+}
+.mini-board.is-xiangqi {
+  background: radial-gradient(ellipse at center, #f9e7ba, #e3bd7f);
+}
+.mini-board.is-xiangqi::after {
+  background: transparent;
+  color: #885627;
+  font: 600 clamp(12px, 3.6cqw, 20px) / 1.2 serif;
+  letter-spacing: 3px;
+  text-align: center;
+}
+.mini-board.is-xiangqi .mini-square.has-piece > span {
+  display: grid;
+  place-items: center;
+  width: 82%;
+  height: 82%;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #fff5d9, #f4d399 70%, #c99b5c);
+  box-shadow:
+    0 2px 1px #734c2f88,
+    inset 0 0 0 2px #efce95,
+    inset 0 0 0 3px #b98d50;
+  font-family: "Songti SC", "Noto Serif CJK SC", "PMingLiU", serif;
+  font-size: clamp(17px, 6cqw, 28px);
+  font-weight: 700;
+  text-shadow: none;
+}
+.game-ui .mini-board.is-xiangqi .mini-square.is-player {
+  color: #b52e27;
+}
+.game-ui .mini-board.is-xiangqi .mini-square.is-bot {
+  color: #263b38;
+}
+
+/* Keep the supplied raster proportions; clickable squares remain the game grid. */
+.mini-square .board-piece-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+.mini-board.is-chess .mini-square > span {
+  width: 94%;
+  height: 94%;
+}
+.mini-board.is-xiangqi .mini-square.has-piece > span:has(.board-piece-art) {
+  width: 94%;
+  height: 94%;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.game-ui .mini-board.is-chess .mini-square.is-light {
+  background: #f1d194;
+}
+.game-ui .mini-board.is-chess .mini-square.is-dark {
+  background: #985b2e;
+}
+
+/* Definite bounds prevent intrinsic sprite height from expanding the grid item. */
+.mini-board .mini-square.has-piece > span:has(.board-piece-art) {
+  position: absolute;
+  inset: 3px;
+  display: block;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.card-table-art {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.arcade-table-settings {
+  display: grid;
+  gap: 12px;
+}
+.arcade-table-settings > p,
+.arcade-table-settings .arcade-members {
+  margin: 0;
+}
+.arcade-members li {
+  gap: 12px;
+  row-gap: 8px;
+  flex-wrap: wrap;
+}
+.arcade-members li[data-self="true"] > span,
+.arcade-table-settings .is-self,
+.mini-opponents .is-self,
+.tien-seat--self > strong,
+.gem-fighter:not(.gem-fighter--bot) .fighter-name {
+  color: #ffdb67;
+}
+.bau-dice-tray:has(.bau-tray-art) {
+  position: relative;
+  isolation: isolate;
+  height: auto;
+  min-height: 128px;
+  aspect-ratio: 514 / 257;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.bau-tray-art {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.arcade-guest-access {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #d7b66b;
+  border-radius: 10px;
+  background: #193f35;
+}
+.arcade-guest-access p {
+  margin: 0;
+  flex: 1 1 260px;
+}
+.arcade-settings-slot > div > .arcade-table-settings {
+  margin: 0;
+}
+
+.chance-controls > .arcade-settings-slot {
+  width: 100%;
+}
+.arcade-main--tien {
+  overflow-anchor: none;
+}
+
+.arcade-footer-actions > .arcade-turn-countdown {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border: 1px solid #e7c280;
+  border-radius: 8px;
+  background: #412b1a;
+  color: #fff3cc;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.arcade-footer-actions > .arcade-turn-countdown.is-warning {
+  background: #fff0d5;
+  border-color: #f4a17c;
+}
+
+@media (min-width: 1101px) and (max-width: 1400px) {
+  .arcade-footer--phom-playing {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .arcade-footer--phom-playing > .ui-button {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .arcade-footer--phom-playing > .arcade-footer-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .arcade-footer--phom-playing > .arcade-footer-game-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .arcade-main--phom-playing {
+    bottom: 145px;
+  }
+}
+@media (max-width: 1100px) {
+  .arcade-footer:has(.arcade-footer-game-actions:not(:empty)) {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .arcade-footer > .ui-button {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .arcade-footer > .arcade-footer-actions {
+    grid-column: -2 / -1;
+    grid-row: 1;
+  }
+  .arcade-footer-game-actions:not(:empty) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .arcade-main:has(+ .arcade-footer .arcade-footer-game-actions:not(:empty)) {
+    bottom: 145px;
+  }
+}
+@media (max-width: 640px) {
+  .arcade-footer-actions > .arcade-turn-countdown {
+    text-align: center;
+    padding: 5px 7px;
+    font-size: 11px;
+  }
+  .arcade-main.arcade-main--phom-playing:has(+ .arcade-footer .arcade-footer-game-actions:not(:empty)) {
+    bottom: 165px;
+  }
+  .arcade-footer--phom-playing > .arcade-footer-game-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+  }
+  .game-ui .arcade-footer--phom-playing .arcade-footer-game-actions > .ui-button {
+    padding: 5px 4px;
+    min-height: 32px;
+    font-size: 11px;
+  }
+}
+
+.arcade-result-effect {
+  position: fixed;
+  inset: 108px 0 92px;
+  z-index: 8;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  animation: arcade-result-fade 4.2s both;
+}
+.arcade-result-banner {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 22px 36px;
+  border: 2px solid #e3bb55;
+  border-radius: 20px;
+  background: radial-gradient(ellipse at top, #fff6b5, #fff9e9 75%);
+  color: #73501b;
+  box-shadow:
+    0 0 70px #ffe67988,
+    0 8px 24px #152c2866;
+  text-align: center;
+  animation: arcade-result-enter 0.45s ease-out both;
+}
+.arcade-result-banner > span {
+  font-size: 40px;
+  line-height: 1;
+  color: #d69417;
+}
+.arcade-result-banner > strong {
+  font-size: clamp(20px, 3vw, 30px);
+}
+.arcade-result-banner > small {
+  font-size: 20px;
+  font-weight: 800;
+}
+.arcade-result-effect.is-loss .arcade-result-banner {
+  background: linear-gradient(#eaf0f9, #ccd8e9);
+  color: #364963;
+  border-color: #879bb5;
+  box-shadow:
+    0 0 50px #607ca344,
+    0 8px 24px #152c2866;
+}
+.arcade-result-effect.is-loss .arcade-result-banner > span {
+  color: #7188a7;
+}
+.arcade-result-effect.is-draw .arcade-result-banner {
+  box-shadow: 0 8px 24px #152c2866;
+}
+.arcade-result-particles {
+  position: absolute;
+  inset: 0;
+}
+.arcade-result-particles > i {
+  position: absolute;
+  left: var(--result-x);
+  top: -20px;
+  width: 8px;
+  height: 13px;
+  background: var(--result-color);
+  animation: arcade-result-confetti 3.5s var(--result-delay) ease-in both;
+}
+.arcade-result-effect.is-loss .arcade-result-particles > i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+@keyframes arcade-result-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes arcade-result-confetti {
+  from {
+    transform: translate(0, -20px) rotate(0);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--result-drift), 75vh) rotate(640deg);
+    opacity: 0;
+  }
+}
+@keyframes arcade-result-fade {
+  0%,
+  82% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arcade-result-effect,
+  .arcade-result-banner {
+    animation: none;
+  }
+  .arcade-result-particles {
+    display: none;
   }
 }

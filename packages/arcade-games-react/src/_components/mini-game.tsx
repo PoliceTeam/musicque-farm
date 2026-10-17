@@ -12,33 +12,23 @@ import { Button, Dialog } from '@chibi-town/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ArcadeGameProps } from '../_utils/arcade-game-props.js';
+import { readArcadeRoute, useArcadeTableRoute } from '../_utils/arcade-route.js';
 import { roomNumber } from '../_utils/room-number.js';
 import { unseenTableSteps } from '../_utils/table-updates.js';
 import { useArcadeLive } from '../_utils/use-arcade-live.js';
 import { useTableSession } from '../_utils/use-table-session.js';
 import { useArcadeHost } from '../host.js';
+import { ArcadeActionProvider, ArcadeActions, ArcadeActionTarget, ArcadeFooterTimer } from './arcade-actions.js';
 import { ArcadeAvatar } from './arcade-avatar.js';
 import { ArcadeDirectory } from './arcade-directory.js';
+import { BoardPiece } from './board-piece.js';
 import { ChanceTable } from './chance-table.js';
 import { CoinChange } from './coin-change.js';
+import { GameResultEffect } from './game-result-effect.js';
 import { useLeaveTable } from './leave-table-dialog.js';
 import { TableSettings } from './table-settings.js';
 import { TurnCountdown } from './turn-countdown.js';
 
-const CHESS: Record<string, string> = {
-  wk: '♔',
-  wq: '♕',
-  wr: '♖',
-  wb: '♗',
-  wn: '♘',
-  wp: '♙',
-  bk: '♚',
-  bq: '♛',
-  br: '♜',
-  bb: '♝',
-  bn: '♞',
-  bp: '♟',
-};
 const XIANGQI: Record<string, string> = {
   rk: '帥',
   ra: '仕',
@@ -68,8 +58,6 @@ export function MiniGame({
     { sdk } = useArcadeHost();
   const [lobby, setLobby] = useState<MiniLobby>(),
     [match, setMatch] = useState<MiniSnapshot>(),
-    [roomId, setRoomId] = useState<number>(),
-    [atTable, setAtTable] = useState(false),
     [busy, setBusy] = useState(false),
     [retry, setRetry] = useState(false),
     [error, setError] = useState(''),
@@ -83,6 +71,7 @@ export function MiniGame({
     startRequest = useRef<MiniStart | undefined>(undefined);
   const chance = gameId === 'bau-cua' || gameId === 'slots';
 
+  const { roomId, atTable, setRoomId, setAtTable } = useArcadeTableRoute(gameId);
   const session = useTableSession();
   const { alive, locked, stale, loading } = session;
 
@@ -135,6 +124,12 @@ export function MiniGame({
           if (!alive.current) return;
         }
         setMatch(l.activeMatch);
+        const route = readArcadeRoute();
+        if (
+          route.table !== undefined &&
+          (!l.activeMatch || l.activeMatch.roomId !== route.room || (l.activeMatch.tableId ?? 0) !== route.table)
+        )
+          setAtTable(false);
         if (l.activeMatch?.id !== confirmed.current?.id || l.activeMatch?.choice !== confirmed.current?.choice)
           setChoice(l.activeMatch?.choice ?? 0);
         setReveal(undefined);
@@ -178,8 +173,7 @@ export function MiniGame({
       if (!alive.current) return;
       confirmed.current = next;
       setMatch(next);
-      setAtTable(true);
-      setRoomId(room);
+      setAtTable(true, next.tableId ?? 0, next.roomId);
       setChoice(next.choice ?? 0);
       setSelected(undefined);
       setReveal(undefined);
@@ -257,6 +251,8 @@ export function MiniGame({
   }
 
   const leaving = useLeaveTable({
+    onLeft: () => void load(),
+
     disabled: busy,
     gameId,
     playerId: player.id,
@@ -292,11 +288,14 @@ export function MiniGame({
   const chanceRolling =
     busy && chance && (!!reveal || (!!command.current && ['roll', 'spin'].includes(command.current.action.type)));
   const columns = gameId === 'chess' ? 8 : 9;
-  const names = gameId === 'chess' ? CHESS : XIANGQI;
+  const names = XIANGQI;
   const tableActions = (
     <>
       {atTable && match?.status === 'playing' && !chance && match.session?.mode === 'practice' && (
-        <Button disabled={busy || retry} onClick={() => setSelected(legal[0]?.from)}>
+        <Button
+          disabled={busy || retry || match.turn !== (match.side ?? 0) || !legal.length}
+          onClick={() => setSelected(legal[0]?.from)}
+        >
           {t('arcadeHint')}
         </Button>
       )}
@@ -318,8 +317,9 @@ export function MiniGame({
     </>
   );
   return (
-    <>
+    <ArcadeActionProvider>
       <CoinChange coins={coins} audio={audio} />
+      <GameResultEffect match={atTable ? match : undefined} />
       <section className="arcade-main arcade-main--mini">
         {!atTable &&
           (!lobby ? (
@@ -329,6 +329,7 @@ export function MiniGame({
             </section>
           ) : (
             <ArcadeDirectory
+              gameId={gameId}
               gameName={t(`arcadeGameNames.${gameId}`)}
               rooms={lobby.rooms}
               roomId={roomId}
@@ -378,16 +379,18 @@ export function MiniGame({
                   </>
                 )}
               </p>
-              {match.status === 'waiting' && retry && <div className="arcade-local-actions">{tableActions}</div>}
               {match.status === 'finished' && match.reason && (
                 <p className="mini-result-reason">{t(`miniReasons.${match.reason}`)}</p>
               )}
               {!chance && match.board.length > 0 && (
                 <>
                   <div className="mini-opponents">
-                    <span>
+                    <span className="is-self">
                       <ArcadeAvatar outfit={player.outfit} label={tablePlayerName(player)!} />
                       {tablePlayerName(player)!}
+                      <small>
+                        {t(match.side === 1 ? 'miniSideBlack' : gameId === 'chess' ? 'miniSideWhite' : 'miniSideRed')}
+                      </small>
                     </span>
                     <span>
                       <ArcadeAvatar
@@ -436,6 +439,8 @@ export function MiniGame({
                           key={position}
                           type="button"
                           className={`mini-square ${(x + y) % 2 ? 'is-dark' : 'is-light'} ${piece ? 'has-piece' : ''} ${piece?.[0] === 'r' || piece?.[0] === 'w' ? 'is-player' : 'is-bot'} ${selected === index ? 'is-selected' : ''} ${destination ? 'is-destination' : ''} ${lastMove ? 'is-last-move' : ''}`}
+                          data-file={gameId === 'chess' && displayIndex >= 56 ? 'abcdefgh'[x] : undefined}
+                          data-rank={gameId === 'chess' && displayIndex % 8 === 0 ? 8 - y : undefined}
                           disabled={busy || retry || match.turn !== (match.side ?? 0) || match.status !== 'playing'}
                           aria-label={t('miniSquareLabel', {
                             position,
@@ -468,23 +473,22 @@ export function MiniGame({
                             cells?.[Math.max(0, Math.min(match.board.length - 1, displayIndex + delta))]?.focus();
                           }}
                         >
-                          <span>{piece ? names[piece] : ''}</span>
+                          <span>
+                            {piece ? (
+                              gameId === 'chess' ? (
+                                <BoardPiece game="chess" piece={piece} fallback={piece[1].toUpperCase()} />
+                              ) : (
+                                <BoardPiece game="chinese-chess" piece={piece} fallback={names[piece]} />
+                              )
+                            ) : (
+                              ''
+                            )}
+                          </span>
                           {destination && !piece && <i aria-hidden="true" />}
                         </button>
                       );
                     })}
                   </fieldset>
-                  {gameId === 'chinese-chess' && <p className="mini-river-label">{t('miniRiver')}</p>}
-                  <p className="mini-board-help">
-                    {t(
-                      match.side === undefined
-                        ? 'miniMoveHelp'
-                        : match.side === 0
-                          ? 'miniMoveHelpFirst'
-                          : 'miniMoveHelpSecond',
-                    )}
-                  </p>
-                  <div className="arcade-local-actions">{tableActions}</div>
                 </>
               )}
               {chance && (
@@ -497,15 +501,19 @@ export function MiniGame({
                     actions={
                       <>
                         {match.status === 'playing' ? (
-                          <Button
-                            variant="primary"
-                            disabled={busy || retry || (!!match.players && match.session?.hostId !== player.id)}
-                            onClick={() =>
-                              void send(gameId === 'bau-cua' ? { type: 'roll', symbol: choice } : { type: 'spin' })
-                            }
-                          >
-                            {t(gameId === 'bau-cua' ? 'miniRoll' : 'miniSpin')}
-                          </Button>
+                          (!match.players || match.session?.hostId === player.id) && (
+                            <ArcadeActions>
+                              <Button
+                                variant="primary"
+                                disabled={busy || retry || (!!match.players && match.session?.hostId !== player.id)}
+                                onClick={() =>
+                                  void send(gameId === 'bau-cua' ? { type: 'roll', symbol: choice } : { type: 'spin' })
+                                }
+                              >
+                                {t(gameId === 'bau-cua' ? 'miniRoll' : 'miniSpin')}
+                              </Button>
+                            </ArcadeActions>
+                          )
                         ) : match.status !== 'finished' ? (
                           <TableSettings
                             key={match.id}
@@ -523,13 +531,17 @@ export function MiniGame({
                             }
                           />
                         ) : (
-                          <Button
-                            variant="primary"
-                            disabled={busy || retry || (!!match.players && match.session?.hostId !== player.id)}
-                            onClick={() => void send({ type: 'next-round' })}
-                          >
-                            {t('arcadeNextRound')}
-                          </Button>
+                          (!match.players || match.session?.hostId === player.id) && (
+                            <ArcadeActions>
+                              <Button
+                                variant="primary"
+                                disabled={busy || retry || (!!match.players && match.session?.hostId !== player.id)}
+                                onClick={() => void send({ type: 'next-round' })}
+                              >
+                                {t('arcadeNextRound')}
+                              </Button>
+                            </ArcadeActions>
+                          )
                         )}
                         {match.status === 'finished' && match.session?.housePayouts && (
                           <ul className="arcade-house-results">
@@ -550,7 +562,6 @@ export function MiniGame({
                             ))}
                           </ul>
                         )}
-                        {tableActions}
                       </>
                     }
                     finished={match.status === 'finished'}
@@ -597,7 +608,10 @@ export function MiniGame({
           <span aria-hidden="true">❮</span>
           <span>{t(atTable ? 'arcadeBackTables' : roomId !== undefined ? 'arcadeBackRooms' : 'arcadeCatalog')}</span>
         </Button>
+        <ArcadeActions>{tableActions}</ArcadeActions>
+        <ArcadeActionTarget />
         <div className="arcade-footer-actions">
+          <ArcadeFooterTimer match={atTable ? match : undefined} />
           <Button onClick={() => setHelp(true)}>{t('arcadeHelp')}</Button>
         </div>
       </footer>
@@ -624,7 +638,7 @@ export function MiniGame({
           <p>{t('miniCommonHelp')}</p>
         </Dialog>
       )}
-    </>
+    </ArcadeActionProvider>
   );
 }
 

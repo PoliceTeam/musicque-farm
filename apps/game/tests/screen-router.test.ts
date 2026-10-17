@@ -7,6 +7,8 @@ describe('screen routing lifecycle', () => {
     expect(gameRoute('/farm.html')).toBe('/farm');
     expect(gameRoute('/character/')).toBe('/character');
     expect(gameRoute('/ui.html')).toBe('/ui');
+    expect(gameRoute('/play/fun/pet-racing', true)).toBe('/pet-racing');
+    expect(gameRoute('/play/fun/pet-racing/')).toBe('/pet-racing');
     expect(gameRoute('/external')).toBeUndefined();
   });
   it('disposes each mounted screen once before opening another and leaves app services untouched', async () => {

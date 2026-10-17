@@ -99,61 +99,6 @@
     ]
   },
   {
-    "key": "tree",
-    "file": "tree.webp",
-    "source": 3,
-    "box": [
-      924,
-      135,
-      1070,
-      268
-    ]
-  },
-  {
-    "key": "tree-alt",
-    "file": "tree-alt.webp",
-    "source": 3,
-    "box": [
-      1068,
-      144,
-      1168,
-      265
-    ]
-  },
-  {
-    "key": "evergreen",
-    "file": "evergreen.webp",
-    "source": 3,
-    "box": [
-      414,
-      691,
-      500,
-      817
-    ]
-  },
-  {
-    "key": "flower-patch",
-    "file": "flower-patch.webp",
-    "source": 3,
-    "box": [
-      758,
-      947,
-      842,
-      1008
-    ]
-  },
-  {
-    "key": "shrubs",
-    "file": "shrubs.webp",
-    "source": 3,
-    "box": [
-      1304,
-      260,
-      1355,
-      306
-    ]
-  },
-  {
     "key": "cable-profile",
     "file": "cable-profile.webp",
     "source": 3,
@@ -209,17 +154,6 @@
     ]
   },
   {
-    "key": "curb",
-    "file": "curb.webp",
-    "source": 3,
-    "box": [
-      663,
-      515,
-      746,
-      561
-    ]
-  },
-  {
     "key": "road",
     "file": "road.webp",
     "source": 3,
@@ -228,17 +162,6 @@
       518,
       992,
       554
-    ]
-  },
-  {
-    "key": "lamp",
-    "file": "lamp.webp",
-    "source": 3,
-    "box": [
-      16,
-      818,
-      68,
-      934
     ]
   },
   {
@@ -272,28 +195,6 @@
       811,
       1370,
       925
-    ]
-  },
-  {
-    "key": "cloud",
-    "file": "cloud.webp",
-    "source": 3,
-    "box": [
-      1360,
-      100,
-      1535,
-      172
-    ]
-  },
-  {
-    "key": "skyline",
-    "file": "skyline.webp",
-    "source": 3,
-    "box": [
-      1270,
-      155,
-      1535,
-      256
     ]
   },
   {

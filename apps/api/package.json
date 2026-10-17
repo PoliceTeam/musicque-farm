@@ -10,7 +10,8 @@
     "lint": "biome check . --formatter-enabled=false",
     "serve": "node --env-file-if-exists=.env dist/main.js",
     "db:up": "docker compose up -d --wait",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "worker": "node --env-file-if-exists=.env dist/worker.js"
   },
   "dependencies": {
     "@chibi-town/character-core": "workspace:*",
@@ -23,7 +24,8 @@
     "pg": "^8.23.1",
     "@chibi-town/realtime-core": "workspace:*",
     "@chibi-town/realtime-redis": "workspace:*",
-    "@chibi-town/realtime-fastify-ws": "workspace:*"
+    "@chibi-town/realtime-fastify-ws": "workspace:*",
+    "@chibi-town/jobs": "workspace:*"
   },
   "devDependencies": {
     "@chibi-town/api-sdk": "workspace:*",

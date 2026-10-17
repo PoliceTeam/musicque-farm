@@ -2,7 +2,7 @@
 
 Game nông trại xã hội 2D trên web, nhân vật chibi phối đồ. Cơ chế dựng nhân vật lấy theo Avatar J2ME ([itdat/avatar-j2me](https://github.com/itdat/avatar-j2me)): nhân vật là danh sách item, mỗi item có lớp vẽ và 15 pose, quay trái là lật gương.
 
-Hiện có: nông trại 60 ô tối đa, 18 giống cây theo giờ thực, 8 loài vật nuôi, 22 công thức nhà bếp, hai rương nâng cấp 6 cấp với 12–48 ô, chuyển đồ và bán hàng chủ động, nuôi con non đến trưởng thành, chăm sóc hàng loạt, nâng cấp sức chứa, nhân vật đi bằng click hoặc phím, NPC tự đi lại, tủ đồ đổi màu da, tóc (có thể để trọc), mắt, miệng, mũi, đồ ở miệng (khẩu trang, kẹo cao su), sticker má, áo, quần, giày, băng tay, cánh, đồ cầm tay, thú cưng đi theo, và màu từng món. Nhân vật là pixel art 49×67 đầu to kiểu chibi, tách từ hình mẫu thành từng item. Map nông trại ghép từ các sprite riêng. Chưa có server.
+Hiện có: nông trại 60 ô tối đa, 18 giống cây theo giờ thực, 8 loài vật nuôi, 22 công thức nhà bếp, hai rương nâng cấp 6 cấp với 12–48 ô, chuyển đồ và bán hàng chủ động, nuôi con non đến trưởng thành, chăm sóc hàng loạt, nâng cấp sức chứa, nhân vật đi bằng click hoặc phím, NPC tự đi lại, tủ đồ đổi màu da, tóc (có thể để trọc), mắt, miệng, mũi, đồ ở miệng (khẩu trang, kẹo cao su), sticker má, áo, quần, giày, băng tay, cánh, đồ cầm tay, thú cưng đi theo, và màu từng món. Nhân vật là pixel art 49×67 đầu to kiểu chibi, tách từ hình mẫu thành từng item. Map nông trại ghép từ các sprite riêng. Backend Fastify/Postgres phục vụ tài khoản, ví và các vòng chơi chung; xem [hướng dẫn backend](docs/backend.md).
 
 ## Chạy
 
@@ -29,7 +29,9 @@ CI (GitHub Actions) chạy typecheck, test và build cho mỗi push lên `main` 
 Repository: [PoliceTeam/musicque-farm](https://github.com/PoliceTeam/musicque-farm). Repo dùng pnpm 11.22.0, Turborepo và Biome. Chạy các lệnh từ root repo (thư mục `musicque-farm/`). Cấu trúc workspace:
 
 ```text
+apps/api/              Backend HTTP và worker entrypoints, repository/service cùng owner
 apps/game/             Next.js + React + Phaser, routes/features/tests/assets
+packages/jobs/          Queue contracts ở entry chính; adapter Redis tại /bullmq
 packages/api-sdk/       SDK local (IndexedDB) và HTTP, entry cấu hình adapter
 packages/contracts/     DTO, commands và kiểm tra dữ liệu tại boundary
 packages/gameplay/      Luật nông trại thuần TypeScript
@@ -56,6 +58,8 @@ biome.json             Format/lint chung
 ## Cấu trúc
 
 Thiết kế mục tiêu để maintain và scale ở [docs/target-architecture.md](docs/target-architecture.md): Next.js + React + Phaser, 8 khu với nhiều map/instance, và `@chibi-town/api-sdk` có adapter local/HTTP. Runtime đã chuyển sang Next.js; hướng dẫn cấu hình SDK ở [docs/api-sdk.md](docs/api-sdk.md).
+
+Ranh giới và nguyên tắc chia package ở [docs/package-boundaries.md](docs/package-boundaries.md).
 
 Tên file dùng **kebab-case**. Cấu trúc và ranh giới chi tiết ở [phaser-migration.md](docs/phaser-migration.md).
 

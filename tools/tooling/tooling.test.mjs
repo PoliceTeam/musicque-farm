@@ -50,6 +50,7 @@ test('asset cache restores generated modules and public images without hashing i
     '../../tools/runtime/build-map-assets.mjs',
     '../../tools/farm-runtime-assets.json',
     '../../tools/entertainment/assets.json',
+    '../../tools/scenery/assets.json',
     '../../tools/arcade/assets.json',
     'src/features/auth/auth.css',
     'src/assets/map/world-map.jpg',

@@ -1,0 +1,1 @@
+ALTER TABLE "pet_race_config" ADD COLUMN "last_reset_day" text;

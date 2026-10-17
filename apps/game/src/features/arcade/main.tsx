@@ -1,7 +1,8 @@
 import { ArcadeGameMount, ArcadeHostProvider } from '@chibi-town/arcade-games-react';
+import { navigateArcadeRoute, roomNumber, useArcadeRoute } from '@chibi-town/arcade-games-react/arcade-route';
 import type { createGameAudio } from '@chibi-town/game-audio';
 import type { MapDefinition } from '@chibi-town/game-content';
-import { Button, UiImage } from '@chibi-town/ui/react';
+import { Button, Dialog, UiImage } from '@chibi-town/ui/react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -39,14 +40,23 @@ export function Screen({
       realtime: getRealtime(),
       assets: arcadeUrls,
       Avatar: ArcadeAvatar,
+      account: {
+        guest: auth.player?.guest ?? false,
+
+        request: () => setAccountRequired(true),
+      },
 
       navigate: (url: string) => navigation.push(url),
     }),
-    [navigation],
+    [navigation, auth.player?.guest],
   );
   const [player, setPlayer] = useState<LocationPlayer>();
   const [wallet, setWallet] = useState<{ coins: number; gems: number }>();
-  const [selectedGame, setSelectedGame] = useState<string>();
+  const route = useArcadeRoute();
+  const selectedGame = route.game;
+
+  const setSelectedGame = (game?: string) => navigateArcadeRoute({ game });
+
   const [top, setTop] = useState(false);
   const [error, setError] = useState('');
   const [reload, setReload] = useState(0);
@@ -96,7 +106,25 @@ export function Screen({
   const activeGame = selectedGame ? arcadeGames.get(selectedGame) : undefined;
   return (
     <ArcadeHostProvider host={host}>
-      <LocationLayout title={t('arcadeTitle')} player={player} coins={wallet?.coins} gems={wallet?.gems} audio={audio}>
+      <LocationLayout
+        title={
+          activeGame
+            ? route.table !== undefined
+              ? t('arcadeHeaderTable', {
+                  game: activeGame.title,
+                  room: roomNumber(route.room ?? 0),
+                  table: route.table + 1,
+                })
+              : route.room !== undefined
+                ? t('arcadeHeaderRoom', { game: activeGame.title, room: roomNumber(route.room) })
+                : activeGame.title
+            : t('arcadeCatalog')
+        }
+        player={player}
+        coins={wallet?.coins}
+        gems={wallet?.gems}
+        audio={audio}
+      >
         <div
           className="arcade-stage"
           style={{
@@ -105,17 +133,24 @@ export function Screen({
           aria-hidden="true"
         />
         {accountRequired && (
-          <div role="alert" className="arcade-error">
-            <p>{t('accountRequired', { ns: 'auth' })}</p>
-            <Button
-              onClick={() => {
-                setAccountRequired(false);
-                auth.openAuth();
-              }}
-            >
-              {t('registerNow', { ns: 'auth' })}
-            </Button>
-          </div>
+          <Dialog
+            title={t('arcadeGuestTitle')}
+            closeLabel={t('close')}
+            onClose={() => setAccountRequired(false)}
+            footer={
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setAccountRequired(false);
+                  auth.openAuth();
+                }}
+              >
+                {t('arcadeGuestAction')}
+              </Button>
+            }
+          >
+            <p>{t('arcadeGuestRestriction')}</p>
+          </Dialog>
         )}
         {activeGame && player && wallet ? (
           <ArcadeGameMount

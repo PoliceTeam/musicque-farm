@@ -73,7 +73,11 @@ export function playAtTable(
       (game.settlement === 'house' && record.match.status === 'waiting' && ['roll', 'spin'].includes(action))
     ) {
       if (session.hostId !== playerId || record.match.status !== 'waiting') return fail('NOT_ALLOWED');
-      if (!session.configured || record.seats.length < game.minPlayers || !session.members?.every((m) => m.ready))
+      if (
+        !session.configured ||
+        record.seats.length < game.minPlayers ||
+        !session.members?.every((m) => m.id === session.hostId || m.ready)
+      )
         return fail('NOT_ALLOWED');
       const documents = record.seats.map((entry) => wallet(wallets, entry.playerId));
       if (

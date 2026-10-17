@@ -14,6 +14,7 @@ export type GameServiceOptions = {
   channelPopulation?: (mapId: string, channelId: number, capacity: number) => number;
   /** True when lobbies and channels describe real players rather than a single local save. */
   live?: boolean;
+  petRaceRounds?: import('./arcade/pet-racing-round.js').PetRaceRound[];
   world?: World;
 };
 /**

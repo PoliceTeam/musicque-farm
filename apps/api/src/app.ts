@@ -11,7 +11,13 @@ import type { PlayerAccount } from '@/_utils/session-auth';
 import { hashSessionToken, readSessionHash, readSessionState, SESSION_COOKIE } from '@/_utils/session-auth';
 import type { ApiConfig } from '@/config';
 import type { Database } from '@/infrastructure/database/database';
-import { arcadeChannel, arcadeModule, createArcadeService, registerArcadeRealtime } from '@/modules/arcade';
+import {
+  arcadeChannel,
+  arcadeModule,
+  createArcadeService,
+  PET_RACE_TOPIC,
+  registerArcadeRealtime,
+} from '@/modules/arcade';
 import { createTableService, lobbyTopic } from '@/modules/arcade/tables';
 import { authModule, createSessionHook } from '@/modules/auth';
 import { commandsModule } from '@/modules/commands';
@@ -28,7 +34,7 @@ export type AppDependencies = {
   clock?: () => number;
   fetch?: typeof fetch;
   logger?: FastifyServerOptions['logger'];
-  /** Milliseconds between table sweeps; 0 leaves sweeping to the caller (tests). */
+  /** Milliseconds between table/pet-race maintenance sweeps; 0 leaves sweeping to the caller (tests). */
   sweepMs?: number;
   /** How long a disconnected player keeps a seat at a table that has not started. */
   goneAfterMs?: number;
@@ -140,12 +146,20 @@ export async function createApp(deps: AppDependencies) {
   const farm = createFarmService({ db, clock });
   const inventory = createInventoryService({ db, clock });
   const world = createWorldService({ db, clock, presence });
-  const arcade = createArcadeService({ db, clock, tables });
+  const arcade = createArcadeService({ db, clock, tables, petRaceReset: config.petRaceReset });
+  if (config.backgroundJobs !== 'worker') await arcade.initializePetRaces();
   registerWorldRealtime(realtime, world, clock);
   registerArcadeRealtime(realtime, watchedLobby);
   const sweepMs = deps.sweepMs ?? 5000;
-  if (sweepMs > 0) {
-    const timer = setInterval(() => void tables.sweep().catch((error) => app.log.error(error)), sweepMs);
+  if (sweepMs > 0 && config.backgroundJobs !== 'worker') {
+    const timer = setInterval(() => {
+      void tables.sweep().catch((error) => app.log.error(error));
+      void arcade.sweepPetRaces().catch((error) => app.log.error(error));
+      void arcade
+        .takePetRacePhase()
+        .then((event) => event && realtime.publish(PET_RACE_TOPIC, event))
+        .catch((error) => app.log.error(error));
+    }, sweepMs);
     app.addHook('onClose', async () => clearInterval(timer));
   }
   await app.register(

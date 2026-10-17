@@ -13,6 +13,7 @@ import type {
   CharacterInventoryQuery,
 } from './character-inventory.js';
 import type { MiniCommand, MiniLobby, MiniStart } from './mini-games.js';
+import type { RaceBet, RaceLobby } from './pet-racing.js';
 import type { PhomCommand, PhomLobby } from './phom.js';
 
 export * from './arcade-table.js';
@@ -140,6 +141,8 @@ export function decodeChannelDirectory(value: unknown): ChannelDirectory {
 }
 
 export interface GameSdk {
+  getPetRace(): Promise<RaceLobby>;
+  betPetRace(input: RaceBet): Promise<RaceLobby>;
   getMiniLobby(gameId: MiniGameId): Promise<MiniLobby>;
   startMiniRoom(input: MiniStart): Promise<MiniSnapshot>;
   playMini(command: MiniCommand): Promise<MiniResult>;

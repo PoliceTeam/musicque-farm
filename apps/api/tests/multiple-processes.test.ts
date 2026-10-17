@@ -1,9 +1,10 @@
-import { createMemoryAdapters } from '@chibi-town/realtime-core';
+import { createMemoryAdapters, createRealtimePublisher } from '@chibi-town/realtime-core';
 import { createRedisAdapters } from '@chibi-town/realtime-redis';
 import { sql } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from '@/app';
 import { type Database, openDatabase } from '@/infrastructure/database/database';
+import { PET_RACE_TOPIC } from '@/modules/arcade/pet-racing';
 import { createTestApp, testConfig } from './test-app.js';
 
 const cleanup: (() => Promise<unknown>)[] = [];
@@ -22,7 +23,7 @@ async function pair(kind: 'memory' | 'redis' = 'memory') {
   const second = await createApp({ db: first.db, adapters: peer, config: testConfig, clock: first.clock, sweepMs: 0 });
   await second.app.ready();
   cleanup.push(first.close, () => second.app.close());
-  return { first, second, shared };
+  return { first, second, shared, peer };
 }
 
 function next(socket: Awaited<ReturnType<Awaited<ReturnType<typeof createApp>>['app']['injectWS']>>, type: string) {
@@ -53,6 +54,29 @@ describe.each(['memory', 'redis'] as const)('two API processes sharing %s and Po
       const changed = next(socket, 'match');
       await first.sdkFor(cookie).startTienRoom({ roomId: 0, requestId: 'cross-start' });
       expect(await changed).toEqual({ type: 'match', gameId: 'tien-len' });
+      socket.terminate();
+    });
+
+    it('delivers worker race notifications to watchers on another API process', async () => {
+      const { first, second, shared, peer } = await pair(kind);
+      const { cookie } = await first.register('cross-race');
+      const socket = await second.app.injectWS('/api/ws', { headers: { cookie, origin: testConfig.webOrigin } });
+      const subscribe = peer.bus.subscribe.bind(peer.bus);
+      let ready!: () => void;
+      const watching = new Promise<void>((resolve) => {
+        ready = resolve;
+      });
+      peer.bus.subscribe = async (topic, listener) => {
+        const stop = await subscribe(topic, listener);
+        if (topic === PET_RACE_TOPIC) ready();
+        return stop;
+      };
+      const changed = next(socket, 'pet-race.changed');
+      socket.send(JSON.stringify({ type: 'pet-race.watch' }));
+      await watching;
+      const event = { type: 'pet-race.changed', roundId: 'race-123', phase: 'betting' } as const;
+      await createRealtimePublisher(shared.bus).publish(PET_RACE_TOPIC, event);
+      expect(await changed).toEqual(event);
       socket.terminate();
     });
 

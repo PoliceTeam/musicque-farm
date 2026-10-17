@@ -20,8 +20,8 @@ it('does not replay on initial load, reload, duplicates or a different table; re
 
 it('disambiguates repeated display names with immutable usernames', async () => {
   const { tablePlayerName } = await import('@chibi-town/arcade-games/table-snapshot');
-  expect(tablePlayerName({ name: 'Lan', username: 'lan.01' })).toBe('Lan @lan.01');
-  expect(tablePlayerName({ name: 'Lan', username: 'other_user' })).toBe('Lan @other_user');
+  expect(tablePlayerName({ name: 'Lan', username: 'lan.01' })).toBe('Lan');
+  expect(tablePlayerName({ name: 'Lan', username: 'other_user' })).toBe('Lan');
   expect(tablePlayerName({ name: 'Khách', username: null })).toBe('Khách');
 });
 
@@ -46,4 +46,24 @@ it('opens the host registration prompt for ACCOUNT_REQUIRED while preserving the
     code: 'ACCOUNT_REQUIRED',
   });
   expect(prompted).toBe(2);
+});
+
+it('celebrates a fresh result once, waits for wager settlement, and never celebrates restored results', async () => {
+  const { newArcadeResult } = await import('@chibi-town/arcade-games-react/table-updates');
+  const playing = { id: 'round', status: 'playing' };
+  const finished = { id: 'round', status: 'finished', winner: 0, session: { mode: 'practice' } };
+  expect(newArcadeResult(undefined, finished)).toBeUndefined();
+  expect(newArcadeResult({ ...playing, id: 'different-round' }, finished)).toBeUndefined();
+  expect(newArcadeResult(playing, finished)).toBe('win');
+  expect(newArcadeResult(finished, { ...finished })).toBeUndefined();
+  const pending = { ...finished, session: { mode: 'wager', settled: false } };
+  const settled = { ...pending, session: { mode: 'wager', settled: true, coinDelta: -100 } };
+  expect(newArcadeResult(playing, pending)).toBeUndefined();
+  expect(newArcadeResult(pending, settled)).toBe('loss');
+  expect(newArcadeResult(settled, settled)).toBeUndefined();
+  expect(
+    newArcadeResult(playing, { ...settled, winner: 1, session: { mode: 'wager', settled: true, coinDelta: 60 } }),
+  ).toBe('win');
+  expect(newArcadeResult(playing, { id: 'round', status: 'finished', outcome: 'draw' })).toBe('draw');
+  expect(newArcadeResult(settled, { ...playing })).toBeUndefined();
 });

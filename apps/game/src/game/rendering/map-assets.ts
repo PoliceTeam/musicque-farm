@@ -1,12 +1,28 @@
 import type { MapDefinition } from '@chibi-town/game-content';
 
-import { entertainmentUrls } from '@/assets/generated-assets';
+import { entertainmentUrls, publicAssetUrls, sceneryUrls } from '@/assets/generated-assets';
 
 const cache = new Map<string, { source: Promise<HTMLCanvasElement>; users: number }>();
 
+/** Old API map snapshots may still use entertainment IDs during a rolling update. */
+export function sceneAssetUrl(id: string) {
+  return (
+    sceneryUrls[id] ??
+    sceneryUrls[id.replace('entertainment:', 'scenery:')] ??
+    entertainmentUrls[id] ??
+    publicAssetUrls[id] ??
+    id
+  );
+}
+
 /** Resources are retained while any map uses them; failed loads can be retried. */
-export async function acquireMapAssets(map: MapDefinition, generated = new Map<string, HTMLCanvasElement>()) {
-  const urls = [...new Set(map.layers?.flatMap((layer) => (layer.asset ? [layer.asset] : [])) ?? [])];
+export function acquireMapAssets(map: MapDefinition, generated = new Map<string, HTMLCanvasElement>()) {
+  return acquireSceneAssets(map.layers?.flatMap((layer) => (layer.asset ? [layer.asset] : [])) ?? [], generated);
+}
+
+/** Shared leases for standalone scenes and maps; IDs resolve to one common source URL. */
+export async function acquireSceneAssets(ids: readonly string[], generated = new Map<string, HTMLCanvasElement>()) {
+  const urls = [...new Set(ids)];
   const acquired: string[] = [];
 
   function release() {
@@ -21,11 +37,12 @@ export async function acquireMapAssets(map: MapDefinition, generated = new Map<s
       urls
         .filter((url) => !generated.has(url))
         .map(async (url) => {
-          let entry = cache.get(url);
+          const sourceUrl = sceneAssetUrl(url);
+          let entry = cache.get(sourceUrl);
           if (!entry) {
             const source = (async () => {
               const image = new Image();
-              image.src = entertainmentUrls[url] ?? url;
+              image.src = sourceUrl;
               await image.decode();
               const canvas = document.createElement('canvas');
               canvas.width = image.width;
@@ -34,10 +51,10 @@ export async function acquireMapAssets(map: MapDefinition, generated = new Map<s
               return canvas;
             })();
             entry = { source, users: 0 };
-            cache.set(url, entry);
+            cache.set(sourceUrl, entry);
           }
           entry.users++;
-          acquired.push(url);
+          acquired.push(sourceUrl);
           return [url, await entry.source] as const;
         }),
     );

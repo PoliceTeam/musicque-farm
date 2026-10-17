@@ -1,4 +1,5 @@
 import type { ArcadeMemberCommand, ArcadeTableCommand, ArcadeTableSettings } from '@chibi-town/contracts/arcade-table';
+import type { RaceBet } from '@chibi-town/contracts/pet-racing';
 import type { ArcadeGameId } from '@chibi-town/game-content/arcade-catalog';
 import type { FastifyRequest } from 'fastify';
 import { operationTrace } from '@/_utils/operation-trace';
@@ -7,6 +8,18 @@ import type { ArcadeService } from '@/modules/arcade/service';
 
 export function createArcadeController(service: ArcadeService) {
   return {
+    getPetRace(request: FastifyRequest) {
+      return service.getPetRace(request.player!, operationTrace(request, 'arcade.pet-racing'));
+    },
+
+    betPetRace(request: FastifyRequest<{ Body: RaceBet }>) {
+      return service.betPetRace(
+        request.player!,
+        request.body,
+        operationTrace(request, 'arcade.pet-racing.bet', request.body?.requestId),
+      );
+    },
+
     getLobby(request: FastifyRequest, gameId: ArcadeGameId) {
       return service.getLobby(request.player!, gameId, operationTrace(request, `arcade.${gameId}.lobby`));
     },

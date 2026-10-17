@@ -13,6 +13,7 @@ export function useLeaveTable({
   refreshWallet,
   interceptNavigation = true,
   disabled = false,
+  onLeft,
 }: {
   gameId: import('@chibi-town/contracts/arcade-table').ArcadeTableCommand['gameId'];
   match?: TableInfo;
@@ -20,6 +21,7 @@ export function useLeaveTable({
   refreshWallet: () => Promise<void>;
   interceptNavigation?: boolean;
   disabled?: boolean;
+  onLeft?: () => void;
 }) {
   const { t } = useTranslation('common');
   const { sdk, navigate } = useArcadeHost();
@@ -48,6 +50,7 @@ export function useLeaveTable({
       setOpen(false);
       action.current?.();
       action.current = undefined;
+      onLeft?.();
     } catch {
       setError(t('arcadeLeaveFailed'));
       setOpen(true);

@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import { locationMusic } from '@/application/_utils/location-music';
 
 it('uses the entertainment loop for entertainment locations', () => {
+  expect(locationMusic('/pet-racing')).toEqual(locationMusic('/location', { scene: 'location', regionId: 'fun' }));
   expect(locationMusic('/location', { scene: 'location', regionId: 'fun' })).toEqual({
     musicUrl: '/chibi-assets/audio/music/entertainment-fairground-loop.mp3',
     loopSeconds: 40,

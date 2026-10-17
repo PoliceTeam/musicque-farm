@@ -99,3 +99,52 @@ HTTP: GET `/arcade` cho Kim cương, `/arcade/tien-len`, `/arcade/phom`, `/arcad
 Test API trên PGlite: `tables.test.ts`, `tables-phom.test.ts`, `tables-chess.test.ts`, `tables-chinese-chess.test.ts`, `tables-diamonds.test.ts`, `tables-bau-cua.test.ts`, `tables-slots.test.ts`. Kiểm tra ván đầy đủ/số xu, dữ liệu kín/seed, lượt và nước bất hợp lệ, retry một lần, giữ cược, bỏ cuộc và timeout bằng sweep; các trò cờ thêm hòa lặp thế, Cờ vua thêm chiếu hết bởi đen. Test engine/local/HTTP và audit hiện có tiếp tục kiểm tra luật, bảo toàn bài, bot và save luyện tập.
 
 API hỗ trợ nhiều process qua `REDIS_URL`: pub/sub thông báo, lease map/presence, join khu nguyên tử và bộ đếm đăng nhập dùng chung. Sweep bàn giữ advisory transaction lock trong Postgres, không thanh toán chồng; phòng luyện tập vẫn nguyên luồng save/bot riêng. Test hai API dùng chung DB/bus trong bộ nhớ và test Redis tùy chọn có trong API. Còn lại: bảng xếp hạng trực tuyến và sổ biến động xu. Xem [backend.md](backend.md).
+
+## Pet Racing trên phố giải trí
+
+Trường đua là màn riêng tại `/play/fun/pet-racing`, vào từ công trình trên phố; nút Về phố trả người chơi về gần cổng. Sân là scene Phaser ghép từ asset rời, bố trí theo kích thước viewport thật: skyline/mây/cây/bụi hoa từ `assets/common/scenery`, ghế/cỏ/dải đất/hàng rào riêng từ `assets/pet-racing`. Không dùng ảnh nền nguyên khối hoặc cắt cảnh 1000×560. Sáu làn, vạch xuất phát và vạch đích tính từ cùng geometry với pet; cloud drift tắt khi giảm chuyển động. Dùng `LocationLayout` chung cho avatar/menu, tiêu đề và xu/gem. Thông tin cược/kết quả và nút điều khiển nằm trong HUD gọn phía dưới, không có sidebar hay khung sân riêng. Bảng đặt cược chỉ mở khi nhấn nút, không tự che sân mỗi vòng.
+
+Trường đua chạy **vòng chung trên server**, không có nút bắt đầu ván riêng của từng người. Mọi tài khoản và process API dùng cùng roundId, lịch UTC và thứ hạng. Chu kỳ 62 giây: **30 giây đặt cược → 5 giây đếm ngược → khoảng 20 giây đua → 7 giây kết quả**, tự trở về bảng cược cho vòng kế tiếp. Client nhận push chuyển pha rồi đọc snapshot HTTP và tính đồng hồ/animation theo giờ server; đóng màn hình, reload hoặc vào giữa cuộc đua không tạo cuộc đua mới.
+
+Sáu pet là các pet có sẵn của hệ thống, không phải pet thuộc sở hữu người cược. Không yêu cầu tối thiểu hai người: một người cược vẫn được tham gia; không ai cược thì cuộc đua vẫn chạy theo lịch để xem và không phát thưởng. Khán giả là bảy NPC trang trí, chọn outfit/tóc/màu từ catalog khi vào màn; không giả làm người chơi thật và không dùng để tính số người tham gia.
+
+Mỗi tài khoản cược một pet mỗi vòng, 10–100.000 xu từ ví chung. Xác nhận cược **trừ vốn ngay**, khóa theo deadline server và không gia hạn khi có thêm người. Đây là cược với nhà cái: **tất cả người cược pet về nhất đều được trả theo hệ số**, không chia quỹ phụ thuộc người khác thua. Người chỉ xem không nhận thưởng; không trả tiền cho NPC hoặc “chủ” pet hệ thống.
+
+| Pet | Xác suất nhất | Tổng nhận khi thắng (gồm vốn) |
+| --- | --- | --- |
+| Corgi | 24% | 3,75× cược |
+| Mèo trắng | 22% | ≈4,09× cược |
+| Thỏ | 18% | 5× cược |
+| Cáo | 15% | 6× cược |
+| Gà con | 12% | 7,5× cược |
+| Rồng con | 9% | 10× cược |
+
+Ví dụ cược 100 xu Corgi ×3,75: lúc xác nhận ví giảm 100; thắng được cộng 375, lãi ròng 275; thua không cộng lại vốn. Cược thắng không được phát lại khi poll/reload/retry hoặc hai instance cùng sweep. Người rời trường đua vẫn được trả: cược pending trong DB được worker sweep (mỗi 5 giây); GET snapshot cũng thanh toán khoản đã đến hạn trước khi trả ví.
+
+Sau khi server xác nhận cược, sân đua luôn hiện pet/làn đã chọn, số vốn đã trừ và tổng thưởng dự kiến nếu thắng. Thẻ kết quả cược gần nhất giữ nguyên qua các vòng tiếp theo, ghi rõ vốn đã trừ, thưởng đã cộng và lãi/lỗ. Thưởng đã cộng lấy từ kết quả server (`stake + coinDelta`), không nhầm lãi ròng với tổng thưởng và không trừ vốn lần thứ hai. Khi nhận kết quả thanh toán mới, popup tự mở và giữ đến khi người chơi đóng; nút Xem kết quả mở lại đúng vòng đã cược, kể cả khi vòng hiện tại đã đổi. Hiện chỉ hiển thị kết quả cược gần nhất, chưa có lịch sử nhiều vòng.
+
+GET `/arcade/pet-racing` trả ví/revision/giờ server, vòng chung, cược riêng của người xem và kết quả cá nhân gần nhất. POST `/arcade/pet-racing/bet` nhận `{ requestId, roundId, pet, stake }`; request trễ mang roundId cũ bị từ chối, không cược nhầm vòng kế tiếp. Outcome hiện tại không có trong snapshot lúc còn nhận cược; chỉ công khai khi khóa cược. Các requestId giữ fingerprint chống đổi payload và xử lý lặp.
+
+Migration `0005` thêm `pet_race_rounds` (outcome chung bất biến, khởi tạo bằng crypto với unique roundId) và `pet_race_bets` (index người cần thanh toán). Round được tạo bằng insert-on-conflict, nên các process không tự chọn kết quả riêng. Tiền, cược và receipt thuộc PlayerDocument; shared game-service sở hữu luật, API transaction khóa player và ghi hàng đợi cùng ví. Sweep của nhiều process dùng cùng khóa player và dấu đã thanh toán, không phát thưởng chồng. Local adapter chỉ mô phỏng cùng lịch/luật để phát triển; multiplayer thật yêu cầu HTTP API + Postgres/PGlite.
+
+Màn trường đua, bảng cược, kết quả và button dùng UI chung từ `@chibi-town/ui/react`; không vẽ biển chữ/modal/button riêng bằng CSS. Nền WebP được dựng theo ảnh tham chiếu, giữ source/prompt/exporter tại `tools/pet-racing`; chưa coi là artwork đã được người dùng duyệt. Raster runtime mới bắt buộc WebP; PNG nguồn chỉ ở thư mục source/tooling. Không sửa artwork nhân vật/pet. Không hiển thị phong độ/sức khỏe giả vì luật dùng xác suất cố định.
+
+Cấu hình live nằm trong bảng `pet_race_config`, dòng `id='default'`: `chances` là mảng phần trăm nguyên theo thứ tự Corgi/Mèo/Thỏ/Cáo/Gà/Rồng, tổng 100; `return_rate_bps=9000` tương ứng mức hoàn trả 90%. API seed dòng này khi khởi động bằng insert-on-conflict; thay đổi cấu hình trong ngày được giữ đến lần reset ngày kế tiếp. Migration `0006` tạo bảng. `DEFAULT_RACE_CONFIG` chỉ dùng làm seed và cho adapter local.
+
+Hệ số không nhập độc lập: `return_rate_bps / (chance * 100)`. Mỗi vòng mới đọc DB rồi lưu `odds` (xác suất, tử/mẫu hệ số) cùng outcome trong `pet_race_rounds.record`; UI đọc chính snapshot này, không tự dùng odds mặc định. Thưởng chính xác là `floor(stake * payoutNumerator / payoutDenominator)`, gồm vốn; mức hoàn trả thực tế có thể thấp hơn rất nhỏ do làm tròn xuống xu. Ví dụ Mèo cược 100 nhận 409; cược 100.000 nhận 409.090. UI ghi ≈ cho hệ số đã làm tròn, nhưng preview số xu và thanh toán dùng phân số gốc. Kết quả cá nhân lưu cùng odds, nên decoder vẫn xác thực được sau khi đổi cấu hình.
+
+Đổi cấu hình DB chỉ tác động vòng chưa được tạo, không thay điều kiện của vòng đang cược/chạy hoặc tiền trả cho người offline. Các vòng cũ chưa có odds được bổ sung bộ điều kiện cũ (×4/×4/×5/×6/×8/×10) khi đọc, không đổi outcome hay tiền đã hứa.
+
+Ví dụ cập nhật cấu hình bằng quyền vận hành DB (không có endpoint công khai để người chơi đổi):
+
+```sql
+UPDATE pet_race_config
+SET chances = '[24,22,18,15,12,9]'::json, return_rate_bps = 9000
+WHERE id = 'default';
+```
+
+Mỗi xác suất phải nguyên và nằm trong 1–99; tổng bằng 100; `return_rate_bps <= 10000` và lớn hơn `max(chances) * 100` để tất cả hệ số >1. Backend từ chối cấu hình sai trước khi tạo vòng hoặc trừ cược; không âm thầm dùng mặc định. Nhịp vòng vẫn ở `contracts/pet-racing.ts`. Kiểm tra `apps/api/tests/pet-racing.test.ts` bao phủ hai tài khoản/hai instance, đồng hồ/outcome chung, dữ liệu kín lúc mở cược, khóa cược đúng biên, giữ vốn, retry, thanh toán offline và sweep đồng thời. `apps/game/tests/pet-racing.test.ts` kiểm tra pha/chuyển vòng, animation bám thứ hạng, decoder và outfit khán giả.
+
+Job reset cấu hình chạy bằng cron trong worker, kèm kiểm tra bù trong sweep mỗi 5 giây: khi sang ngày mới theo `Asia/Ho_Chi_Minh`, đặt lại `chances=[24,22,18,15,12,9]` và `return_rate_bps=9000`. Migration `0007` thêm `last_reset_day`; cập nhật cấu hình và dấu ngày trong cùng câu UPDATE có điều kiện, nên nhiều instance chỉ reset một lần. Sửa cấu hình sau lần reset trong ngày không bị job/restart ghi đè lại. Cài đặt cũ có dấu ngày null được thiết lập mốc ngày đầu mà không xóa cấu hình tùy chỉnh. Khi API ngừng qua đêm, startup hoặc lúc tạo vòng mới sẽ xử lý bù; đồng hồ lùi không reset ngược ngày. Không xóa cược, lịch sử hay snapshot của vòng đang mở: vòng qua nửa đêm vẫn được trả theo odds lúc tạo vòng. Client watch `pet-race.changed` qua WebSocket, tự đăng ký lại khi reconnect; HTTP lấy snapshot tại deadline pha và có kiểm tra dự phòng mỗi 30 giây khi tab đang hiển thị.
+
+Giờ reset cấu hình được chọn bằng env backend (cần restart API và worker sau khi đổi): `PET_RACE_RESET_ENABLED=true`, `PET_RACE_RESET_TIME=00:00` (HH:mm) và `PET_RACE_RESET_TIMEZONE=Asia/Ho_Chi_Minh`. Đặt `false` để tắt reset ở cả startup, sweep và tạo vòng mới; việc thanh toán cược vẫn chạy. Tất cả instance phải dùng cùng env. Giờ trước mốc reset thuộc chu kỳ reset của ngày trước; thay giờ không gây reset lại cùng nhãn ngày đã xử lý. Múi giờ có DST xử lý giờ bị bỏ qua tại lần quét đầu sau mốc và không reset hai lần khi giờ lặp. `apps/api/.env.example` và `deploy/.env.prod.example` có mẫu; compose truyền cả ba biến vào API và worker. Xem [backend.md](backend.md#worker-và-ranh-giới-package) về ranh giới package, retry và phục hồi sau downtime.

@@ -1,10 +1,10 @@
 # Backend: `apps/api`
 
-Trạng thái ngày 2026-10-15. Server phục vụ farm, kho, outfit, đăng nhập, người chơi cùng khu trên phố giải trí và bàn người thật cho cả bảy game arcade. Phòng luyện tập vẫn chơi riêng với bot.
+Trạng thái ngày 2026-10-16. Server phục vụ farm, kho, outfit, đăng nhập, người chơi cùng khu trên phố giải trí và bàn người thật cho cả bảy game arcade. Phòng luyện tập vẫn chơi riêng với bot.
 
 ## Quyết định đã chốt
 
-- **Stack**: Node ≥ 22.13, Fastify, PostgreSQL, Drizzle. Mặc định chạy một process với realtime adapters trong bộ nhớ; đặt `REDIS_URL` để nhiều process dùng chung Redis. Postgres giữ save và khóa sweep, không dùng queue bền vững.
+- **Stack**: Node ≥ 22.13, Fastify, PostgreSQL, Drizzle. Production chạy HTTP API và worker thành hai process riêng dùng chung Postgres/Redis. BullMQ giữ lịch và retry; Postgres giữ tiền, cược pending và dấu reset. Dev/test một process vẫn hỗ trợ `BACKGROUND_JOBS_MODE=embedded`.
 - **Tài khoản**: tự tạo khách khi trình duyệt chưa có phiên; popup đăng ký bằng email + mật khẩu hoặc Google là tùy chọn. Khách chỉ truy cập được bằng cookie trong trình duyệt hiện tại. Đăng ký nâng cấp cùng player/save; đăng nhập tài khoản có sẵn chuyển tài khoản, không gộp tiến độ khách.
 - **Lưu tiến trình**: server là nguồn chính. Adapter local chỉ dùng để phát triển và test; không có luồng nhập save local lên tài khoản.
 - **Bàn arcade**: ô cố định theo địa chỉ `(gameId, khu, roomId, tableId)`. Chỉ ván đang diễn ra được lưu; bàn trống là bàn không có ván.
@@ -17,10 +17,12 @@ Trạng thái ngày 2026-10-15. Server phục vụ farm, kho, outfit, đăng nh�
 
 ```text
 apps/api/
-  compose.yaml               # Postgres cho dev, cổng 5433
+  compose.yaml               # Postgres cổng 5433 và Redis cổng 6379 cho dev
   drizzle/                   # migration sinh bởi drizzle-kit, không sửa tay
   src/
     main.ts                  # đọc env, chạy migration, listen
+    worker.ts                # entrypoint riêng cho background jobs
+    background-jobs.ts       # ghép lịch queue với service backend
     app.ts                   # createApp(deps): CORS, lỗi, đăng ký route
     config.ts
     _utils/                  # password, session-auth, http-errors
@@ -37,6 +39,7 @@ apps/api/
       commands/              # endpoint SDK /commands, chuyển tới service của domain
   tests/                     # chạy trên PGlite, không cần Docker
 packages/game-service/       # lõi điều phối dùng chung cho local và server
+packages/jobs/               # root chỉ export type; adapter opt-in tại /bullmq
 packages/realtime-core/      # ports, service, room/presence, policy và memory adapters
 packages/realtime-redis/     # Redis Bus/Store và Coordination KV/lock
 packages/realtime-fastify-ws/ # Fastify WebSocket Transport
@@ -213,6 +216,10 @@ Chạy game với server: đặt `NEXT_PUBLIC_API_URL=http://127.0.0.1:3001/api`
 
 Server tự chạy migration khi khởi động. Sau khi đổi `src/infrastructure/database/schema.ts`, chạy `pnpm --filter @chibi-town/api db:generate` và commit thư mục `drizzle/`. `pnpm dev` ở gốc không khởi động API.
 
+## Trường đua pet chung
+
+`modules/arcade/pet-racing` sở hữu repository/service cho các vòng chung toàn server. Migration `0005` thêm outcome bất biến theo roundId và index cược chờ thanh toán. Cùng một lịch UTC 62 giây cho mọi người: cược 30 giây, đếm ngược 5 giây, đua khoảng 20 giây, kết quả 7 giây. Không cần đủ hai người và không có lệnh start cá nhân. Game-service tính tiền trên PlayerDocument; xác nhận trừ vốn ngay, cuối vòng cộng tổng thưởng (gồm vốn) cho mọi người cược pet nhất. Sweep thanh toán cả người đã rời; đọc snapshot cũng thanh toán khi đến hạn. Dòng player được khóa và xóa pending bet trong cùng transaction với dấu đã trả ở hàng đợi, nên nhiều instance không trả hai lần. GET chỉ công khai outcome sau khi khóa cược; client nhận thông báo chuyển pha qua WebSocket rồi đọc snapshot HTTP, không truyền tiền qua WebSocket. Xem [arcade.md](arcade.md).
+
 ## Nhiều process và Redis
 
 Cài dependencies bằng `pnpm install`, dùng cùng `DATABASE_URL` Postgres và cùng `REDIS_URL=redis://127.0.0.1:6379` cho mọi API. Ví dụ chạy Redis cho dev: `docker run --rm -p 6379:6379 redis:7-alpine`. `apps/api/.env.example` có cấu hình này. Production dùng URL có mật khẩu/TLS (`rediss://`) và mạng riêng. Không chia sẻ thư mục PGlite giữa các process; PGlite chỉ phục vụ test/dev một process.
@@ -262,3 +269,40 @@ cp deploy/.env.prod.example deploy/.env.prod   # điền PUBLIC_URL, DATABASE_PA
 ### Túi đồ, trang bị và Pet
 
 Migration `0004` thêm bốn bảng character inventory/unlock/instance/grant, có owner là player + character `main`. Các request inventory/equip hydrate trạng thái riêng và lưu delta cùng transaction ví; `PlayerDocument` không lưu collection trên server. `POST /character-inventory` trả danh sách phân trang; `/commands` xử lý mua, di chuyển, trang bị và màu. `equip-outfit` bị chặn nếu đồ/màu chưa sở hữu hoặc món còn trong kho. Đăng ký chọn starter cấp đúng đồ/màu một lần; save cũ migrate từ outfit đã lưu. Xem [cosmetic-economy.md](cosmetic-economy.md) để biết giá, container và phạm vi quest/event.
+
+### Cấu hình Pet Racing trong DB
+
+`pet_race_config` (migration 0006) giữ một dòng `default`, gồm mảng `chances` và `return_rate_bps`; API khởi động sẽ seed khi chưa có; job maintenance reset về mặc định khi sang ngày mới theo giờ Việt Nam. Giá trị mặc định 24/22/18/15/12/9 và 9000 (90%). Hệ số trả được suy ra từ xác suất, không nhập riêng. Vòng mới chụp odds vào `pet_race_rounds.record`; kết quả và thanh toán offline luôn dùng snapshot của vòng đã cược. Vòng cũ thiếu odds được bổ sung điều kiện cũ khi đọc để giữ nguyên cam kết. UI nhận odds qua snapshot HTTP; không có quyền sửa cấu hình từ client. Xem [arcade.md](arcade.md) để cập nhật bằng SQL và quy tắc làm tròn xu.
+
+Migration `0007` bổ sung `last_reset_day` để job reset cấu hình Pet Racing một lần/ngày theo `Asia/Ho_Chi_Minh`, bằng cron worker, kèm sweep phục hồi mỗi 5 giây. UPDATE có điều kiện giữ reset nguyên tử giữa các instance; startup và tạo vòng mới xử lý bù nếu hệ thống vắng qua ngày. Không đổi odds của vòng cũ hay dữ liệu thanh toán. Bản nâng cấp gặp dấu ngày null chỉ thiết lập mốc hôm nay, giữ cấu hình đã chỉnh đến lần sang ngày kế tiếp.
+
+Env job: `PET_RACE_RESET_ENABLED` (`true`/`false`), `PET_RACE_RESET_TIME` (`HH:mm`, mặc định `00:00`), `PET_RACE_RESET_TIMEZONE` (IANA, mặc định `Asia/Ho_Chi_Minh`). `readConfig` kiểm tra giá trị trước khi khởi động; composition truyền cùng policy vào startup, sweep và tạo round. `false` chỉ tắt reset, không tắt thanh toán. Cần cùng cấu hình trên mọi instance và restart sau khi thay env; compose production đã truyền các biến này.
+
+
+## Worker và ranh giới package
+
+`packages/jobs` sở hữu port `JobQueue`, `JobSchedule`, `Job` tại entry chính (chỉ export type). Entry `@chibi-town/jobs/bullmq` hiện thực port bằng BullMQ + ioredis; root không import/re-export adapter và không mở kết nối Redis. Package jobs không phụ thuộc workspace package nào, không biết realtime, contracts, DB hay Fastify. BullMQ/ioredis vẫn là dependency cài đặt của package; tách entry chỉ tách đường import/runtime, không hứa tách dependency lúc install. `apps/api/src/background-jobs.ts` sở hữu tên job/payload và nối queue với service Pet Racing/bàn, publisher realtime. `game-service` tiếp tục là luật thuần. Test `tools/tooling/package-boundaries.test.mjs` giữ chiều phụ thuộc; xem [package-boundaries.md](package-boundaries.md) về quyết định chia package.
+
+HTTP `main.ts` và `worker.ts` là hai entrypoint của cùng backend workspace, dùng chung module repository/service; không có app import app. Worker chỉ tạo publisher từ bus, không cần Fastify hay WebSocket transport. API chịu xác thực/socket và fan-out thông báo. Cả hai entrypoint chạy migration với cùng advisory lock Postgres để tránh DDL chồng lúc startup.
+
+`BACKGROUND_JOBS_MODE=worker` yêu cầu Postgres và Redis; API không chạy maintenance timer. Worker đăng ký scheduler bằng ID cố định (khởi động lại không nhân lịch): `pet-race-phase` mỗi giây, `pet-race-settle` và `arcade-table-sweep` mỗi 5 giây, `pet-race-reset` cron theo ba biến `PET_RACE_RESET_*`. Tắt reset sẽ gỡ scheduler reset cũ. `WORKER_CONCURRENCY=2` (1–32) cấu hình số job đồng thời. Mỗi job thử tối đa ba lần với exponential backoff; lỗi được log; lần sweep sau vẫn phục hồi các khoản còn pending. Queue và realtime dùng hai adapter độc lập dù cùng Redis; key queue có hash tag `{chibi-jobs}` để dùng được Cluster.
+
+Không enqueue trả thưởng kiểu fire-and-forget sau commit. Cược pending được lưu cùng transaction ví trong Postgres; các job chỉ đánh thức service để quét DB. Startup worker xử lý bù trước khi nhận queue; dấu reset và khóa ví giữ hiệu ứng tiền/reset idempotent khi retry hoặc nhiều worker. Mất Redis không làm mất cược đã lưu. Khi worker ngừng, việc thanh toán người offline bị trễ đến lúc worker phục hồi; HTTP snapshot vẫn thanh toán cược đã đến hạn cho người đang xem. Không có cam kết exactly-once delivery của queue.
+
+Migration `0008` thêm `announced_phase`: claim nguyên tử pha tăng dần cho từng vòng để nhiều worker không phát cùng một chuyển pha. Worker phát `pet-race.changed` chỉ chứa roundId/phase; client watch/unwatch qua kết nối realtime dùng chung và tự watch lại khi reconnect. Client đọc HTTP khi mở màn, chuyển pha, trở lại tab hoặc reconnect; thêm kiểm tra dự phòng 30 giây và timer tại deadline pha. Animation/đếm ngược chạy tại client theo giờ server. Thông báo có thể mất sau claim nhưng trước publish; timer/snapshot phục hồi mà không ảnh hưởng tiền hoặc outcome.
+
+Chạy local sau khi `pnpm install`, sao chép `apps/api/.env.example` thành `.env` và cấu hình URL:
+
+```sh
+pnpm --filter @chibi-town/api db:up
+pnpm build
+pnpm --filter @chibi-town/api serve
+# Terminal riêng:
+pnpm --filter @chibi-town/api worker
+# Terminal riêng:
+pnpm dev
+```
+
+Compose production chạy Redis AOF, HTTP API và worker từ cùng image backend. Thay `PET_RACE_RESET_*` cần restart cả API và worker với cùng giá trị; worker cập nhật cron khi startup. `BACKGROUND_JOBS_MODE=embedded` dùng cho test/dev PGlite một process, giữ maintenance trong API; không chạy worker cùng thư mục PGlite.
+
+Để chuyển dữ liệu dev PGlite sang Postgres, dừng API cũ, build backend rồi chạy từ `apps/api`: `SOURCE_DATABASE_URL=pglite:.data/dev TARGET_DATABASE_URL=postgres://... node scripts/copy-local-database.mjs`. Script chỉ chép vào DB đích trống trong một transaction, giữ id/session/document/inventory/odds và các cược pending; từ chối đích có dữ liệu. Thư mục PGlite gốc được giữ lại. Sau khi đối chiếu số dòng, đổi DATABASE_URL và khởi động API/worker.

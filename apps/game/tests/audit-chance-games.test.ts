@@ -495,7 +495,7 @@ describe('SDK exploit attempts', () => {
   });
 
   for (const gameId of CHANCE)
-    it(`${gameId}: Roll/Spin needs a saved stake, every member ready, at least one opponent and the host`, async () => {
+    it(`${gameId}: Roll/Spin needs a saved stake, other members ready, at least one opponent and the host`, async () => {
       const t = table(gameId, 500);
       await t.open();
 
@@ -545,9 +545,6 @@ describe('SDK exploit attempts', () => {
       await memberAt({ type: 'ready', ready: false, memberId: BOTS[1] });
       await expect(go()).rejects.toMatchObject({ code: 'NOT_ALLOWED' }); // a bot is not ready
       await memberAt({ type: 'ready', ready: true, memberId: BOTS[1] });
-      await memberAt({ type: 'ready', ready: false });
-      await expect(go()).rejects.toMatchObject({ code: 'NOT_ALLOWED' }); // host is not ready
-      await memberAt({ type: 'ready', ready: true });
       for (const bot of BOTS) await memberAt({ type: 'kick', memberId: bot });
       await expect(go()).rejects.toMatchObject({ code: 'NOT_ALLOWED' }); // alone at the table
       await expect(memberAt({ type: 'kick', memberId: HOST })).rejects.toMatchObject({ code: 'NOT_ALLOWED' });
@@ -574,6 +571,7 @@ describe('SDK exploit attempts', () => {
       await t.repository.transaction((d) => {
         d.mini![gameId]!.activeMatch!.session!.hostId = HOST;
       });
+      await memberAt({ type: 'ready', ready: false }); // host starts directly, without a separate readiness action
       const result = await go();
       expect(result.match.status).toBe('finished');
       expect((await t.ledger()).coins).toBe(500 + result.match.session!.coinDelta!);

@@ -62,7 +62,7 @@ export function LocationLayout({
         profile={
           <ProfileMenu
             menuRef={menuRef}
-            name={`${auth.player?.name ?? player?.name ?? '…'}${(auth.player?.username ?? player?.username) ? ` @${auth.player?.username ?? player?.username}` : ''}`}
+            name={auth.player?.name ?? player?.name ?? '…'}
             subtitle={
               auth.player?.guest
                 ? t('guest', { ns: 'auth' })

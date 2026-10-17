@@ -36,6 +36,8 @@ const loaders: Record<string, () => Promise<ScreenModule>> = {
 
   '/location': () => import('@/features/location/main'),
 
+  '/pet-racing': () => import('@/features/pet-racing/main'),
+
   ...(process.env.NODE_ENV !== 'production'
     ? {
         '/farm-art-review': () => import('@/devtools/farm-art-review/art-review-screen'),

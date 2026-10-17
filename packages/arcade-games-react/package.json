@@ -32,6 +32,10 @@
     "./table-session": {
       "types": "./dist/_utils/use-table-session.d.ts",
       "default": "./dist/_utils/use-table-session.js"
+    },
+    "./arcade-route": {
+      "types": "./dist/_utils/arcade-route.d.ts",
+      "default": "./dist/_utils/arcade-route.js"
     }
   },
   "scripts": {
@@ -42,17 +46,19 @@
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "typescript": "^5.9.0"
   },
   "dependencies": {
-    "react": "^19.3.0",
     "@chibi-town/arcade-games": "workspace:*",
-    "@chibi-town/contracts": "workspace:*",
-    "@chibi-town/ui": "workspace:*",
-    "@chibi-town/game-content": "workspace:*",
-    "@chibi-town/game-audio": "workspace:*",
     "@chibi-town/character-core": "workspace:*",
+    "@chibi-town/contracts": "workspace:*",
+    "@chibi-town/game-audio": "workspace:*",
+    "@chibi-town/game-content": "workspace:*",
+    "@chibi-town/ui": "workspace:*",
     "i18next": "^26.4.3",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "react-i18next": "^17.0.16"
   }
 }

@@ -1,6 +1,6 @@
 import { MAPS, REGIONS } from '@chibi-town/game-content';
 import { describe, expect, it } from 'vitest';
-import { entertainmentUrls } from '@/assets/generated-assets';
+import { entertainmentUrls, sceneryUrls } from '@/assets/generated-assets';
 import { moveInLocation } from '@/features/location/_utils/location-logic';
 
 const map = MAPS.find((entry) => entry.id === 'entertainment-street')!;
@@ -14,7 +14,7 @@ describe('entertainment street', () => {
           layer.asset,
         )
       )
-        expect(entertainmentUrls[layer.asset]).toBeTruthy();
+        expect(sceneryUrls[layer.asset] ?? entertainmentUrls[layer.asset]).toBeTruthy();
     }
     expect(map.portals.some((portal) => portal.target === 'world')).toBe(true);
   });

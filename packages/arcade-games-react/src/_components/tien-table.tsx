@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { roomNumber } from '../_utils/room-number.js';
 import { ArcadeAvatar } from './arcade-avatar.js';
+import { CardTableSurface } from './card-table-surface.js';
 import { PlayingCard } from './playing-card.js';
 import { TurnCountdown } from './turn-countdown.js';
 
@@ -48,7 +49,7 @@ export function TienTable({
     <div
       className={`tien-table-scene tien-table-scene--${playerCount} ${match.status === 'playing' ? 'has-hand-actions' : ''} ${match.status === 'waiting' ? 'is-waiting' : ''}`}
     >
-      <div className="tien-table-surface" aria-hidden="true" />
+      <CardTableSurface />
       <span className="tien-table-badge">
         {t('arcadeSeatTitle', { room: roomNumber(match.roomId), table: (match.tableId ?? 0) + 1 })}
         <small>
@@ -109,7 +110,7 @@ export function TienTable({
             mirror={seat === 3}
             label={seatName(seat)}
           />
-          <small>
+          <small hidden={match.status === 'waiting' && match.session?.mode === 'practice'}>
             {match.status === 'waiting'
               ? t(
                   match.players
@@ -149,7 +150,7 @@ export function TienTable({
           ))}
         </fieldset>
       )}
-      {match.status === 'playing' && <div className="card-hand-actions">{actions}</div>}
+      {actions}
     </div>
   );
 }

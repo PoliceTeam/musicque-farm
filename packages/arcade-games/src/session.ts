@@ -85,5 +85,5 @@ export function arcadeMembers(session: ArcadeSession, count = session.playerCoun
 
 export function arcadeAllReady(session: ArcadeSession) {
   const members = arcadeMembers(session);
-  return members.length >= 2 && members.every((m) => m.ready);
+  return members.length >= 2 && members.every((m) => m.id === session.hostId || m.ready);
 }
