@@ -6,6 +6,7 @@ import {
 } from '@chibi-town/character-core/cosmetic-catalog';
 import { defaultOutfit } from '@chibi-town/character-core/outfit-logic';
 import type { CharacterCosmeticInstance, CosmeticShopOffer } from '@chibi-town/game-content/cosmetic-economy';
+import { COSMETIC_SHOP_IDS, type CosmeticShopId } from '@chibi-town/game-content/cosmetic-shop';
 import { ApiSdkError } from './index.js';
 
 export type CharacterInventoryQuery = {
@@ -13,6 +14,7 @@ export type CharacterInventoryQuery = {
   category?: CosmeticCategory;
   slot?: string;
   groupId?: string;
+  shop?: CosmeticShopId;
   cursor?: string;
   limit?: number;
 };
@@ -49,6 +51,7 @@ export function validateCharacterInventoryQuery(query: CharacterInventoryQuery) 
     !query ||
     !['bag', 'equipped', 'warehouse', 'shop', 'owned', 'unequipped'].includes(query.view) ||
     (query.category !== undefined && !['equipment', 'appearance', 'pet'].includes(query.category)) ||
+    (query.shop !== undefined && !COSMETIC_SHOP_IDS.includes(query.shop)) ||
     [query.groupId, query.cursor, query.slot].some(
       (value) => value !== undefined && (typeof value !== 'string' || value.length > 256),
     ) ||
@@ -92,6 +95,8 @@ export function decodeCharacterInventoryPage(value: unknown): CharacterInventory
         (row.offer !== undefined &&
           (!row.offer ||
             row.offer.id !== row.definition.id ||
+            !COSMETIC_SHOP_IDS.includes(row.offer.shop) ||
+            typeof row.offer.enabled !== 'boolean' ||
             !row.offer.price ||
             !safe(row.offer.price.amount) ||
             row.offer.price.amount === 0 ||

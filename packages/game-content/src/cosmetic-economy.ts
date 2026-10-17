@@ -1,6 +1,8 @@
-/** Definitions for future shop/reward integration; importing this module grants nothing. */
+import type { CosmeticShopId } from './cosmetic-shop.js';
+
+/** Definitions for shop/reward integration; importing this module grants nothing. */
 export type CosmeticGrantSource =
-  | { kind: 'shop'; offerId: string }
+  | { kind: 'shop'; offerId: string; shop?: CosmeticShopId; paid?: { currency: 'coins' | 'gems'; amount: number } }
   | { kind: 'quest'; questId: string; rewardId: string }
   | { kind: 'event'; eventId: string; rewardId: string }
   | { kind: 'starter'; bundleId: string }
@@ -11,6 +13,7 @@ export type CosmeticReward = { cosmeticIds: readonly string[] };
 /** One listing can bundle an item and its initial palette. No fallback price for unlisted items. */
 export type CosmeticShopOffer = {
   id: string;
+  shop: CosmeticShopId;
   enabled: boolean;
   price: { currency: 'coins' | 'gems'; amount: number };
   reward: CosmeticReward;

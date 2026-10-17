@@ -5,7 +5,7 @@ import type { CharacterInventoryPage, CharacterInventoryQuery } from '@chibi-tow
 import type { CharacterCosmeticInstance } from '@chibi-town/game-content/cosmetic-economy';
 import { skinId } from '../character/outfit-bindings.js';
 import type { PlayerDocument } from '../player-document.js';
-import { cosmeticOffer } from '../shop/cosmetic-offers.js';
+import { cosmeticOffer, cosmeticShop, isBaseCosmetic } from '../shop/cosmetic-offers.js';
 import { ensureCharacterInventory } from './cosmetic-grants.js';
 import { own } from './inventory-state.js';
 
@@ -18,6 +18,13 @@ export function characterInventoryPage(
   let definitions = Object.values(COSMETIC_CATALOG).filter(
     (entry) =>
       (!query.category || entry.category === query.category) &&
+      (!query.shop || cosmeticShop(entry) === query.shop) &&
+      (query.view !== 'shop' ||
+        (isBaseCosmetic(entry) &&
+          (!query.shop ||
+            !('gender' in entry) ||
+            !entry.gender ||
+            entry.gender === (document.outfit ?? defaultOutfit).gender))) &&
       (!query.slot || ('slot' in entry && entry.slot === query.slot)) &&
       (!query.groupId || entry.groupId === query.groupId) &&
       (query.view !== 'shop' ||
@@ -65,7 +72,10 @@ export function characterInventoryPage(
               (entry.kind === 'item-color' &&
                 instanceByCosmetic.get(entry.requires as CharacterCosmeticInstance['cosmeticId'])?.location
                   .container === 'equipped')),
-          canBuy: !own(state, entry.id) && (entry.kind !== 'item-color' || own(state, entry.requires)),
+          canBuy:
+            isBaseCosmetic(entry) &&
+            !own(state, entry.id) &&
+            (entry.kind !== 'item-color' || own(state, entry.requires)),
           ...(item ? { instance: structuredClone(item) } : {}),
           ...(query.view === 'shop' ? { offer: cosmeticOffer(entry.id) } : {}),
         },

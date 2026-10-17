@@ -1,5 +1,7 @@
 import { arcadeVi } from '@chibi-town/arcade-games-react/locales/vi';
 export default {
+  shopStaff: 'Nhân viên Mỹ viện',
+  returnLocation: 'Về {{name}}',
   petRace: {
     title: 'Trường Đua',
     controls: 'Bảng điều khiển trường đua',

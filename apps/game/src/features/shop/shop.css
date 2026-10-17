@@ -1,0 +1,330 @@
+.game-ui dialog.shop-dialog[open] {
+  width: min(960px, calc(100vw - 24px));
+  height: min(690px, calc(100dvh - 24px));
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.game-ui .shop-dialog .ui-dialog-surface {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+  padding: 18px 22px 22px;
+}
+.game-ui .shop-dialog .ui-dialog-surface > .ui-dialog-header {
+  margin: 0;
+  padding: 0 0 12px;
+}
+.game-ui .shop-dialog .ui-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  padding: 0;
+}
+.shop-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(240px, 1fr);
+  flex: 1;
+  min-height: 0;
+  gap: 24px;
+}
+.shop-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  min-height: 0;
+}
+.shop-face-filters {
+  flex-shrink: 0;
+}
+.shop-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #bda781 transparent;
+  scrollbar-gutter: stable;
+  padding: 3px 8px 5px 3px;
+  border-radius: 14px;
+}
+.shop-list:focus-visible {
+  outline: 2px solid #9b854f;
+  outline-offset: -2px;
+}
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.game-ui .shop-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 8px 12px;
+  border: 1px solid #dfcda9;
+  border-radius: 16px;
+  background: linear-gradient(#fffdf4, #f4ecd6);
+  box-shadow: 0 2px #dfd0ae;
+  font-size: 12px;
+  transition:
+    border-color 120ms,
+    background 120ms,
+    box-shadow 120ms;
+}
+.game-ui .shop-card:hover:not(:disabled) {
+  border-color: #b4955c;
+  background: #fff8e3;
+}
+.game-ui .shop-card.is-selected {
+  border-color: #9e7833;
+  background: linear-gradient(#fff8d9, #eee0af);
+  box-shadow:
+    inset 0 0 0 2px #e6c875,
+    0 2px #c7aa68;
+}
+.shop-card .cosmetic-thumbnail {
+  width: 100%;
+  max-width: 110px;
+  height: 84px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.shop-card strong {
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.shop-card > span {
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: #eadfbd80;
+  font-size: 11px;
+  font-weight: 800;
+  color: #846333;
+}
+.shop-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  min-height: 0;
+  padding: 20px;
+  border: 1px solid #d8c9a6;
+  border-radius: 22px;
+  background: linear-gradient(150deg, #f5f2dd, #e6e8ce);
+  box-shadow:
+    inset 0 1px #fffdf1,
+    0 3px #d9cba950;
+}
+.shop-preview-stage {
+  display: grid;
+  place-items: center;
+  flex: 0 0 190px;
+  width: 100%;
+  min-height: 0;
+}
+.shop-selection {
+  display: grid;
+  gap: 6px;
+  text-align: center;
+}
+.shop-selection > span {
+  font-size: 10px;
+  color: #8a805c;
+}
+.shop-selection > strong {
+  font-size: 16px;
+  color: #665136;
+}
+.shop-palettes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.shop-palettes legend {
+  width: 100%;
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 11px;
+  color: #816a45;
+}
+.game-ui .shop-palettes button {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 4px;
+  border: 2px solid #b29870;
+  border-radius: 50%;
+  font-size: 10px;
+  color: #fff;
+  text-shadow: 0 1px 3px #312914;
+  box-shadow: none;
+}
+.game-ui .shop-palettes .shop-base-palette {
+  color: #695339;
+  text-shadow: none;
+  border-radius: 9px;
+}
+.game-ui .shop-palettes button[aria-pressed="true"] {
+  outline: 2px solid #967037;
+  outline-offset: 2px;
+}
+.game-ui .shop-purchase {
+  width: 100%;
+  min-height: 44px;
+  margin-top: auto;
+  background: linear-gradient(#779454, #55743f);
+  border-color: #4c6835;
+  color: #fff8dd;
+}
+.game-ui .shop-purchase:disabled {
+  background: #ded6c4;
+  color: #8c8069;
+  border-color: #cabb9a;
+}
+.shop-pages {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #ddcfad;
+  font-size: 11px;
+  color: #8b7957;
+}
+.game-ui .shop-pages button {
+  padding: 8px 12px;
+  font-size: 11px;
+}
+.shop-help,
+.shop-empty {
+  margin: 0;
+  color: #967b51;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.shop-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 32px 12px;
+}
+.shop-list:has(.shop-empty) .shop-grid {
+  display: none;
+}
+.shop-empty-symbol {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 4px;
+  border-radius: 18px;
+  background: #eee5ce;
+  color: #b09a70;
+  font-size: 32px;
+}
+.shop-empty > strong {
+  color: #766446;
+  font-size: 14px;
+}
+.shop-empty > span:last-child:not(.shop-empty-symbol) {
+  color: #9a876a;
+  font-size: 12px;
+}
+.shop-notice,
+.shop-error {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+.shop-notice {
+  background: #e6edcf;
+  color: #476439;
+}
+.shop-error {
+  background: #f5e4d6;
+  color: #9e4c3c;
+}
+@media (max-width: 650px) {
+  .game-ui .shop-dialog .ui-dialog-surface {
+    padding: 12px;
+  }
+  .shop-content {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 14px;
+  }
+  .shop-preview {
+    order: -1;
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    padding: 12px;
+    gap: 8px 12px;
+    border-radius: 16px;
+  }
+  .shop-preview-stage {
+    height: 112px;
+    grid-row: 1 / span 4;
+  }
+  .shop-selection > strong {
+    font-size: 13px;
+  }
+  .shop-preview .shop-purchase {
+    min-height: 36px;
+    padding: 8px;
+    font-size: 12px;
+  }
+  .shop-palettes {
+    gap: 6px;
+  }
+  .shop-palettes legend,
+  .shop-selection > span {
+    display: none;
+  }
+  .shop-grid {
+    gap: 8px;
+  }
+  .game-ui .shop-card {
+    padding: 10px 6px;
+  }
+  .shop-card .cosmetic-thumbnail {
+    height: 64px;
+  }
+}
+@media (max-height: 560px) and (min-width: 651px) {
+  .shop-preview {
+    gap: 8px;
+    padding: 12px;
+  }
+  .shop-preview-stage {
+    flex-basis: 110px;
+  }
+  .shop-preview-stage .character-preview-frame {
+    width: 100px;
+  }
+  .shop-palettes legend,
+  .shop-selection > span {
+    display: none;
+  }
+}

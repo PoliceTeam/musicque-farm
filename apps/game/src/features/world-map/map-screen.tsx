@@ -106,7 +106,11 @@ export function MapScreen({
               world.regions.map((region) => [
                 region.id,
                 world.maps.filter(
-                  (map) => map.regionId === region.id && region.maps.includes(map.id) && map.id !== 'arcade-hall',
+                  (map) =>
+                    map.regionId === region.id &&
+                    region.maps.includes(map.id) &&
+                    map.id !== 'arcade-hall' &&
+                    map.presentation !== 'interior',
                 ),
               ]),
             ),

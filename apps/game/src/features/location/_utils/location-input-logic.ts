@@ -60,13 +60,27 @@ export function locationInputAt(map: MapDefinition, x: number, y: number) {
     return { kind: 'channels' } as const;
   for (const portal of map.portals)
     if (
-      portal.target === 'world' &&
       portal.entrance &&
       Math.abs(x - portal.entrance[0]) <= 36 &&
       y >= portal.entrance[1] - 52 &&
       y <= portal.entrance[1] + 12
     )
-      return { kind: 'exit' } as const;
+      return portal.target === 'world' ? ({ kind: 'exit' } as const) : ({ kind: 'portal', portal } as const);
+  for (const layer of map.layers ?? []) {
+    if (!layer.shop && !layer.destination) continue;
+    if (map.regionId === 'fun' && !layer.shop && attractionIds.includes(layer.id as Attraction)) continue;
+    if (
+      (x >= layer.x && x <= layer.x + layer.width && y >= layer.y && y <= layer.y + layer.height) ||
+      (layer.shopInteraction &&
+        Math.abs(x - layer.shopInteraction[0]) <= 32 &&
+        y >= layer.shopInteraction[1] - 52 &&
+        y <= layer.shopInteraction[1] + 4) ||
+      (layer.entrance && Math.abs(x - layer.entrance[0]) <= 28 && y >= layer.entrance[1] && y <= layer.entrance[1] + 44)
+    ) {
+      if (layer.shop) return { kind: 'shop', shop: layer.shop } as const;
+      return { kind: 'destination', destination: layer.destination! } as const;
+    }
+  }
   if (map.regionId === 'fun')
     for (const layer of map.layers ?? []) {
       if (

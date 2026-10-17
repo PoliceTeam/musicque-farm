@@ -91,3 +91,9 @@ body {
   background: #b7aa8d;
   border-radius: 8px;
 }
+
+.location-portals.is-interior {
+  top: auto;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 2;
+}

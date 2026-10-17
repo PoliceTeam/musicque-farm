@@ -1,5 +1,6 @@
 import { arcadeMap } from './arcade-map.js';
 import { entertainmentMap } from './entertainment.js';
+import { salonMap } from './salon.js';
 import { shoppingMap } from './shopping.js';
 export type RegionDefinition = { id: string; label: string; maps: readonly string[] };
 export type MapLayer = {
@@ -14,11 +15,13 @@ export type MapLayer = {
   rotationSeconds?: number;
   drift?: { distance: number; seconds: number };
   destination?: { regionId: string; mapId: string };
+  shop?: 'salon' | 'premium';
+  shopInteraction?: readonly [number, number];
   entrance?: readonly [number, number];
 };
 export type MapDefinition = {
   scene: 'farm' | 'location' | 'arcade';
-  presentation?: 'street';
+  presentation?: 'street' | 'interior';
   channels?: { count: number; capacity: number };
   width: number;
   height: number;
@@ -55,7 +58,7 @@ export const REGIONS = [
   {
     id: 'center',
     label: 'Trung tâm',
-    maps: ['shopping-street'],
+    maps: ['shopping-street', 'salon'],
   },
   {
     id: 'fun',
@@ -92,6 +95,7 @@ export const MAPS: readonly MapDefinition[] = [
   },
   entertainmentMap,
   shoppingMap,
+  salonMap,
   arcadeMap,
 ];
 

@@ -5,8 +5,10 @@ import { decodeCharacterInventoryPage } from '@chibi-town/contracts/character-in
 import { cosmeticOffer, grantCharacterCosmetics, reservedArcadeCoins } from '@chibi-town/game-service';
 import { describe, expect, it } from 'vitest';
 
-function fixture() {
-  const repository = createMemoryRepository(createLocalDocument());
+function fixture(coins = 500_000) {
+  const document = createLocalDocument();
+  document.farm.coins = coins;
+  const repository = createMemoryRepository(document);
   const sdk = createGameSdk({
     adapter: 'local',
     repository,
@@ -30,7 +32,7 @@ async function buy(t: ReturnType<typeof fixture>, id: string) {
 
 describe('character ownership, containers and permanent colors', () => {
   it('migrates only the trusted worn equipment and colors once, retaining wallet and an empty bag', async () => {
-    const t = fixture();
+    const t = fixture(30_000);
     const first = await t.sdk.getCharacterInventory({ view: 'equipped' });
     expect(first.rows.length).toBeGreaterThan(0);
     expect(first.bagUsed).toBe(0);
@@ -66,7 +68,7 @@ describe('character ownership, containers and permanent colors', () => {
     const t = fixture();
     const command = { type: 'buy-cosmetic', offerId: 'pet/cat', requestId: 'cat', mapInstanceId: 'home' } as const;
     const first = await t.sdk.execute(command);
-    expect(first.farm.coins).toBe(25000);
+    expect(first.farm.coins).toBe(420000);
     expect(await t.sdk.execute(command)).toEqual(first);
     await expect(buy(t, 'pet/cat')).rejects.toMatchObject({ code: 'NOT_ALLOWED' });
     let bag = await t.sdk.getCharacterInventory({ view: 'bag' });
@@ -163,11 +165,11 @@ describe('character ownership, containers and permanent colors', () => {
   it('rejects spending reserved arcade money and rolls back both purchase and grant', async () => {
     const t = fixture();
     await t.repository.transaction((document) => {
-      document.tableStakes = { diamonds: 29999 };
-      expect(reservedArcadeCoins(document)).toBe(29999);
+      document.tableStakes = { diamonds: 420001 };
+      expect(reservedArcadeCoins(document)).toBe(420001);
     });
     await expect(buy(t, 'pet/cat')).rejects.toMatchObject({ code: 'INSUFFICIENT_COINS' });
-    expect((await t.sdk.getInventory()).farm.coins).toBe(30000);
+    expect((await t.sdk.getInventory()).farm.coins).toBe(500000);
     expect((await t.sdk.getCharacterInventory({ view: 'bag' })).rows).toHaveLength(0);
   });
   it('does not inherit Pet levels and paginates shop without duplicate IDs', async () => {

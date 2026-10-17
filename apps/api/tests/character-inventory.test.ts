@@ -15,6 +15,50 @@ describe('server character inventory transactions', () => {
   });
   afterEach(() => t.close());
 
+  async function fund(playerId: string) {
+    const [row] = await t.db.select().from(playerDocuments).where(eq(playerDocuments.playerId, playerId));
+    row.document.farm.coins = 500_000;
+    await t.db.update(playerDocuments).set({ document: row.document }).where(eq(playerDocuments.playerId, playerId));
+  }
+
+  it('serves store-specific inventory and enforces Premium prices and upgrade-only levels on HTTP commands', async () => {
+    const account = await t.register('salon_buyer');
+    await fund(account.player.id);
+    const sdk = t.sdkFor(account.cookie);
+    const normal = await sdk.getCharacterInventory({ view: 'shop', shop: 'salon', slot: 'hair', limit: 50 });
+    expect(normal.rows.length).toBeGreaterThan(0);
+    expect(normal.rows.every((row) => row.offer?.shop === 'salon')).toBe(true);
+    expect(normal.rows.some((row) => row.definition.groupId === 'item/hair.goku')).toBe(false);
+    const premium = await sdk.getCharacterInventory({ view: 'shop', shop: 'premium', groupId: 'item/hair.goku' });
+    expect(premium.rows.every((row) => !('level' in row.definition) || row.definition.level === 1)).toBe(true);
+    const forgedPrice = await t.app.inject({
+      method: 'POST',
+      url: '/api/commands',
+      headers: { cookie: account.cookie },
+      payload: {
+        type: 'buy-cosmetic',
+        offerId: 'item/hair.goku.1',
+        price: 1,
+        requestId: 'premium-lowest',
+        mapInstanceId: 'home',
+      },
+    });
+    expect(forgedPrice.statusCode).toBe(200);
+    expect((await sdk.getInventory()).farm.coins).toBe(300_000);
+    await expect(
+      sdk.execute({
+        type: 'buy-cosmetic',
+        offerId: 'item/hair.goku.2',
+        requestId: 'upgrade-direct',
+        mapInstanceId: 'home',
+      }),
+    ).rejects.toMatchObject({ code: 'NOT_ALLOWED' });
+    expect((await sdk.getInventory()).farm.coins).toBe(300_000);
+    expect((await sdk.getCharacterInventory({ view: 'bag' })).rows.map((row) => row.definition.id)).toEqual([
+      'item/hair.goku.1',
+    ]);
+  });
+
   it('migrates to normalized tables, scopes data by session and never adds inventory to farm snapshots', async () => {
     const a = await t.register('owner_a');
     const b = await t.register('owner_b');
@@ -45,11 +89,12 @@ describe('server character inventory transactions', () => {
 
   it('serializes duplicate purchases, persists each grant once and makes colors permanent across reads', async () => {
     const account = await t.register('buyer');
+    await fund(account.player.id);
     const sdk = t.sdkFor(account.cookie);
     const command = { type: 'buy-cosmetic', offerId: 'pet/cat', requestId: 'buy-cat', mapInstanceId: 'home' } as const;
     const bought = await Promise.all([sdk.execute(command), sdk.execute(command)]);
     expect(bought[0]).toEqual(bought[1]);
-    expect((await sdk.getInventory()).farm.coins).toBe(75000);
+    expect((await sdk.getInventory()).farm.coins).toBe(420000);
     await expect(sdk.execute({ ...command, requestId: 'buy-again' })).rejects.toMatchObject({ code: 'NOT_ALLOWED' });
     await sdk.execute({
       type: 'buy-cosmetic',
@@ -64,7 +109,7 @@ describe('server character inventory transactions', () => {
         requestId,
         mapInstanceId: 'home',
       });
-    expect((await sdk.getInventory()).farm.coins).toBe(74500);
+    expect((await sdk.getInventory()).farm.coins).toBe(408000);
     expect((await sdk.getPlayer()).outfit.shirtColor).toBe('Đỏ');
     const [row] = await t.db.select().from(playerDocuments).where(eq(playerDocuments.playerId, account.player.id));
     expect(row.document.characterInventory).toBeUndefined();
@@ -77,7 +122,7 @@ describe('server character inventory transactions', () => {
     await expect(
       sdk.execute({ type: 'buy-cosmetic', offerId: 'pet/corgi', requestId: 'reserved-money', mapInstanceId: 'home' }),
     ).rejects.toMatchObject({ code: 'INSUFFICIENT_COINS' });
-    expect((await sdk.getInventory()).farm.coins).toBe(74500);
+    expect((await sdk.getInventory()).farm.coins).toBe(408000);
     const corgi = await sdk.getCharacterInventory({ view: 'shop', groupId: 'pet/corgi' });
     expect(corgi.rows.every((item) => !item.owned)).toBe(true);
     const instances = await t.db
@@ -92,6 +137,7 @@ describe('server character inventory transactions', () => {
 
   it('moves and swaps with unique slots while a failed operation rolls back every row and the wallet', async () => {
     const account = await t.register('swapper');
+    await fund(account.player.id);
     const sdk = t.sdkFor(account.cookie);
     for (const pet of ['cat', 'corgi'])
       await sdk.execute({ type: 'buy-cosmetic', offerId: `pet/${pet}`, requestId: pet, mapInstanceId: 'home' });

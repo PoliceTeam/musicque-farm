@@ -66,6 +66,7 @@ export function LocationLayout({
   const [friendTab, setFriendTab] = useState<SocialTab>('friends');
   const { incoming: inbox, notice, dismissNotice } = useFriendInbox(auth.player?.id ?? player?.id);
   const [wornOutfit, setWornOutfit] = useState<Outfit>();
+  useEffect(() => setWornOutfit(outfit), [outfit]);
   const portrait = useRef<HTMLCanvasElement>(null);
   const drawnOutfit = useRef('');
   useEffect(() => {

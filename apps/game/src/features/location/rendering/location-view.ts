@@ -198,7 +198,7 @@ export function createLocationView(
     for (const entry of draw) entry.paint(view, now);
     if (map.presentation === 'street')
       for (const layer of layers)
-        if (layer.entrance && (layer.destination || layer.id === 'racing'))
+        if (layer.entrance && (layer.destination || layer.shop || layer.id === 'racing'))
           view.surface(
             `location-entrance-hint:${enterText}`,
             entranceHint,
@@ -207,8 +207,19 @@ export function createLocationView(
             64,
             48,
           );
+    if (map.presentation === 'interior')
+      for (const layer of layers)
+        if (layer.shop && layer.shopInteraction)
+          view.surface(
+            `location-shop-hint:${enterText}`,
+            entranceHint,
+            layer.shopInteraction[0] - 32,
+            layer.shopInteraction[1] - 48 + Math.sin(now / 330) * 1.5,
+            64,
+            48,
+          );
     for (const portal of map.portals)
-      if (portal.target === 'world' && portal.entrance)
+      if (portal.entrance)
         view.surface(
           `location-exit-hint:${exitText}`,
           exitHint,

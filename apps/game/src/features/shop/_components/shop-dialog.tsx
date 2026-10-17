@@ -1,0 +1,348 @@
+import type { CosmeticDefinition } from '@chibi-town/character-core/cosmetic-catalog';
+import { colors } from '@chibi-town/character-core/item-catalog';
+import { ApiSdkError } from '@chibi-town/contracts';
+import type { CharacterInventoryPage, CharacterInventoryQuery } from '@chibi-town/contracts/character-inventory';
+import { Button, Dialog, Tabs } from '@chibi-town/ui/react';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { getApiSdk } from '@/application/api-sdk';
+import { shopCss } from '@/assets/generated-styles';
+import { CharacterPreview } from '@/features/character/_components/character-preview';
+import { CosmeticThumbnail } from '@/features/character/_components/cosmetic-thumbnail';
+import { previewCosmetic } from '@/features/shop/_utils/preview-outfit';
+
+type Tab = 'hair' | 'face' | 'decoration' | 'equipment';
+type Face = 'head' | 'eyes' | 'mouth' | 'nose' | 'skin';
+type Shop = 'salon' | 'premium';
+
+function paletteColor(entry: Readonly<CosmeticDefinition>) {
+  return entry.kind === 'item-color' ? Object.values(colors[entry.colorGroup][entry.colorValue])[2] : undefined;
+}
+
+export function ShopDialog({
+  shop,
+  onClose,
+  onChanged,
+}: {
+  shop: Shop;
+  onClose(): void;
+  onChanged(page: CharacterInventoryPage): void;
+}) {
+  const { t } = useTranslation('shop');
+  const [tab, setTab] = useState<Tab>('hair');
+  const [face, setFace] = useState<Face>('head');
+  const [data, setData] = useState<CharacterInventoryPage>();
+  const [details, setDetails] = useState<CharacterInventoryPage>();
+  const [selected, setSelected] = useState<string>();
+  const [color, setColor] = useState<string>();
+  const [history, setHistory] = useState<(string | undefined)[]>([undefined]);
+  const [index, setIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [mutating, setMutating] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [refresh, setRefresh] = useState(0);
+  const busy = useRef(false);
+  const current = useRef(0);
+  const changed = useRef(onChanged);
+  changed.current = onChanged;
+  const cursor = history[index];
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refresh explicitly reloads after purchases and outfit changes.
+  useEffect(() => {
+    const generation = ++current.current;
+    setLoading(true);
+    const query: CharacterInventoryQuery = {
+      view: 'shop',
+      shop,
+      limit: 9,
+      cursor,
+      ...(tab === 'equipment'
+        ? { category: 'equipment' }
+        : tab === 'face' && face === 'skin'
+          ? { groupId: 'appearance/skin' }
+          : { slot: tab === 'hair' ? 'hair' : tab === 'decoration' ? 'sticker' : face }),
+    };
+    void getApiSdk()
+      .getCharacterInventory(query)
+      .then((page) => {
+        if (generation !== current.current) return;
+        setData(page);
+        setSelected((id) => (page.rows.some((row) => row.definition.id === id) ? id : page.rows[0]?.definition.id));
+        changed.current(page);
+      })
+      .catch(() => {
+        if (generation === current.current) {
+          setError(t('failed'));
+          setData(undefined);
+          setDetails(undefined);
+        }
+      })
+      .finally(() => {
+        if (generation === current.current) setLoading(false);
+      });
+    return () => {
+      current.current++;
+    };
+  }, [shop, tab, face, cursor, refresh, t]);
+  const root = data?.rows.find((row) => row.definition.id === selected);
+  const groupId = root?.definition.groupId;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refresh updates ownership without changing the selected group.
+  useEffect(() => {
+    if (!groupId) {
+      setDetails(undefined);
+      return;
+    }
+    let active = true;
+    setDetails(undefined);
+    void getApiSdk()
+      .getCharacterInventory({ view: 'shop', shop, groupId, limit: 50 })
+      .then((page) => {
+        if (active) setDetails(page);
+      })
+      .catch(() => {
+        if (active) setError(t('failed'));
+      });
+    return () => {
+      active = false;
+    };
+  }, [shop, groupId, refresh, t]);
+  const choice = (color && details?.rows.find((row) => row.definition.id === color)) || root;
+  const preview = data && choice ? previewCosmetic(data.outfit, choice.definition) : data?.outfit;
+  const locked = loading || mutating;
+  const price = choice?.offer?.price.amount ?? 0;
+
+  function reset() {
+    setHistory([undefined]);
+    setIndex(0);
+    setSelected(undefined);
+    setColor(undefined);
+    setNotice('');
+    setError('');
+  }
+
+  async function execute(use: boolean) {
+    if (!choice || !preview || busy.current || locked) return;
+    const row = choice;
+    const generation = current.current;
+    busy.current = true;
+    setMutating(true);
+    setError('');
+    setNotice('');
+    try {
+      await getApiSdk().execute({
+        ...(use
+          ? { type: 'equip-outfit' as const, outfit: preview }
+          : { type: 'buy-cosmetic' as const, offerId: row.definition.id }),
+        requestId: crypto.randomUUID(),
+        mapInstanceId: 'home',
+      });
+      if (generation !== current.current) return;
+      setNotice(t(use ? 'applied' : 'bought', { name: row.definition.label }));
+      setRefresh((value) => value + 1);
+    } catch (reason) {
+      if (generation !== current.current) return;
+      const key =
+        reason instanceof ApiSdkError && reason.code === 'INSUFFICIENT_COINS'
+          ? 'insufficient'
+          : reason instanceof ApiSdkError && reason.code === 'INVENTORY_FULL'
+            ? 'full'
+            : 'actionFailed';
+      setError(t(key));
+      // A lost response may follow a committed purchase; refresh authoritative ownership before retrying.
+      setRefresh((value) => value + 1);
+    } finally {
+      busy.current = false;
+      setMutating(false);
+    }
+  }
+
+  const tabs: Tab[] = shop === 'salon' ? ['hair', 'face', 'decoration'] : ['hair', 'equipment'];
+  return (
+    <Dialog
+      title={t(shop)}
+      className="shop-dialog"
+      hideTitle
+      showCloseFooter={false}
+      closeLabel={t('close', { ns: 'common' })}
+      onClose={() => {
+        if (!busy.current) onClose();
+      }}
+      tabs={
+        <Tabs
+          appearance="folder"
+          label={t(shop)}
+          value={tab}
+          items={tabs.map((id) => ({ id, label: t(`tabs.${id}`) }))}
+          onChange={(id) => {
+            if (!busy.current) {
+              setTab(id as Tab);
+              reset();
+            }
+          }}
+        />
+      }
+    >
+      <style>{shopCss}</style>
+      <div className="shop-content" aria-busy={locked}>
+        <section className="shop-catalog" aria-label={t(`tabs.${tab}`)}>
+          {tab === 'face' && (
+            <div className="shop-face-filters">
+              <Tabs
+                label={t('tabs.face')}
+                value={face}
+                items={(['head', 'eyes', 'mouth', 'nose', 'skin'] as const).map((id) => ({
+                  id,
+                  label: t(`filters.${id}`),
+                }))}
+                onChange={(id) => {
+                  if (!busy.current) {
+                    setFace(id as Face);
+                    reset();
+                  }
+                }}
+              />
+            </div>
+          )}
+          <section className="shop-list" aria-label={t(`tabs.${tab}`)}>
+            <div className="shop-grid">
+              {data?.rows.map((row) => (
+                <button
+                  type="button"
+                  key={row.definition.id}
+                  className={`shop-card${row.definition.id === selected ? ' is-selected' : ''}`}
+                  aria-pressed={row.definition.id === selected}
+                  disabled={mutating}
+                  onClick={() => {
+                    setSelected(row.definition.id);
+                    setColor(undefined);
+                    setNotice('');
+                  }}
+                >
+                  <CosmeticThumbnail definition={row.definition} />
+                  <strong>{row.definition.label}</strong>
+                  <span>
+                    {row.owned
+                      ? t('owned')
+                      : t('balance', { amount: (row.offer?.price.amount ?? 0).toLocaleString('vi-VN') })}
+                  </span>
+                </button>
+              ))}
+            </div>
+            {!data?.rows.length && !error && (
+              <div className="shop-empty" role="status">
+                <span className="shop-empty-symbol" aria-hidden="true">
+                  ◇
+                </span>
+                <strong>{t(loading ? 'loading' : 'empty')}</strong>
+                {!loading && <span>{t('emptyHint')}</span>}
+              </div>
+            )}
+          </section>
+          {(data?.total ?? 0) > 9 && (
+            <nav
+              className="shop-pages"
+              aria-label={t('page', { page: index + 1, total: Math.max(1, Math.ceil((data?.total ?? 0) / 9)) })}
+            >
+              <Button
+                disabled={locked || index === 0}
+                onClick={() => {
+                  setIndex((value) => value - 1);
+                  setColor(undefined);
+                }}
+              >
+                {t('previous')}
+              </Button>
+              <span>{t('page', { page: index + 1, total: Math.max(1, Math.ceil((data?.total ?? 0) / 9)) })}</span>
+              <Button
+                disabled={locked || !data?.nextCursor}
+                onClick={() => {
+                  if (!data?.nextCursor) return;
+                  setHistory((values) => [...values.slice(0, index + 1), data.nextCursor!]);
+                  setIndex((value) => value + 1);
+                  setColor(undefined);
+                }}
+              >
+                {t('next')}
+              </Button>
+            </nav>
+          )}
+        </section>
+        <aside className="shop-preview">
+          <div className="shop-preview-stage">
+            {preview && <CharacterPreview outfit={preview} label={t('preview')} />}
+          </div>
+          <div className="shop-selection">
+            {choice && <span>{t('selected')}</span>}
+            <strong>{choice?.definition.label ?? t('preview')}</strong>
+          </div>
+          {details?.rows.some((row) => row.definition.kind === 'item-color') && (
+            <fieldset className="shop-palettes">
+              <legend>{t('colors')}</legend>
+              <button
+                type="button"
+                className="shop-base-palette"
+                disabled={mutating}
+                aria-pressed={!color}
+                title={t('base')}
+                onClick={() => setColor(undefined)}
+              >
+                {t('base')}
+              </button>
+              {details.rows
+                .filter((row) => row.definition.kind === 'item-color')
+                .map((row) => (
+                  <button
+                    type="button"
+                    key={row.definition.id}
+                    disabled={mutating}
+                    aria-label={row.definition.label}
+                    title={`${row.definition.label}${row.owned ? ` · ${t('owned')}` : ''}`}
+                    aria-pressed={color === row.definition.id}
+                    onClick={() => setColor(row.definition.id)}
+                    style={{ background: paletteColor(row.definition) }}
+                  >
+                    <span>{row.owned ? '✓' : ''}</span>
+                  </button>
+                ))}
+            </fieldset>
+          )}
+          {choice && (
+            <Button
+              className="shop-purchase"
+              disabled={
+                locked ||
+                (!choice.owned && (!choice.canBuy || price > (data?.coins ?? 0))) ||
+                choice.instance?.location.container === 'warehouse'
+              }
+              onClick={() => void execute(choice.owned)}
+            >
+              {choice.owned ? t('use') : t('buy', { price: price.toLocaleString('vi-VN') })}
+            </Button>
+          )}
+          {choice && !choice.owned && !choice.canBuy && <p className="shop-help">{t('rootRequired')}</p>}
+          {choice && !choice.owned && price > (data?.coins ?? 0) && <p className="shop-help">{t('insufficient')}</p>}
+          {choice?.instance?.location.container === 'warehouse' && <p className="shop-help">{t('inWarehouse')}</p>}
+        </aside>
+      </div>
+      {notice && (
+        <p className="shop-notice" role="status">
+          {notice}
+        </p>
+      )}
+      {error && (
+        <p className="shop-error" role="alert">
+          {error}{' '}
+          <Button
+            disabled={locked}
+            onClick={() => {
+              setError('');
+              setRefresh((value) => value + 1);
+            }}
+          >
+            {t('retry')}
+          </Button>
+        </p>
+      )}
+    </Dialog>
+  );
+}

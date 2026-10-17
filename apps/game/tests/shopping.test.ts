@@ -16,8 +16,15 @@ it('opens the shared shopping street from Center with all six supplied shops reg
   for (const layer of buildings) {
     expect(shoppingUrls[layer.asset!]).toBeTruthy();
     expect(layer.y + layer.height).toBeCloseTo(545);
-    expect(layer.destination).toBeUndefined();
-    expect(locationInputAt(map, layer.x + layer.width / 2, 565).kind).toBe('move');
+    if (layer.id === 'salon') {
+      expect(layer.destination).toEqual({ regionId: 'center', mapId: 'salon' });
+      expect(locationInputAt(map, layer.x + layer.width / 2, 565).kind).toBe('destination');
+    } else if (layer.id === 'premium') {
+      expect(locationInputAt(map, layer.x + layer.width / 2, 565)).toEqual({ kind: 'shop', shop: 'premium' });
+    } else {
+      expect(layer.destination).toBeUndefined();
+      expect(locationInputAt(map, layer.x + layer.width / 2, 565).kind).toBe('move');
+    }
   }
   for (const layer of map.layers!.filter((layer) => layer.asset?.startsWith('scenery:')))
     expect(sceneryUrls[layer.asset!]).toBeTruthy();

@@ -54,6 +54,8 @@ for (const [id, x, w, sourceW, sourceH] of [
   const h = (w * sourceH) / sourceW;
   prop(id, `shopping:${id}`, x, 545 - h, w, h, 545);
   layers[layers.length - 1].entrance = [x + w / 2, 545];
+  if (id === 'salon') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'salon' };
+  if (id === 'premium') layers[layers.length - 1].shop = 'premium';
 }
 prop('atm', 'scenery:atm', 610, 391.5, 160, 153.5, 545);
 layers[layers.length - 1].entrance = [690, 545];

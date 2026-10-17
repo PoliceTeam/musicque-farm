@@ -1,0 +1,196 @@
+[
+  {
+    "key": "wall",
+    "file": "wall.webp",
+    "box": [
+      1122,
+      62,
+      1298,
+      213
+    ]
+  },
+  {
+    "key": "corner-left",
+    "file": "corner-left.webp",
+    "box": [
+      986,
+      53,
+      1110,
+      236
+    ]
+  },
+  {
+    "key": "corner-right",
+    "file": "corner-right.webp",
+    "box": [
+      1566,
+      51,
+      1671,
+      236
+    ]
+  },
+  {
+    "key": "floor",
+    "file": "floor.webp",
+    "box": [
+      1167,
+      245,
+      1247,
+      309
+    ]
+  },
+  {
+    "key": "front-wall",
+    "file": "front-wall.webp",
+    "box": [
+      1165,
+      508,
+      1243,
+      615
+    ]
+  },
+  {
+    "key": "door",
+    "file": "door.webp",
+    "box": [
+      1270,
+      429,
+      1419,
+      552
+    ]
+  },
+  {
+    "key": "painting",
+    "file": "painting.webp",
+    "box": [
+      1268,
+      312,
+      1419,
+      412
+    ]
+  },
+  {
+    "key": "poster",
+    "file": "poster.webp",
+    "box": [
+      1420,
+      312,
+      1525,
+      416
+    ]
+  },
+  {
+    "key": "mirror",
+    "file": "mirror.webp",
+    "box": [
+      879,
+      644,
+      992,
+      841
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "counter",
+    "file": "counter.webp",
+    "box": [
+      311,
+      635,
+      646,
+      790
+    ]
+  },
+  {
+    "key": "stool",
+    "file": "stool.webp",
+    "box": [
+      647,
+      646,
+      715,
+      761
+    ]
+  },
+  {
+    "key": "shelf",
+    "file": "shelf.webp",
+    "box": [
+      734,
+      638,
+      869,
+      836
+    ]
+  },
+  {
+    "key": "cosmetics",
+    "file": "cosmetics.webp",
+    "box": [
+      1101,
+      649,
+      1227,
+      840
+    ]
+  },
+  {
+    "key": "plant",
+    "file": "plant.webp",
+    "box": [
+      1225,
+      662,
+      1358,
+      791
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "sofa",
+    "file": "sofa.webp",
+    "box": [
+      1351,
+      662,
+      1538,
+      782
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "armchair",
+    "file": "armchair.webp",
+    "box": [
+      1543,
+      667,
+      1666,
+      803
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "coffee-table",
+    "file": "coffee-table.webp",
+    "box": [
+      1097,
+      846,
+      1225,
+      927
+    ]
+  },
+  {
+    "key": "exit-mat",
+    "file": "exit-mat.webp",
+    "box": [
+      1267,
+      549,
+      1424,
+      649
+    ]
+  },
+  {
+    "key": "lamp",
+    "file": "lamp.webp",
+    "box": [
+      1272,
+      242,
+      1324,
+      301
+    ]
+  }
+]

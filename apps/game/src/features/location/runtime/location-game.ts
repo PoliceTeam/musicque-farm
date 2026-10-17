@@ -14,6 +14,7 @@ import {
   updateLocationInput,
 } from '@/features/location/_utils/location-input-logic';
 import { createRemotePlayers } from '@/features/location/_utils/remote-players-logic';
+import { navigateLocationPortal } from '@/features/location/location-navigation-handler';
 import {
   createEntertainmentBillboard,
   createEntertainmentGarden,
@@ -40,6 +41,7 @@ export function createLocationGame(options: {
   selectedPlayer?(): string | undefined;
   onPlayerPosition?(point?: [number, number]): void;
   onAttraction(id: Attraction): void;
+  onShop?(shop: 'salon' | 'premium'): void;
   navigate(path: string): void;
   onError(): void;
 }) {
@@ -113,16 +115,16 @@ export function createLocationGame(options: {
       zoom: 1,
       fillParent: true,
       renderScale: 2,
-      smoothSurfaces: map.presentation === 'street',
-      backgroundColor: map.presentation === 'street' ? '#29b5f2' : '#7bb457',
+      smoothSurfaces: !!map.presentation,
+      backgroundColor: map.presentation === 'interior' ? '#292832' : '#29b5f2',
       camera: {
         worldWidth: map.width,
         worldHeight: map.height,
-        zoom: map.presentation === 'street' ? 0 : 1,
+        zoom: map.presentation ? 0 : 1,
 
         target: () => {
           cameraTarget[0] = state.x;
-          cameraTarget[1] = map.presentation === 'street' ? map.height / 2 : state.y;
+          cameraTarget[1] = map.presentation ? map.height / 2 : state.y;
           return cameraTarget;
         },
       },
@@ -144,6 +146,22 @@ export function createLocationGame(options: {
           } else if (hit.kind === 'exit') {
             state.target = undefined;
             options.navigate('/');
+          } else if (hit.kind === 'shop') {
+            state.target = undefined;
+            options.onShop?.(hit.shop);
+          } else if (hit.kind === 'destination') {
+            state.target = undefined;
+            options.navigate(`/play/${hit.destination.regionId}/${hit.destination.mapId}`);
+          } else if (hit.kind === 'portal') {
+            state.target = undefined;
+            void navigateLocationPortal(hit.portal, {
+              getWorld: () => getApiSdk().getWorld(),
+
+              isActive: () => !disposed,
+
+              navigate: options.navigate,
+              onError: options.onError,
+            });
           } else if (hit.kind === 'attraction') {
             state.target = undefined;
             if (hit.destination) options.navigate(`/play/${hit.destination.regionId}/${hit.destination.mapId}`);

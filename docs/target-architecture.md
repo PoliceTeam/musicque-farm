@@ -66,6 +66,8 @@ CSS được chia theo thành phần/màn sở hữu, dùng cùng skin của UI 
 | Đăng nhập, đăng ký và chọn nhân vật lần đầu | `apps/game/src/features/auth/auth.css` |
 | Bản đồ chung | `apps/game/src/features/world-map/map.css` |
 | Màn khu vực và chọn kênh | `apps/game/src/features/location/location.css` |
+| Khung xem nhân vật dùng chung | `apps/game/src/features/character/character-preview.css` |
+| Cửa hàng Mỹ viện / Premium | `apps/game/src/features/shop/shop.css` |
 | Kho nông sản | `apps/game/src/features/inventory/inventory.css` (nạp cùng farm và showcase) |
 | Nông trại | `apps/game/src/features/farm/farm.css` |
 | Lab nhân vật | `apps/game/src/features/character/character-base.css`, `lab.css` |
@@ -92,7 +94,8 @@ Giữ nguyên 8 ID đang có trong `apps/game/src/features/world-map/_utils/worl
 
 | regionId | Tên |
 | --- | --- |
-| farm | Kho nông sản | `apps/game/src/features/inventory/inventory.css` (nạp cùng farm và showcase) |
+| farm | Cửa hàng Mỹ viện / Premium | `apps/game/src/features/shop/shop.css` |
+| Kho nông sản | `apps/game/src/features/inventory/inventory.css` (nạp cùng farm và showcase) |
 | Nông trại |
 | forest | Rừng già |
 | school | Trường học |

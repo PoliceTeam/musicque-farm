@@ -4,7 +4,7 @@ import type { createGameAudio } from '@chibi-town/game-audio';
 import type { MapDefinition } from '@chibi-town/game-content';
 import { Button, Dialog } from '@chibi-town/ui/react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocationLayout, type LocationPlayer } from '@/application/_components/location-layout';
 import { getApiSdk } from '@/application/api-sdk';
@@ -15,6 +15,10 @@ import { navigateLocationPortal } from '@/features/location/location-navigation-
 import { createLocationGame } from '@/features/location/runtime/location-game';
 import { PlayerInteractionDialog } from '@/features/social/_components/player-interaction-dialog';
 import { PlayerRadialMenu } from '@/features/social/_components/player-radial-menu';
+
+const ShopDialog = lazy(() =>
+  import('@/features/shop/_components/shop-dialog').then((module) => ({ default: module.ShopDialog })),
+);
 
 export const styles = locationCss;
 
@@ -53,6 +57,7 @@ export function Screen({
     channelRef.current = directory;
     setChannelDirectory(directory);
   }, []);
+  const [shop, setShop] = useState<'salon' | 'premium'>();
   const [attraction, setAttraction] = useState<Attraction>();
   const host = useRef<HTMLDivElement>(null);
   const equippedOutfit = useRef<Outfit | undefined>(undefined);
@@ -129,6 +134,8 @@ export function Screen({
 
       onChannels: () => setChannelDialog(true),
 
+      onShop: setShop,
+
       onAttraction: (value) => {
         if (value === 'racing') navigation.push('/play/fun/pet-racing');
         else setAttraction(value);
@@ -161,6 +168,21 @@ export function Screen({
         )
       }
     >
+      {shop && (
+        <Suspense fallback={null}>
+          <ShopDialog
+            shop={shop}
+            onClose={() => setShop(undefined)}
+            onChanged={(page) => {
+              equippedOutfit.current = page.outfit;
+              setHeader(
+                (value) =>
+                  value && { player: { ...value.player, outfit: page.outfit }, coins: page.coins, gems: page.gems },
+              );
+            }}
+          />
+        </Suspense>
+      )}
       {selectedPlayer && (
         <PlayerRadialMenu
           key={selectedPlayer.id}
@@ -176,7 +198,10 @@ export function Screen({
       )}
       {profileId && <PlayerInteractionDialog id={profileId} onClose={() => setProfileId(undefined)} />}
       <div className="location-canvas" ref={host} />
-      <nav className="location-portals" aria-label={t('locationLabel')}>
+      <nav
+        className={`location-portals${definition?.presentation === 'interior' ? ' is-interior' : ''}`}
+        aria-label={t('locationLabel')}
+      >
         {definition?.portals
           .filter((portal) => portal.target !== 'world')
           .map((portal) => (
@@ -194,11 +219,18 @@ export function Screen({
                 })
               }
             >
-              {t('locationPortal', { name: portalLabels[portal.target] ?? t('visitDestination') })}
+              {t(definition.presentation === 'interior' ? 'returnLocation' : 'locationPortal', {
+                name: portalLabels[portal.target] ?? t('visitDestination'),
+              })}
             </Button>
           ))}
         {error && <p role="alert">{error}</p>}
       </nav>
+      {definition?.id === 'salon' && (
+        <Button className="location-controls-toggle" onClick={() => setShop('salon')}>
+          {t('shopStaff')}
+        </Button>
+      )}
       {definition?.regionId === 'fun' && (
         <Button className="location-controls-toggle" onClick={() => setControlsOpen(true)}>
           {t('locationControls')}
