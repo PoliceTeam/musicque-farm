@@ -545,7 +545,7 @@
   background: #4c5147;
   border-color: #68736242;
   opacity: 1;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 .diamond-cell .gem-image {
   display: block;
@@ -1052,7 +1052,7 @@
   opacity: 1;
   background: linear-gradient(120deg, #fff, #f3f3e9);
   border-color: #adad9b;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 .game-ui .playing-card.is-selected {
   transform: none;
@@ -1434,7 +1434,7 @@
   border-color: transparent;
   box-shadow: none;
   opacity: 0.78;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 .arcade-table-drawing {
   width: 100%;
@@ -1846,7 +1846,7 @@
 }
 .game-ui .mini-square:disabled {
   opacity: 1;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 .game-ui .mini-square.is-last-move {
   box-shadow: inset 0 0 0 3px #e3b24b;

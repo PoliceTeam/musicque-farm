@@ -4,6 +4,9 @@ Trạng thái ngày 2026-10-16. Server phục vụ farm, kho, outfit, đăng nh�
 
 ## Quyết định đã chốt
 
+- **Kết bạn**: `friendships` lưu một cặp UUID theo thứ tự, người gửi và trạng thái pending/accepted/closed. Các mutation khóa hai tài khoản theo cùng thứ tự để chống gửi trùng và giữ giới hạn 200 bạn/50 lời mời đang chờ mỗi người. Chỉ người nhận được chấp nhận/từ chối; người gửi được hủy lời mời; mỗi bên được hủy kết bạn. Quan hệ vừa đóng chờ 60 giây trước lời mời mới. Khách cũng có quan hệ theo tài khoản khách hiện tại; nâng cấp tài khoản giữ nguyên ID.
+- **API xã hội**: `/api/social/friends` GET danh sách, POST `{ targetId, action }`; `/api/social/players/:id` GET hồ sơ công khai (tên hiển thị, cấp, ngoại hình, chỉ số), không trả ví, username, email hay kho đồ. `social.watch` chỉ subscribe topic của tài khoản được xác thực; `social.changed` được phát sau commit cho hai bên, không chứa dữ liệu. Client đọc lại snapshot sau reconnect; không polling mỗi giây. `Tin nhắn` hiện là nơi quản lý bạn bè/lời mời, chưa có chat.
+
 - **Chỉ số nhân vật**: `players.level` giữ cấp hiện tại; các cột `experience` (bigint an toàn với JavaScript), `fashion`, `friendliness`, `happiness`, `mischief`, `health` lưu điểm riêng từng tài khoản. Migration bổ sung mặc định 0, giữ nguyên cấp và dữ liệu tài khoản cũ. `/api/player` trả `stats` theo session; client không có API tự ghi điểm. Chưa chốt ngưỡng lên cấp, giới hạn hay nguồn tăng/giảm điểm, nên các chỉ số là điểm không âm, chưa phải phần trăm. Các tác vụ thưởng sau này phải cập nhật điểm/cấp trong cùng transaction với phần thưởng và dùng receipt để chống cộng lặp.
 
 - **Stack**: Node ≥ 22.13, Fastify, PostgreSQL, Drizzle. Production chạy HTTP API và worker thành hai process riêng dùng chung Postgres/Redis. BullMQ giữ lịch và retry; Postgres giữ tiền, cược pending và dấu reset. Dev/test một process vẫn hỗ trợ `BACKGROUND_JOBS_MODE=embedded`.

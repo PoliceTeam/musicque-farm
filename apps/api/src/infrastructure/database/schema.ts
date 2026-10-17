@@ -230,3 +230,30 @@ export const petRaceConfig = pgTable(
     check('pet_race_config_return_rate', sql`${table.returnRateBps} > 0 AND ${table.returnRateBps} <= 10000`),
   ],
 );
+
+/** One ordered pair represents a request and, after acceptance, a mutual friendship. */
+export const friendships = pgTable(
+  'friendships',
+  {
+    lowId: uuid('low_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    highId: uuid('high_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    requestedBy: uuid('requested_by')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    status: text('status').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.lowId, table.highId] }),
+    index('friendships_high_status').on(table.highId, table.status),
+    index('friendships_low_status').on(table.lowId, table.status),
+    check('friendships_order', sql`${table.lowId} < ${table.highId}`),
+    check('friendships_requester', sql`${table.requestedBy} IN (${table.lowId}, ${table.highId})`),
+    check('friendships_status', sql`${table.status} IN ('pending', 'accepted', 'closed')`),
+  ],
+);

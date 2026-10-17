@@ -36,6 +36,9 @@ export function createLocationGame(options: {
   channel(): ChannelDirectory | undefined;
   onHeader(header: { player: LocationPlayer; coins: number; gems: number }): void;
   onChannels(): void;
+  onPlayer?(id: string, point?: [number, number]): void;
+  selectedPlayer?(): string | undefined;
+  onPlayerPosition?(point?: [number, number]): void;
   onAttraction(id: Attraction): void;
   navigate(path: string): void;
   onError(): void;
@@ -55,25 +58,24 @@ export function createLocationGame(options: {
     if (disposed) return;
     options.onHeader({ player, coins: inventory.farm.coins, gems: inventory.farm.gems });
     const generated = new Map<string, HTMLCanvasElement>();
-    if (map.regionId === 'fun') {
+    if (map.presentation === 'street') {
       generated.set('entertainment:plaza', await createEntertainmentGround(map.width, 310));
-      generated.set('entertainment:wires', await createEntertainmentWires(map.width));
+      if (map.layers?.some((layer) => layer.asset === 'entertainment:wires'))
+        generated.set('entertainment:wires', await createEntertainmentWires(map.width));
       generated.set('entertainment:garden', createEntertainmentGarden(map.width));
       generated.set('entertainment:sky', createEntertainmentSky(map.width, 520));
     }
     const resource = await acquireMapAssets(map, generated);
     release = resource.release;
-    const signSource = resource.assets.get('entertainment:zone-sign');
+    const signKey = map.layers?.find((layer) => layer.id === 'zone-sign')?.asset ?? 'entertainment:zone-sign';
+    const signSource = resource.assets.get(signKey);
     let renderedChannel: number | undefined;
     let signLabel = options.labels()('channelSign');
-    if (map.regionId === 'fun') {
+    if (map.presentation === 'street') {
       const pole = resource.assets.get('entertainment:utility-pole');
       if (pole) resource.assets.set('entertainment:utility-pole', createEntertainmentPole(pole));
       if (signSource)
-        resource.assets.set(
-          'entertainment:zone-sign',
-          createEntertainmentSign(signSource, undefined, options.labels()('channelSign')),
-        );
+        resource.assets.set(signKey, createEntertainmentSign(signSource, undefined, options.labels()('channelSign')));
       const billboard = resource.assets.get('entertainment:billboard');
       if (billboard) resource.assets.set('entertainment:billboard', createEntertainmentBillboard(billboard));
       const disc = resource.assets.get('entertainment:wheel-disc');
@@ -111,22 +113,30 @@ export function createLocationGame(options: {
       zoom: 1,
       fillParent: true,
       renderScale: 2,
-      smoothSurfaces: map.regionId === 'fun',
-      backgroundColor: map.regionId === 'fun' ? '#29b5f2' : '#7bb457',
+      smoothSurfaces: map.presentation === 'street',
+      backgroundColor: map.presentation === 'street' ? '#29b5f2' : '#7bb457',
       camera: {
         worldWidth: map.width,
         worldHeight: map.height,
-        zoom: map.regionId === 'fun' ? 0 : 1,
+        zoom: map.presentation === 'street' ? 0 : 1,
 
         target: () => {
           cameraTarget[0] = state.x;
-          cameraTarget[1] = map.regionId === 'fun' ? map.height / 2 : state.y;
+          cameraTarget[1] = map.presentation === 'street' ? map.height / 2 : state.y;
           return cameraTarget;
         },
       },
       input: {
         onPointerDown(px, py) {
           if (blocksGameInput()) return;
+          const selected = [...others.players.values()]
+            .sort((a, b) => b.y - a.y)
+            .find((other) => Math.abs(other.x - px) <= 24 && py >= other.y - 78 && py <= other.y + 8);
+          if (selected && options.onPlayer) {
+            state.target = undefined;
+            options.onPlayer(selected.id, renderer?.clientPoint?.(selected.x, selected.y - 30));
+            return;
+          }
           const hit = locationInputAt(map, px, py);
           if (hit.kind === 'channels') {
             state.target = undefined;
@@ -151,6 +161,11 @@ export function createLocationGame(options: {
       },
 
       onFrame(view, now, delta, input) {
+        const selectedId = options.selectedPlayer?.();
+        if (selectedId) {
+          const selected = others.players.get(selectedId);
+          options.onPlayerPosition?.(selected ? view.clientPoint?.(selected.x, selected.y - 30) : undefined);
+        }
         const nextOutfit = options.outfit?.();
         if (nextOutfit && nextOutfit !== equipped) {
           equipped = nextOutfit;
@@ -160,10 +175,7 @@ export function createLocationGame(options: {
         }
         const channelId = options.channel()?.currentChannelId;
         if (signSource && (channelId !== renderedChannel || signLabel !== options.labels()('channelSign'))) {
-          resource.assets.set(
-            'entertainment:zone-sign',
-            createEntertainmentSign(signSource, channelId, options.labels()('channelSign')),
-          );
+          resource.assets.set(signKey, createEntertainmentSign(signSource, channelId, options.labels()('channelSign')));
           renderedChannel = channelId;
           signLabel = options.labels()('channelSign');
         }

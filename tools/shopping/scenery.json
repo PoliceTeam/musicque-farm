@@ -1,0 +1,76 @@
+[
+  {
+    "key": "bus-stop",
+    "file": "bus-stop.webp",
+    "source": "street-atlas.png",
+    "box": [
+      979,
+      300,
+      1230,
+      433
+    ],
+    "alphaFloor": 180
+  },
+  {
+    "key": "bus-stop-sign",
+    "file": "bus-stop-sign.webp",
+    "source": "street-atlas.png",
+    "box": [
+      1240,
+      300,
+      1304,
+      433
+    ],
+    "alphaFloor": 180
+  },
+  {
+    "key": "bench",
+    "file": "bench.webp",
+    "source": "street-atlas.png",
+    "box": [
+      951,
+      446,
+      1072,
+      512
+    ],
+    "alphaFloor": 180
+  },
+  {
+    "key": "lotus",
+    "file": "lotus.webp",
+    "source": "street-atlas.png",
+    "box": [
+      314,
+      495,
+      391,
+      563
+    ],
+    "alphaFloor": 180
+  },
+  {
+    "key": "autumn-tree",
+    "file": "autumn-tree.webp",
+    "source": "street-atlas.png",
+    "box": [
+      3,
+      295,
+      187,
+      514
+    ],
+    "alphaFloor": 180,
+    "largestComponent": true
+  },
+  {
+    "key": "autumn-tree-red",
+    "file": "autumn-tree-red.webp",
+    "source": "street-atlas.png",
+    "box": [
+      186,
+      294,
+      314,
+      466
+    ],
+    "alphaFloor": 180,
+    "largestComponent": true
+  }
+]

@@ -4,6 +4,20 @@
   box-sizing: border-box;
 }
 .game-ui {
+  --ui-cursor-default:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20d%3D%22M5%204%206%2026l6-6%205%2010%205-3-5-10%209-1Z%22%20fill%3D%22%2355391f%22%20opacity%3D%22.25%22%2F%3E%3Cpath%20d%3D%22m3%202%201%2023%207-7%205%2011%205-3-5-10%2010-1Z%22%20fill%3D%22%23fff3cf%22%20stroke%3D%22%23684527%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22m7%208%201%2010%204-4%208-1Z%22%20fill%3D%22%23edcb83%22%2F%3E%3Cpath%20d%3D%22M18%205c2-5%207-4%2010-3-1%206-4%2010-9%208%22%20fill%3D%22%238ab75b%22%20stroke%3D%22%234b7135%22%20stroke-width%3D%221.5%22%2F%3E%3Cpath%20d%3D%22m18%2012%206-7%22%20stroke%3D%22%234b7135%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E")
+    3 2,
+    default;
+  --ui-cursor-pointer:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20d%3D%22M12%2016V5c0-4%206-4%206%200v8c2-3%205-1%205%201%203-1%205%201%205%204v5l-5%207H12L4%2020c-2-3%201-6%204-4l4%204%22%20fill%3D%22%2355391f%22%20opacity%3D%22.2%22%2F%3E%3Cpath%20d%3D%22M11%2015V4c0-4%206-4%206%200v9c2-3%205-2%205%201%203-2%206%200%206%203v5l-5%207H12L3%2019c-2-3%201-6%204-4l4%204%22%20fill%3D%22%23fff3cf%22%20stroke%3D%22%23684527%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M17%2014v5m5-4v5%22%20stroke%3D%22%23d6b778%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M11%2025h14v5H11z%22%20fill%3D%22%2387ad56%22%20stroke%3D%22%234b7135%22%20stroke-width%3D%221.5%22%2F%3E%3Cpath%20d%3D%22m14%2027%208%201%22%20stroke%3D%22%23c5dc8b%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fsvg%3E")
+    14 3,
+    pointer;
+  --ui-cursor-grab: var(--ui-cursor-pointer);
+  --ui-cursor-grabbing:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20d%3D%22M8%2016V9c0-3%205-3%205%200V7c0-3%205-3%205%200v2c0-3%205-3%205%200v3c3-2%206%200%206%203v7l-6%207H12L4%2020c-3-4%201-7%204-4Z%22%20fill%3D%22%23fff3cf%22%20stroke%3D%22%23684527%22%20stroke-width%3D%222%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M13%2011v6m5-6v6m5-3v4%22%20stroke%3D%22%23d6b778%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M11%2025h14v5H11z%22%20fill%3D%22%2387ad56%22%20stroke%3D%22%234b7135%22%20stroke-width%3D%221.5%22%2F%3E%3Cpath%20d%3D%22m14%2027%208%201%22%20stroke%3D%22%23c5dc8b%22%20stroke-width%3D%221.5%22%2F%3E%3C%2Fsvg%3E")
+    16 16,
+    grabbing;
+  cursor: var(--ui-cursor-default);
   --ui-space-1: 8px;
   --ui-space-2: 16px;
   --ui-space-3: 24px;
@@ -57,7 +71,7 @@
   color: #675944;
   border-color: #cebea0;
   box-shadow: none;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 .game-ui button:focus-visible,
 .game-ui summary:focus-visible,
@@ -135,7 +149,7 @@
 }
 .game-ui .ui-audio-settings-panel summary {
   padding: 8px 12px;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 .game-ui .ui-audio-settings input {
   accent-color: var(--ui-green-dark);
@@ -498,7 +512,7 @@
 .game-ui input[type="range"] {
   min-height: 32px;
   margin: 0;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
   accent-color: var(--ui-green-dark);
 }
 .game-ui input:focus-visible {
@@ -524,7 +538,7 @@
   padding: 10px 16px;
   font-size: 14px;
   line-height: 1.4;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 .game-ui .ui-icon-button {
   width: 44px;
@@ -630,7 +644,7 @@
   color: #776c59;
   border-color: #ccbea3;
   box-shadow: none;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 .game-ui dialog header .ui-icon-button {
   width: 44px;
@@ -861,7 +875,7 @@
   border: 2px solid var(--ui-border);
   border-radius: 12px;
   background: #fff8e7;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 .game-ui .ui-select-trigger:focus-visible {
   outline: 3px solid #648b40;
@@ -869,7 +883,7 @@
 }
 .game-ui .ui-select-trigger:disabled {
   opacity: 0.6;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 .game-ui .ui-select-trigger > span:first-of-type,
 .game-ui .ui-select-options [role="option"] > span:first-of-type {
@@ -900,7 +914,7 @@
 }
 .game-ui .ui-select-options [role="option"] {
   border-radius: 8px;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 .game-ui .ui-select-options [role="option"].is-active {
   background: #e2edc8;
@@ -1018,4 +1032,36 @@
 
 .ui-location-layout .ui-profile-info > strong {
   color: #94630c;
+}
+
+/* One shared cursor set; text editing and resizing retain their native affordances. */
+.game-ui
+:is(
+  a[href],
+  button,
+  summary,
+  select,
+  label[for],
+  [role="button"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"]
+) {
+  cursor: var(--ui-cursor-pointer, pointer);
+}
+.game-ui :is(button:disabled, select:disabled, input:disabled, [aria-disabled="true"]) {
+  cursor: var(--ui-cursor-default, default);
+}
+.game-ui
+  :is(
+    input:not([type]),
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="search"],
+    textarea,
+    [contenteditable="true"]
+  ) {
+  cursor: text;
 }

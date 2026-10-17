@@ -71,6 +71,13 @@
       "when": 1792204709109,
       "tag": "0009_peaceful_vulture",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792209577145,
+      "tag": "0010_mute_kabuki",
+      "breakpoints": true
     }
   ]
 }

@@ -77,7 +77,7 @@ body {
   height: auto;
   border-radius: 10px;
   touch-action: none;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 
 #game canvas {
@@ -130,7 +130,7 @@ button {
 }
 
 button {
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 
 button.primary {
@@ -198,7 +198,7 @@ body.town-screen {
   height: 100%;
   image-rendering: pixelated;
   touch-action: none;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 .map-tools {
   position: absolute;

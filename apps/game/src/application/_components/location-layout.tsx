@@ -8,9 +8,18 @@ import { lazy, type ReactNode, type RefObject, Suspense, useContext, useEffect, 
 import { useTranslation } from 'react-i18next';
 import { getAuthClient } from '@/application/auth-client';
 import { AuthContext } from '@/application/auth-context';
+import { socialCss } from '@/assets/generated-styles';
 import { RenameDialog } from '@/features/auth/rename-dialog';
 import { AudioSettings } from '@/features/settings/_components/audio-settings';
+import { InboxButton } from '@/features/social/_components/inbox-button';
+import { SocialNotification } from '@/features/social/_components/social-notification';
+import type { SocialTab } from '@/features/social/_utils/friend-notifications';
+import { useFriendInbox } from '@/features/social/use-friend-inbox';
 import { drawPlayerPortrait } from '@/game/rendering/player-portrait-view';
+
+const FriendsDialog = lazy(() =>
+  import('@/features/social/_components/friends-dialog').then((module) => ({ default: module.FriendsDialog })),
+);
 
 const CharacterDialog = lazy(() =>
   import('@/features/character/_components/character-dialog').then((module) => ({ default: module.CharacterDialog })),
@@ -53,6 +62,9 @@ export function LocationLayout({
   const auth = useContext(AuthContext);
   const [renameOpen, setRenameOpen] = useState(false);
   const [characterOpen, setCharacterOpen] = useState(false);
+  const [friendsOpen, setFriendsOpen] = useState(false);
+  const [friendTab, setFriendTab] = useState<SocialTab>('friends');
+  const { incoming: inbox, notice, dismissNotice } = useFriendInbox(auth.player?.id ?? player?.id);
   const [wornOutfit, setWornOutfit] = useState<Outfit>();
   const portrait = useRef<HTMLCanvasElement>(null);
   const drawnOutfit = useRef('');
@@ -66,6 +78,7 @@ export function LocationLayout({
   }, [outfit, wornOutfit]);
   return (
     <main className="game-ui ui-location-layout" aria-label={accessibleTitle}>
+      <style>{socialCss}</style>
       <GameHeader
         title={title}
         profile={
@@ -73,9 +86,11 @@ export function LocationLayout({
             menuRef={menuRef}
             name={auth.player?.name ?? player?.name ?? '…'}
             subtitle={
-              auth.player?.guest
-                ? t('guest', { ns: 'auth' })
-                : (subtitle ?? t('profileLevel', { level: player?.level ?? '…' }))
+              inbox > 0
+                ? t('newRequests', { ns: 'social', count: inbox })
+                : auth.player?.guest
+                  ? t('guest', { ns: 'auth' })
+                  : (subtitle ?? t('profileLevel', { level: player?.level ?? '…' }))
             }
             label={t('playerMenu')}
             portrait={<canvas id="player-portrait" ref={portrait} role="img" aria-label={t('portrait')} />}
@@ -112,6 +127,15 @@ export function LocationLayout({
       >
         <CurrencyCounter label={t('coins')} icon={<CurrencyIcon kind="coins" />} value={coins} />
         <CurrencyCounter label={t('gems')} icon={<CurrencyIcon kind="gems" />} value={gems} />
+        {process.env.NEXT_PUBLIC_API_URL && (
+          <InboxButton
+            count={inbox}
+            onClick={() => {
+              setFriendTab(inbox > 0 ? 'incoming' : 'friends');
+              setFriendsOpen(true);
+            }}
+          />
+        )}
         {counters}
       </GameHeader>
       {renameOpen && authClient && auth.player && (
@@ -123,6 +147,21 @@ export function LocationLayout({
         />
       )}
       {children}
+      {notice && (
+        <SocialNotification
+          notice={notice}
+          onDismiss={dismissNotice}
+          onOpen={(tab) => {
+            setFriendTab(tab);
+            setFriendsOpen(true);
+          }}
+        />
+      )}
+      {friendsOpen && (
+        <Suspense fallback={null}>
+          <FriendsDialog key={friendTab} initialTab={friendTab} onClose={() => setFriendsOpen(false)} />
+        </Suspense>
+      )}
       {characterOpen && (
         <Suspense fallback={null}>
           <CharacterDialog

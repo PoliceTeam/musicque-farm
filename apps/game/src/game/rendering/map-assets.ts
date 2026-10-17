@@ -1,6 +1,6 @@
 import type { MapDefinition } from '@chibi-town/game-content';
 
-import { entertainmentUrls, publicAssetUrls, sceneryUrls } from '@/assets/generated-assets';
+import { entertainmentUrls, publicAssetUrls, sceneryUrls, shoppingUrls } from '@/assets/generated-assets';
 
 const cache = new Map<string, { source: Promise<HTMLCanvasElement>; users: number }>();
 
@@ -9,6 +9,7 @@ export function sceneAssetUrl(id: string) {
   return (
     sceneryUrls[id] ??
     sceneryUrls[id.replace('entertainment:', 'scenery:')] ??
+    shoppingUrls[id] ??
     entertainmentUrls[id] ??
     publicAssetUrls[id] ??
     id

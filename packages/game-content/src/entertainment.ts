@@ -25,7 +25,7 @@ for (const [index, x, y, width] of [
 }
 prop('plaza', 'plaza', 0, 520, 1680, 310, 0);
 for (let x = 0; x < 1680; x += 120) {
-  prop(`road-${x}`, 'road', x, 830, 120, 110, 1);
+  prop(`road-${x}`, 'scenery:road', x, 830, 120, 110, 1);
   prop(`curb-${x}`, 'scenery:curb', x, 819, 120, 26, 2);
 }
 for (const x of [185, 740, 1270])
@@ -39,7 +39,7 @@ prop('pole-right', 'utility-pole', 1194, 102, 43, 440, 531);
 prop('wires', 'wires', 0, 147, 1680, 80, 532);
 prop('garden', 'garden', 0, 495, 1680, 65, 529);
 // Keep the original aspect ratios rather than stretching architecture.
-prop('atm', 'atm', 55, 365, 185, 178, 545);
+prop('atm', 'scenery:atm', 55, 365, 185, 178, 545);
 prop('arcade', 'arcade', 350, 327, 205, 217.5, 545);
 prop('hall', 'hall', 686, 299, 225, (225 * 234) / 217, 545);
 prop('auction', 'auction', 992, 376, 195, 165.5, 545);
@@ -69,11 +69,11 @@ for (const [index, x] of [185, 500, 995, 1510].entries()) {
   prop(`front-evergreen-${index}`, 'scenery:evergreen', x, 655 + (index % 2) * 12, 80, 145 - (index % 2) * 12);
   prop(`front-flowers-${index}`, 'scenery:flower-patch', x - 34, 756, 112, 55);
 }
-prop('bin', 'bin', 18, 757, 45, 70);
+prop('bin', 'scenery:bin', 18, 757, 45, 70);
 // Preserve the source 64:114 aspect ratio; keep the base on the sidewalk.
-prop('zone-sign', 'zone-sign', 88, 663, 86, (86 * 114) / 64);
+prop('zone-sign', 'scenery:zone-sign', 88, 663, 86, (86 * 114) / 64);
 prop('hydrant', 'hydrant', 1180, 755, 45, 68);
-for (const x of [470, 1150]) prop(`drain-${x}`, 'drain', x, 816, 84, 25, 846);
+for (const x of [470, 1150]) prop(`drain-${x}`, 'scenery:drain', x, 816, 84, 25, 846);
 layers.find((layer) => layer.id === 'arcade')!.destination = { regionId: 'fun', mapId: 'arcade-hall' };
 const entrances: Record<string, readonly [number, number]> = {
   atm: [145, 545],
@@ -87,6 +87,7 @@ for (const layer of layers) if (entrances[layer.id]) layer.entrance = entrances[
 
 export const entertainmentMap: MapDefinition = {
   scene: 'location',
+  presentation: 'street',
   channels: { count: 40, capacity: 30 },
   id: 'entertainment-street',
   regionId: 'fun',

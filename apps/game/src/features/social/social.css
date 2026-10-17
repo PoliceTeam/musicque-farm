@@ -1,0 +1,426 @@
+.game-ui dialog.social-dialog {
+  width: min(700px, calc(100vw - 24px));
+}
+.social-list {
+  display: grid;
+  gap: 10px;
+}
+.social-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #dac8a2;
+  border-radius: 12px;
+  background: #fff9e8;
+}
+.game-ui .social-list-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  text-align: left;
+  min-width: 0;
+}
+.social-list-person > span:last-child {
+  display: grid;
+  gap: 4px;
+}
+.social-list-person strong {
+  overflow-wrap: anywhere;
+}
+.social-list-person small {
+  color: #927b59;
+}
+.social-list-avatar {
+  display: block;
+  width: 68px;
+  height: 62px;
+  flex-shrink: 0;
+  background: #ede8ce;
+  border-radius: 12px;
+}
+.social-list-avatar canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.social-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.social-list-row .social-actions {
+  margin: 0;
+  justify-content: flex-end;
+}
+.social-list-row .ui-button {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.social-empty {
+  padding: 28px 12px;
+  text-align: center;
+  color: #927b59;
+}
+.social-dialog .character-profile {
+  margin-bottom: 12px;
+}
+.social-dialog .character-identity {
+  justify-content: center;
+}
+@media (max-width: 560px) {
+  .social-list-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .social-list-row .social-actions {
+    margin-left: auto;
+  }
+}
+
+.social-pages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-top: 14px;
+}
+/* DOM actions follow the selected avatar through the renderer's world-to-client projection. */
+.player-radial-menu {
+  position: fixed;
+  z-index: 40;
+  width: 0;
+  height: 0;
+  --radial-radius: clamp(70px, 10vw, 110px);
+  pointer-events: none;
+}
+.game-ui .player-radial-menu button {
+  pointer-events: auto;
+}
+.game-ui .player-radial-menu .radial-action {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 108px;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: none;
+  transform: translate(-50%, -50%);
+  color: #476a36;
+}
+.radial-information {
+  left: var(--radial-radius);
+  top: 10px;
+}
+.radial-friend {
+  left: calc(0px - var(--radial-radius));
+  top: 10px;
+}
+.radial-caption {
+  display: block;
+  padding: 4px 9px;
+  border: 2px solid #9c7039;
+  border-radius: 8px;
+  background: linear-gradient(#80512b, #57331d);
+  color: #fff3cf;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow:
+    0 2px #38281955,
+    inset 0 1px #c39156;
+}
+.radial-disc {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 6px solid #936026;
+  border-radius: 50%;
+  outline: 2px solid #55371c;
+  background: radial-gradient(circle at 40% 30%, #fffbe8, #efd29a);
+  box-shadow:
+    inset 0 0 0 2px #e5b35e,
+    inset 0 3px #fffcef,
+    0 4px #55351d,
+    0 7px 12px #24372344;
+  transition: transform 100ms ease;
+}
+.radial-disc svg {
+  width: 33px;
+  height: 33px;
+}
+.radial-information .radial-disc {
+  color: #477f8b;
+}
+.radial-action:hover .radial-disc {
+  transform: translateY(-3px);
+  background: #fff7d2;
+}
+.radial-action:active .radial-disc {
+  transform: translateY(1px);
+}
+.radial-action:disabled {
+  opacity: 0.65;
+}
+.game-ui .player-radial-menu .radial-dismiss {
+  position: absolute;
+  left: -14px;
+  top: -100px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  padding: 0;
+  border: 2px solid #8c6a3c;
+  border-radius: 50%;
+  background: #fff0ce;
+  color: #6a4c28;
+  font-size: 20px;
+}
+.game-ui .player-radial-menu .radial-secondary {
+  position: absolute;
+  left: 0;
+  top: 84px;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  font-size: 11px;
+}
+.radial-status {
+  position: absolute;
+  top: 112px;
+  left: 0;
+  display: grid;
+  gap: 4px;
+  width: 250px;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #fff7da;
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow:
+    0 1px 2px #283e2b,
+    1px 0 #283e2b,
+    -1px 0 #283e2b;
+}
+.radial-status strong {
+  font-size: 14px;
+  color: #f9d469;
+}
+.radial-status [role="alert"] {
+  padding: 8px;
+  border-radius: 8px;
+  background: #523822ef;
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .radial-disc {
+    transition: none;
+  }
+}
+.player-radial-menu[data-edge="left"] .radial-friend {
+  left: 72px;
+  top: -74px;
+}
+.player-radial-menu[data-edge="left"] .radial-information {
+  left: 118px;
+  top: 28px;
+}
+.player-radial-menu[data-edge="right"] .radial-information {
+  left: -72px;
+  top: -74px;
+}
+.player-radial-menu[data-edge="right"] .radial-friend {
+  left: -118px;
+  top: 28px;
+}
+.player-radial-menu[data-edge="left"] .radial-status {
+  left: 120px;
+}
+.player-radial-menu[data-edge="right"] .radial-status {
+  left: -120px;
+}
+.player-radial-menu[data-bottom="true"] .radial-status {
+  top: -154px;
+}
+.player-radial-menu[data-bottom="true"] .radial-secondary {
+  top: 68px;
+}
+.game-ui .social-inbox-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 9px;
+  flex-shrink: 0;
+  color: #72522c;
+  background: linear-gradient(#fff8e6, #e9d7ae);
+  border-radius: 12px;
+}
+.social-inbox-button svg {
+  width: 24px;
+  height: 24px;
+}
+.social-inbox-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 5px;
+  border: 2px solid #fff5db;
+  border-radius: 12px;
+  background: #df302f;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 900;
+  box-shadow:
+    0 2px 4px #6e1c3055,
+    0 0 0 3px #df302f26;
+}
+.game-ui .ui-dialog-header-titleless {
+  display: flex;
+  justify-content: flex-end;
+}
+.game-ui dialog.social-friends-dialog {
+  width: min(600px, calc(100vw - 24px));
+}
+.game-ui .social-friends-dialog .ui-dialog-surface > .ui-dialog-header {
+  margin-bottom: 0;
+  padding-bottom: 16px;
+}
+.game-ui .social-friends-dialog .ui-dialog-body {
+  max-height: min(460px, calc(100dvh - 180px));
+}
+.social-friends-dialog .social-empty {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 12px;
+  min-height: 190px;
+  padding: 16px 12px 24px;
+}
+.social-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: #ece5cd;
+  color: #a99164;
+}
+.social-empty-icon svg {
+  width: 32px;
+  height: 32px;
+}
+.social-empty strong {
+  font-size: 16px;
+  color: #766446;
+}
+.social-empty p {
+  max-width: 250px;
+  margin: 0;
+  font-size: 12px;
+  color: #9a876a;
+}
+.social-toast {
+  position: fixed;
+  z-index: 1000;
+  top: 100px;
+  right: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: min(360px, calc(100vw - 32px));
+  padding: 14px;
+  border: 2px solid #a78a58;
+  border-radius: 14px;
+  background: #fff9e7;
+  color: #655336;
+  box-shadow:
+    0 4px #5c492633,
+    0 8px 22px #263a3030;
+  font-family: inherit;
+}
+.social-toast-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #e3ead2;
+  color: #647a4e;
+}
+.social-toast-icon svg {
+  width: 23px;
+  height: 23px;
+}
+.social-toast > div {
+  flex: 1;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.social-toast strong {
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.social-toast button,
+.game-ui .social-toast button {
+  border: 0;
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  min-height: 28px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: #557b63;
+  text-align: left;
+  cursor: var(--ui-cursor-pointer, pointer);
+}
+.social-toast button:focus-visible {
+  outline: 2px solid #52745c;
+  outline-offset: 4px;
+}
+.social-toast .social-toast-close,
+.game-ui .social-toast .social-toast-close {
+  display: grid;
+  place-items: center;
+  flex: 0 0 26px;
+  height: 26px;
+  color: #8f7a58;
+  font-size: 22px;
+}
+@media (max-width: 700px) {
+  .game-ui .social-inbox-button {
+    margin-left: auto;
+  }
+  .social-toast {
+    top: 140px;
+    right: 12px;
+  }
+}
+@media (max-width: 560px) {
+  .game-ui .social-friends-dialog .ui-folder-tabs .ui-button {
+    flex: 1;
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+}

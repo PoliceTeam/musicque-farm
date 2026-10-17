@@ -683,7 +683,7 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
     }
 
     private setupInput() {
-      this.input.setDefaultCursor('grab');
+      this.input.setDefaultCursor('var(--ui-cursor-grab, grab)');
       this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
         if (this.dragFrom) return;
         const center = this.cameras.main.midPoint;
@@ -704,7 +704,7 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
               Phaser.Math.Clamp(drag.centerY - dy / this.coverZoom, halfHeight, H - halfHeight),
             );
             this.setHover(undefined);
-            this.input.setDefaultCursor('grabbing');
+            this.input.setDefaultCursor('var(--ui-cursor-grabbing, grabbing)');
             return;
           }
         }
@@ -714,7 +714,7 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
         const drag = this.dragFrom;
         if (drag && p.id !== drag.id) return;
         this.dragFrom = undefined;
-        this.input.setDefaultCursor(this.hover ? 'pointer' : 'grab');
+        this.input.setDefaultCursor(this.hover ? 'var(--ui-cursor-pointer, pointer)' : 'var(--ui-cursor-grab, grab)');
         if (drag?.moved || objects.length) return;
         const zone = options.zoneAt([p.worldX, p.worldY]);
         if (zone) options.onSelect?.(zone);
@@ -723,7 +723,7 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
         if (this.dragFrom?.id !== p.id) return;
         this.dragFrom = undefined;
         this.setHover(undefined);
-        this.input.setDefaultCursor('grab');
+        this.input.setDefaultCursor('var(--ui-cursor-grab, grab)');
       });
       this.input.on('gameout', () => this.setHover(undefined));
     }
@@ -738,7 +738,7 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
         this.tweens.add({ targets: old, angle: 0, duration: 220, ease: 'Sine.easeOut' });
       }
       this.hover = zone;
-      this.input.setDefaultCursor(zone ? 'pointer' : 'grab');
+      this.input.setDefaultCursor(zone ? 'var(--ui-cursor-pointer, pointer)' : 'var(--ui-cursor-grab, grab)');
       if (zone) {
         this.hoverCode = options.zones.indexOf(zone) + 1;
         const label = this.labels.get(zone.id)!;

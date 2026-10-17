@@ -80,6 +80,17 @@ export const createPhaserProvider: RendererProvider = (options) => {
       return kind;
     },
 
+    clientPoint(x, y) {
+      if (destroyed || !scene) return undefined;
+      const camera = scene.cameras.main;
+      const rect = scene.game.canvas.getBoundingClientRect();
+      const point = camera.matrixCombined.transformPoint(x, y);
+      return [
+        rect.left + (point.x * rect.width) / scene.scale.width,
+        rect.top + (point.y * rect.height) / scene.scale.height,
+      ];
+    },
+
     beginFrame() {
       if (!destroyed) view?.beginFrame();
     },

@@ -1,0 +1,68 @@
+[
+  {
+    "key": "salon",
+    "file": "salon.webp",
+    "source": "buildings.png",
+    "box": [
+      29,
+      125,
+      485,
+      557
+    ]
+  },
+  {
+    "key": "gifts",
+    "file": "gifts.webp",
+    "source": "buildings.png",
+    "box": [
+      486,
+      125,
+      997,
+      556
+    ]
+  },
+  {
+    "key": "premium",
+    "file": "premium.webp",
+    "source": "buildings.png",
+    "box": [
+      997,
+      110,
+      1500,
+      558
+    ]
+  },
+  {
+    "key": "jewelry",
+    "file": "jewelry.webp",
+    "source": "buildings.png",
+    "box": [
+      24,
+      570,
+      520,
+      938
+    ]
+  },
+  {
+    "key": "fashion",
+    "file": "fashion.webp",
+    "source": "buildings.png",
+    "box": [
+      522,
+      594,
+      999,
+      938
+    ]
+  },
+  {
+    "key": "pets",
+    "file": "pets.webp",
+    "source": "buildings.png",
+    "box": [
+      1005,
+      565,
+      1515,
+      939
+    ]
+  }
+]

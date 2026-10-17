@@ -13,6 +13,8 @@ import { ChannelDialog } from '@/features/location/_components/channel-dialog';
 import type { Attraction } from '@/features/location/_utils/location-input-logic';
 import { navigateLocationPortal } from '@/features/location/location-navigation-handler';
 import { createLocationGame } from '@/features/location/runtime/location-game';
+import { PlayerInteractionDialog } from '@/features/social/_components/player-interaction-dialog';
+import { PlayerRadialMenu } from '@/features/social/_components/player-radial-menu';
 
 export const styles = locationCss;
 
@@ -38,6 +40,14 @@ export function Screen({
   const [channelDirectory, setChannelDirectory] = useState<ChannelDirectory>();
   const [channelDialog, setChannelDialog] = useState(false);
   const [controlsOpen, setControlsOpen] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<{ id: string; point: [number, number] }>();
+  const selectedId = useRef<string | undefined>(undefined);
+  const radial = useRef<HTMLDivElement>(null);
+  const [profileId, setProfileId] = useState<string>();
+  const closeRadial = useCallback(() => {
+    selectedId.current = undefined;
+    setSelectedPlayer(undefined);
+  }, []);
   const updateChannels = useCallback((directory: ChannelDirectory) => {
     channelVersion.current++;
     channelRef.current = directory;
@@ -94,6 +104,27 @@ export function Screen({
 
       onHeader: setHeader,
 
+      onPlayer: (id, point) => {
+        if (!point) return;
+        selectedId.current = id;
+        setSelectedPlayer({ id, point });
+      },
+
+      selectedPlayer: () => selectedId.current,
+
+      onPlayerPosition: (point) => {
+        if (!point) {
+          closeRadial();
+          return;
+        }
+        if (radial.current) {
+          radial.current.style.left = `${point[0]}px`;
+          radial.current.style.top = `${point[1]}px`;
+          radial.current.dataset.edge = point[0] < 180 ? 'left' : point[0] > window.innerWidth - 180 ? 'right' : '';
+          radial.current.dataset.bottom = String(point[1] > window.innerHeight - 180);
+        }
+      },
+
       outfit: () => equippedOutfit.current,
 
       onChannels: () => setChannelDialog(true),
@@ -107,7 +138,7 @@ export function Screen({
 
       onError: () => setError(labels.current('locationLoadFailed')),
     });
-  }, [definition, navigation.push]);
+  }, [definition, navigation.push, closeRadial]);
   return (
     <LocationLayout
       title={definition?.label ?? t('locationLabel')}
@@ -130,6 +161,20 @@ export function Screen({
         )
       }
     >
+      {selectedPlayer && (
+        <PlayerRadialMenu
+          key={selectedPlayer.id}
+          id={selectedPlayer.id}
+          anchor={selectedPlayer.point}
+          menuRef={radial}
+          onClose={closeRadial}
+          onInformation={() => {
+            setProfileId(selectedPlayer.id);
+            closeRadial();
+          }}
+        />
+      )}
+      {profileId && <PlayerInteractionDialog id={profileId} onClose={() => setProfileId(undefined)} />}
       <div className="location-canvas" ref={host} />
       <nav className="location-portals" aria-label={t('locationLabel')}>
         {definition?.portals

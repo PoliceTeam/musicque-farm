@@ -1,16 +1,5 @@
 [
   {
-    "key": "atm",
-    "file": "atm.webp",
-    "source": 3,
-    "box": [
-      8,
-      303,
-      205,
-      492
-    ]
-  },
-  {
     "key": "arcade",
     "file": "arcade.webp",
     "source": 3,
@@ -143,39 +132,6 @@
     ]
   },
   {
-    "key": "drain",
-    "file": "drain.webp",
-    "source": 3,
-    "box": [
-      581,
-      657,
-      653,
-      693
-    ]
-  },
-  {
-    "key": "road",
-    "file": "road.webp",
-    "source": 3,
-    "box": [
-      906,
-      518,
-      992,
-      554
-    ]
-  },
-  {
-    "key": "bin",
-    "file": "bin.webp",
-    "source": 3,
-    "box": [
-      600,
-      820,
-      665,
-      923
-    ]
-  },
-  {
     "key": "billboard",
     "file": "billboard.webp",
     "source": 3,
@@ -184,50 +140,6 @@
       794,
       1170,
       946
-    ]
-  },
-  {
-    "key": "zone-sign",
-    "file": "zone-sign.webp",
-    "source": 3,
-    "box": [
-      1306,
-      811,
-      1370,
-      925
-    ]
-  },
-  {
-    "key": "paving-a",
-    "file": "paving-a.webp",
-    "source": 3,
-    "box": [
-      23,
-      516,
-      116,
-      598
-    ]
-  },
-  {
-    "key": "paving-b",
-    "file": "paving-b.webp",
-    "source": 3,
-    "box": [
-      135,
-      516,
-      235,
-      598
-    ]
-  },
-  {
-    "key": "paving-c",
-    "file": "paving-c.webp",
-    "source": 3,
-    "box": [
-      253,
-      516,
-      348,
-      598
     ]
   }
 ]

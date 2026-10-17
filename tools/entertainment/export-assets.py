@@ -5,7 +5,7 @@ import json
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'apps/game/src/assets/entertainment'
 OUT.mkdir(parents=True, exist_ok=True)
-COMMON = {'lamp', 'cloud', 'tree', 'tree-alt', 'curb', 'shrubs', 'skyline', 'flower-patch', 'evergreen'}
+COMMON = {'atm', 'road', 'bin', 'zone-sign', 'drain', 'paving-a', 'paving-b', 'paving-c', 'lamp', 'cloud', 'tree', 'tree-alt', 'curb', 'shrubs', 'skyline', 'flower-patch', 'evergreen'}
 COMMON_OUT = ROOT / 'apps/game/src/assets/common/scenery'
 COMMON_OUT.mkdir(parents=True, exist_ok=True)
 # Source rectangles deliberately retain the supplied art and alpha.
@@ -105,4 +105,6 @@ for key, (version, box) in SLICES.items():
 ( ROOT / 'tools/entertainment/assets.json').write_text(json.dumps(manifest, indent=2)+'\n')
 print(f'Exported {len(manifest)} assets')
 
-(ROOT / 'tools/scenery/assets.json').write_text(json.dumps(common_manifest, indent=2)+'\n')
+scenery_path = ROOT / 'tools/scenery/assets.json'
+extra_common = [entry for entry in json.loads(scenery_path.read_text()) if isinstance(entry.get('source'), str)]
+scenery_path.write_text(json.dumps(common_manifest + extra_common, indent=2)+'\n')

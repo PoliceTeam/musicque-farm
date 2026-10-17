@@ -94,6 +94,7 @@ export function CharacterDialog({ onClose, onOutfit }: { onClose(): void; onOutf
     <Dialog
       title={t('character.title')}
       className="character-dialog"
+      showCloseFooter={false}
       hideTitle
       closeLabel={t('close', { ns: 'common' })}
       onClose={() => {

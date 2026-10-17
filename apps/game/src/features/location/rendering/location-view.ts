@@ -41,7 +41,7 @@ export function createLocationView(
   labels: () => LocationLabels,
 ) {
   const layers = map.layers ?? [];
-  const shadow = map.regionId === 'fun' ? createEntertainmentShadow() : undefined;
+  const shadow = map.presentation === 'street' ? createEntertainmentShadow() : undefined;
   const draw: Entry[] = [];
   const remoteEntries = new Map<RemotePlayer, Entry[]>();
   let exitText = '',
@@ -92,6 +92,27 @@ export function createLocationView(
           );
         },
       });
+    }
+    if (shadow && (layer.id === 'bus-stop' || layer.id === 'bus-stop-sign')) {
+      const sign = layer.id === 'bus-stop-sign';
+      const nativeWidth = sign ? 64 : 250;
+      for (const x of sign ? [32] : [8, 240]) {
+        draw.push({
+          depth: layer.depth - 0.2,
+
+          paint(view) {
+            const scale = layer.width / nativeWidth;
+            view.surface(
+              'contact-shadow',
+              shadow,
+              layer.x + x * scale - 9,
+              layer.y + (128 * layer.height) / 134 - 2,
+              18,
+              5,
+            );
+          },
+        });
+      }
     }
     if (shadow && layer.id === 'billboard')
       for (const [fx, fy, footWidth] of BILLBOARD_FEET) {
@@ -175,9 +196,9 @@ export function createLocationView(
     draw.sort(byDepth);
     view.beginFrame();
     for (const entry of draw) entry.paint(view, now);
-    if (map.regionId === 'fun')
+    if (map.presentation === 'street')
       for (const layer of layers)
-        if (layer.entrance)
+        if (layer.entrance && (layer.destination || layer.id === 'racing'))
           view.surface(
             `location-entrance-hint:${enterText}`,
             entranceHint,

@@ -161,7 +161,7 @@ summary {
 }
 button {
   font: inherit;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 a {
   color: inherit;
@@ -177,7 +177,7 @@ input:focus-visible {
 #map {
   position: fixed;
   inset: 148px 0 128px;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 #map canvas {
   display: block;
@@ -312,7 +312,7 @@ h1 {
   border: 1px solid #ffe2a268;
   border-radius: 14px;
   background: linear-gradient(135deg, #244e64ef, #173e53f0);
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
   box-shadow: 0 4px 14px #12394c15;
 }
 .time-settings summary::-webkit-details-marker {

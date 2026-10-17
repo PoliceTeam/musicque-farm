@@ -178,6 +178,24 @@ describe('realtime client', () => {
     return { client, sockets, timers, open, drop };
   }
 
+  it('restores the private social subscription after reconnect and decodes invalidations', () => {
+    const { client, sockets, timers, open, drop } = harness();
+    const seen: string[] = [];
+    client.subscribe((event) => seen.push(event.type));
+    client.send({ type: 'social.watch' });
+    open(0);
+    expect(sockets[0].sent.map((raw) => JSON.parse(raw))).toEqual([{ type: 'social.watch' }]);
+    sockets[0].onmessage?.({ data: '{"type":"social.changed"}' });
+    expect(seen).toEqual(['social.changed']);
+    drop(0);
+    timers[0].task();
+    open(1);
+    expect(sockets[1].sent.map((raw) => JSON.parse(raw))).toEqual([{ type: 'social.watch' }]);
+    expect(seen).toEqual(['social.changed', 'reconnected']);
+    expect(decodeRealtimeCommand({ type: 'social.watch', playerId: 'another-user' })).toEqual({ type: 'social.watch' });
+    client.close();
+  });
+
   it('re-enters the map at the latest position and re-watches the lobby after a reconnect', () => {
     const { client, sockets, timers, open, drop } = harness();
     client.send({ type: 'map.move', x: 1, y: 1 });

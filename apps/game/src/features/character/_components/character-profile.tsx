@@ -10,11 +10,13 @@ export function CharacterProfile({
   outfit,
   coins,
   gems,
+  publicView = false,
 }: {
   player?: Awaited<ReturnType<GameSdk['getPlayer']>>;
   outfit?: Outfit;
   coins?: number;
   gems?: number;
+  publicView?: boolean;
 }) {
   const { t } = useTranslation('inventory');
   return (
@@ -27,17 +29,19 @@ export function CharacterProfile({
         <div className="character-avatar-stage">
           {player && <CharacterPreview outfit={outfit ?? player.outfit} label={player.name} />}
         </div>
-        <dl className="character-wallet">
-          {(['coins', 'gems'] as const).map((kind) => (
-            <div key={kind}>
-              <dt>
-                <CurrencyIcon kind={kind} />
-                <span>{t(`character.${kind}`)}</span>
-              </dt>
-              <dd>{(kind === 'coins' ? coins : gems)?.toLocaleString('vi-VN') ?? '…'}</dd>
-            </div>
-          ))}
-        </dl>
+        {!publicView && (
+          <dl className="character-wallet">
+            {(['coins', 'gems'] as const).map((kind) => (
+              <div key={kind}>
+                <dt>
+                  <CurrencyIcon kind={kind} />
+                  <span>{t(`character.${kind}`)}</span>
+                </dt>
+                <dd>{(kind === 'coins' ? coins : gems)?.toLocaleString('vi-VN') ?? '…'}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </section>
       <section className="character-attributes" aria-label={t('character.attributes')}>
         <h3>{t('character.attributes')}</h3>

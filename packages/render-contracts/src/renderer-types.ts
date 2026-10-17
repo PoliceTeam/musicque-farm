@@ -4,6 +4,8 @@ import type { SpriteSheet } from '@chibi-town/character-core/sprite-types';
 /** Native pixel coordinates. Draw calls preserve submission order. Resources stay stable during a mount. */
 export type CharacterRenderer = {
   readonly kind: string;
+  /** Viewport CSS coordinates for DOM controls anchored to a world object, when supported. */
+  clientPoint?(x: number, y: number): [number, number] | undefined;
   beginFrame(): void;
   drawPieces(sheetName: string, sheet: SpriteSheet, ops: DrawOp[], x: number, y: number, scale?: number): void;
   rectangle(x: number, y: number, width: number, height: number, color: number, alpha?: number): void;

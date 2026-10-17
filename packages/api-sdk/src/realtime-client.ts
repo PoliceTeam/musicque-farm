@@ -35,6 +35,7 @@ export function createRealtimeClient(options: {
   let room: RealtimeCommand | undefined;
   let lobby: RealtimeCommand | undefined;
   let race: RealtimeCommand | undefined;
+  let social: RealtimeCommand | undefined;
 
   function connect() {
     if (closed) return;
@@ -43,7 +44,7 @@ export function createRealtimeClient(options: {
     next.onopen = () => {
       if (closed || socket !== next) return;
       attempts = 0;
-      for (const command of [room, lobby, race]) if (command) next.send(JSON.stringify(command));
+      for (const command of [room, lobby, race, social]) if (command) next.send(JSON.stringify(command));
       if (openedBefore) for (const listener of [...listeners]) listener({ type: 'reconnected' });
       openedBefore = true;
     };
@@ -66,7 +67,8 @@ export function createRealtimeClient(options: {
   connect();
   return {
     send(command) {
-      if (command.type === 'pet-race.watch') race = command;
+      if (command.type === 'social.watch') social = command;
+      else if (command.type === 'pet-race.watch') race = command;
       else if (command.type === 'pet-race.unwatch') race = undefined;
       else if (command.type === 'map.enter') room = command;
       else if (command.type === 'map.leave') room = undefined;

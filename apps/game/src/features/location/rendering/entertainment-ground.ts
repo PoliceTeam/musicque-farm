@@ -1,12 +1,12 @@
 import { seededRandom } from '@chibi-town/character-core/random';
-import { entertainmentUrls } from '@/assets/generated-assets';
+import { entertainmentUrls, sceneryUrls } from '@/assets/generated-assets';
 
 /** Bake staggered cobbles using texture from the supplied stone interiors, avoiding repeated atlas borders. */
 export async function createEntertainmentGround(width: number, height: number) {
   const images = await Promise.all(
     ['paving-a', 'paving-b', 'paving-c'].map(async (key) => {
       const image = new Image();
-      image.src = entertainmentUrls[`entertainment:${key}`];
+      image.src = sceneryUrls[`scenery:${key}`];
       await image.decode();
       return image;
     }),

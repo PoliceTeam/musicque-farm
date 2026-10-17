@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { SdkErrorCode } from '@chibi-town/contracts';
 import { decodeRealtimeCommand } from '@chibi-town/contracts/realtime';
+import { SocialError } from '@chibi-town/contracts/social';
 import { type Adapters, createMemoryAdapters, createRealtimeService } from '@chibi-town/realtime-core';
 import { createFastifyWsTransport } from '@chibi-town/realtime-fastify-ws';
 import { createRedisAdapters } from '@chibi-town/realtime-redis';
@@ -23,8 +24,8 @@ import { authModule, createSessionHook } from '@/modules/auth';
 import { commandsModule } from '@/modules/commands';
 import { createFarmService, farmModule } from '@/modules/farm';
 import { createInventoryService, inventoryModule } from '@/modules/inventory';
-
 import { createPlayerService, playerModule, withPlayerDocument } from '@/modules/player';
+import { registerSocialRealtime, socialModule } from '@/modules/social';
 import { createChannelPresence, createWorldService, registerWorldRealtime, worldModule } from '@/modules/world';
 
 export type AppDependencies = {
@@ -71,6 +72,11 @@ export async function createApp(deps: AppDependencies) {
 
   app.setErrorHandler((error: unknown, request, reply) => {
     const failure = error as { name?: string; code?: string; statusCode?: number; reason?: string };
+    if (error instanceof SocialError)
+      return reply.code(409).send({
+        code: error.code,
+        ...(error.retryAfterSeconds !== undefined ? { retryAfterSeconds: error.retryAfterSeconds } : {}),
+      });
     if (error instanceof HttpError)
       return reply.code(error.status).send({
         code: error.code,
@@ -149,6 +155,7 @@ export async function createApp(deps: AppDependencies) {
   const arcade = createArcadeService({ db, clock, tables, petRaceReset: config.petRaceReset });
   if (config.backgroundJobs !== 'worker') await arcade.initializePetRaces();
   registerWorldRealtime(realtime, world, clock);
+  registerSocialRealtime(realtime);
   registerArcadeRealtime(realtime, watchedLobby);
   const sweepMs = deps.sweepMs ?? 5000;
   if (sweepMs > 0 && config.backgroundJobs !== 'worker') {
@@ -176,6 +183,7 @@ export async function createApp(deps: AppDependencies) {
         protectedApi.decorateRequest('player', null);
         protectedApi.addHook('preHandler', createSessionHook({ db, clock, presence }));
         await protectedApi.register(playerModule, { service: player });
+        await protectedApi.register(socialModule, { db, clock, realtime });
         await protectedApi.register(farmModule, { service: farm });
         await protectedApi.register(inventoryModule, { service: inventory });
         await protectedApi.register(worldModule, { service: world });

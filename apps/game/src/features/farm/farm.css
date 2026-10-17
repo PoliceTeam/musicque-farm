@@ -119,7 +119,7 @@
   padding: 10px 16px;
   font-size: 14px;
   line-height: 1.4;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 .game-ui.farm-style-sample .farm-selection .ui-icon-button {
   width: 44px;
@@ -164,7 +164,7 @@
   color: #776c59;
   border-color: #ccbea3;
   box-shadow: none;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 .game-ui .farm-quick-actions {
   display: grid;
@@ -234,7 +234,7 @@ a {
 }
 button {
   font: inherit;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 #farm-canvas {
   position: fixed;
@@ -243,7 +243,7 @@ button {
 #farm-canvas canvas {
   display: block;
   touch-action: none;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 .ui-profile-menu {
   position: fixed;
@@ -259,7 +259,7 @@ button {
   box-shadow:
     0 0 0 2px #526f79,
     0 3px 0 #224c62;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
   font-size: 13px;
   font-weight: 900;
   letter-spacing: 0.4px;
@@ -582,7 +582,7 @@ summary:focus-visible {
   color: #a18d6e;
   border-color: #d3c3a5;
   box-shadow: 0 3px #d3c3a5;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 .farm-style-sample .farm-tools button:disabled img {
   opacity: 0.5;
@@ -651,12 +651,12 @@ summary:focus-visible {
   padding: 12px 20px;
   font: inherit;
   font-weight: 700;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 .farm-style-sample :is(#unit-expand, #unit-feed, #unit-buy):disabled {
   background: #ddd0af;
   color: #847957;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 .farm-style-sample :is(#unit-expand, #unit-feed, #unit-buy)[hidden] {
   display: none;
@@ -725,7 +725,7 @@ dialog button {
 }
 dialog button:disabled {
   opacity: 0.5;
-  cursor: default;
+  cursor: var(--ui-cursor-default, default);
 }
 .ui-tabs {
   display: flex;
@@ -827,7 +827,7 @@ dialog small {
   border: 2px solid #aa8758;
   border-radius: 12px;
   background: #fff8e7;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 .game-ui .farm-picture-trigger:focus-visible {
   outline: 3px solid #648b40;
@@ -861,7 +861,7 @@ dialog small {
 }
 .game-ui .farm-picture-options [role="option"] {
   border-radius: 8px;
-  cursor: pointer;
+  cursor: var(--ui-cursor-pointer, pointer);
 }
 .game-ui .farm-picture-options [role="option"].is-active {
   background: #e2edc8;

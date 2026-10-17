@@ -62,6 +62,9 @@ it('keeps one renderer and subscription across label changes, receives batches a
   const i18n = createGameI18n();
   let translate = i18n.getFixedT('vi', 'common');
   let outfit = defaultOutfit;
+  const selectPlayer = vi.fn();
+  let selectedId: string | undefined;
+  const playerPosition = vi.fn();
   const cleanup = createLocationGame({
     parent: {} as HTMLElement,
     map,
@@ -73,6 +76,11 @@ it('keeps one renderer and subscription across label changes, receives batches a
     channel: () => undefined,
 
     onHeader: vi.fn(),
+    onPlayer: selectPlayer,
+
+    selectedPlayer: () => selectedId,
+
+    onPlayerPosition: playerPosition,
     onChannels: vi.fn(),
     onAttraction: vi.fn(),
     navigate: vi.fn(),
@@ -85,6 +93,15 @@ it('keeps one renderer and subscription across label changes, receives batches a
   apply({ type: 'map.join', player: { id: 'other', name: 'Other', level: 2, outfit: defaultOutfit, x: 0, y: 0 } });
   apply({ type: 'map.moves', moves: [{ id: 'other', x: 50, y: 60 }] });
   expect(players.get('other')?.target).toEqual([50, 60]);
+  options.input?.onPointerDown?.(0, 0);
+  expect(selectPlayer).toHaveBeenCalledWith('other', undefined);
+  selectedId = 'other';
+  options.onFrame({ clientPoint: (x: number, y: number) => [x + 100, y + 200] } as never, 100, 0);
+  expect(playerPosition).toHaveBeenLastCalledWith([100, 170]);
+  apply({ type: 'map.leave', id: 'other' });
+  options.onFrame({} as never, 110, 0);
+  expect(playerPosition).toHaveBeenLastCalledWith(undefined);
+  selectedId = undefined;
   i18n.addResource('vi', 'common', 'enterLocation', 'Enter');
   translate = i18n.getFixedT('vi', 'common');
   options.onFrame({} as never, 200, 16);

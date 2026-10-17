@@ -18,6 +18,7 @@ export type MapPlayer = {
  * hidden information (other hands) never travels on a shared message.
  */
 export type RealtimeEvent =
+  | { type: 'social.changed' }
   | { type: 'pet-race.changed'; roundId: string; phase: RacePhase }
   | { type: 'lobby'; gameId: ArcadeGameId }
   | { type: 'match'; gameId: ArcadeGameId }
@@ -26,6 +27,7 @@ export type RealtimeEvent =
   | { type: 'map.moves'; moves: { id: string; x: number; y: number }[] }
   | { type: 'map.leave'; id: string };
 export type RealtimeCommand =
+  | { type: 'social.watch' }
   | { type: 'pet-race.watch' }
   | { type: 'pet-race.unwatch' }
   | { type: 'lobby.watch'; gameId: ArcadeGameId }
@@ -71,6 +73,7 @@ export function decodeRealtimeCommand(value: unknown): RealtimeCommand | undefin
   switch (command.type) {
     case 'lobby.watch':
       return gameId(command.gameId) ? { type: command.type, gameId: command.gameId } : undefined;
+    case 'social.watch':
     case 'pet-race.watch':
     case 'pet-race.unwatch':
     case 'lobby.unwatch':
@@ -91,6 +94,8 @@ export function decodeRealtimeEvent(value: unknown): RealtimeEvent | undefined {
   const event = value as RealtimeEvent;
   if (!event || typeof event !== 'object') return undefined;
   switch (event.type) {
+    case 'social.changed':
+      return { type: 'social.changed' };
     case 'pet-race.changed':
       return /^race-\d{1,12}$/.test(event.roundId ?? '') &&
         ['betting', 'countdown', 'racing', 'results'].includes(event.phase)

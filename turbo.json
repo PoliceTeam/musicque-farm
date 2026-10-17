@@ -68,6 +68,7 @@
         "$TURBO_ROOT$/tools/farm-runtime-assets.json",
         "$TURBO_ROOT$/tools/entertainment/assets.json",
         "$TURBO_ROOT$/tools/scenery/assets.json",
+        "$TURBO_ROOT$/tools/shopping/assets.json",
         "$TURBO_ROOT$/tools/arcade/assets.json"
       ],
       "outputs": [

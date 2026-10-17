@@ -97,5 +97,167 @@
       1535,
       256
     ]
+  },
+  {
+    "key": "atm",
+    "file": "atm.webp",
+    "source": 3,
+    "box": [
+      8,
+      303,
+      205,
+      492
+    ]
+  },
+  {
+    "key": "drain",
+    "file": "drain.webp",
+    "source": 3,
+    "box": [
+      581,
+      657,
+      653,
+      693
+    ]
+  },
+  {
+    "key": "road",
+    "file": "road.webp",
+    "source": 3,
+    "box": [
+      906,
+      518,
+      992,
+      554
+    ]
+  },
+  {
+    "key": "bin",
+    "file": "bin.webp",
+    "source": 3,
+    "box": [
+      600,
+      820,
+      665,
+      923
+    ]
+  },
+  {
+    "key": "zone-sign",
+    "file": "zone-sign.webp",
+    "source": 3,
+    "box": [
+      1306,
+      811,
+      1370,
+      925
+    ]
+  },
+  {
+    "key": "paving-a",
+    "file": "paving-a.webp",
+    "source": 3,
+    "box": [
+      23,
+      516,
+      116,
+      598
+    ]
+  },
+  {
+    "key": "paving-b",
+    "file": "paving-b.webp",
+    "source": 3,
+    "box": [
+      135,
+      516,
+      235,
+      598
+    ]
+  },
+  {
+    "key": "paving-c",
+    "file": "paving-c.webp",
+    "source": 3,
+    "box": [
+      253,
+      516,
+      348,
+      598
+    ]
+  },
+  {
+    "key": "bus-stop",
+    "file": "bus-stop.webp",
+    "source": "shopping/street-atlas.png",
+    "box": [
+      979,
+      300,
+      1230,
+      433
+    ],
+    "alphaFloor": 180
+  },
+  {
+    "key": "bus-stop-sign",
+    "file": "bus-stop-sign.webp",
+    "source": "shopping/street-atlas.png",
+    "box": [
+      1240,
+      300,
+      1304,
+      433
+    ],
+    "alphaFloor": 180
+  },
+  {
+    "key": "bench",
+    "file": "bench.webp",
+    "source": "shopping/street-atlas.png",
+    "box": [
+      951,
+      446,
+      1072,
+      512
+    ],
+    "alphaFloor": 180
+  },
+  {
+    "key": "lotus",
+    "file": "lotus.webp",
+    "source": "shopping/street-atlas.png",
+    "box": [
+      314,
+      495,
+      391,
+      563
+    ],
+    "alphaFloor": 180
+  },
+  {
+    "key": "autumn-tree",
+    "file": "autumn-tree.webp",
+    "source": "shopping/street-atlas.png",
+    "box": [
+      3,
+      295,
+      187,
+      514
+    ],
+    "alphaFloor": 180,
+    "largestComponent": true
+  },
+  {
+    "key": "autumn-tree-red",
+    "file": "autumn-tree-red.webp",
+    "source": "shopping/street-atlas.png",
+    "box": [
+      186,
+      294,
+      314,
+      466
+    ],
+    "alphaFloor": 180,
+    "largestComponent": true
   }
 ]
