@@ -68,17 +68,17 @@
 }
 .shop-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
 }
 .game-ui .shop-card {
   position: relative;
   display: grid;
   justify-items: center;
   align-content: start;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
-  padding: 14px 8px 12px;
+  padding: 10px 5px;
   border: 1px solid #dfcda9;
   border-radius: 16px;
   background: linear-gradient(#fffdf4, #f4ecd6);
@@ -102,18 +102,20 @@
 }
 .shop-card .cosmetic-thumbnail {
   width: 100%;
-  max-width: 110px;
-  height: 84px;
+  max-width: 64px;
+  height: 60px;
   object-fit: contain;
   image-rendering: pixelated;
 }
 .shop-card strong {
+  max-width: 100%;
+  overflow-wrap: anywhere;
   text-align: center;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.4;
 }
 .shop-card > span {
-  padding: 4px 8px;
+  padding: 4px 5px;
   border-radius: 8px;
   background: #eadfbd80;
   font-size: 11px;
@@ -283,6 +285,11 @@
   background: #f5e4d6;
   color: #9e4c3c;
 }
+@media (max-width: 850px) {
+  .shop-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 @media (max-width: 650px) {
   .game-ui .shop-dialog .ui-dialog-surface {
     padding: 12px;
@@ -326,7 +333,7 @@
     padding: 10px 6px;
   }
   .shop-card .cosmetic-thumbnail {
-    height: 64px;
+    height: 60px;
   }
 }
 @media (max-height: 700px) and (min-width: 651px) {

@@ -28,6 +28,8 @@ type Tab =
   | 'wrist'
   | 'pets'
   | 'held';
+const SHOP_PAGE_SIZE = 15;
+
 type Shop = 'salon' | 'premium' | 'pets' | 'accessories' | 'fashion';
 
 function paletteColor(entry: Readonly<CosmeticDefinition>) {
@@ -73,7 +75,7 @@ export function ShopDialog({
     const query: CharacterInventoryQuery = {
       view: 'shop',
       shop,
-      limit: 9,
+      limit: SHOP_PAGE_SIZE,
       cursor,
       ...(tab === 'pets'
         ? { category: 'pet' as const }
@@ -268,10 +270,13 @@ export function ShopDialog({
               </div>
             )}
           </section>
-          {(data?.total ?? 0) > 9 && (
+          {(data?.total ?? 0) > SHOP_PAGE_SIZE && (
             <nav
               className="shop-pages"
-              aria-label={t('page', { page: index + 1, total: Math.max(1, Math.ceil((data?.total ?? 0) / 9)) })}
+              aria-label={t('page', {
+                page: index + 1,
+                total: Math.max(1, Math.ceil((data?.total ?? 0) / SHOP_PAGE_SIZE)),
+              })}
             >
               <Button
                 disabled={locked || index === 0}
@@ -281,7 +286,9 @@ export function ShopDialog({
               >
                 {t('previous')}
               </Button>
-              <span>{t('page', { page: index + 1, total: Math.max(1, Math.ceil((data?.total ?? 0) / 9)) })}</span>
+              <span>
+                {t('page', { page: index + 1, total: Math.max(1, Math.ceil((data?.total ?? 0) / SHOP_PAGE_SIZE)) })}
+              </span>
               <Button
                 disabled={locked || !data?.nextCursor}
                 onClick={() => {
