@@ -11,6 +11,8 @@ import { shopCss } from '@/assets/generated-styles';
 import { CharacterPreview } from '@/features/character/_components/character-preview';
 import { CosmeticThumbnail } from '@/features/character/_components/cosmetic-thumbnail';
 import { previewCosmetic } from '@/features/shop/_utils/preview-outfit';
+import { changeShopPage, FIRST_SHOP_PAGE, type ShopPage } from '@/features/shop/_utils/shop-browsing';
+import { loadShopDetails } from '@/features/shop/_utils/shop-details';
 
 type Tab =
   | 'hair'
@@ -51,8 +53,9 @@ export function ShopDialog({
   const [draft, setDraft] = useState<Outfit>();
   const selected = selections[tab]?.id;
   const color = selections[tab]?.color;
-  const [history, setHistory] = useState<(string | undefined)[]>([undefined]);
-  const [index, setIndex] = useState(0);
+  const [browsing, setBrowsing] = useState<Partial<Record<Tab, ShopPage>>>({});
+  const page = browsing[tab] ?? FIRST_SHOP_PAGE;
+  const { history, index } = page;
   const [loading, setLoading] = useState(true);
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState('');
@@ -83,6 +86,7 @@ export function ShopDialog({
       .then((page) => {
         if (generation !== current.current) return;
         setData(page);
+        setError('');
         setDraft((value) => value ?? page.outfit);
         changed.current(page);
       })
@@ -110,8 +114,11 @@ export function ShopDialog({
     }
     let active = true;
     setDetails(undefined);
-    void getApiSdk()
-      .getCharacterInventory({ view: 'shop', shop, groupId, limit: 50 })
+    void loadShopDetails(
+      (query) => getApiSdk().getCharacterInventory(query),
+      { view: 'shop', shop, groupId },
+      () => active,
+    )
       .then((page) => {
         if (active) setDetails(page);
       })
@@ -128,13 +135,19 @@ export function ShopDialog({
   const price = choice?.offer?.price.amount ?? 0;
 
   function reset() {
-    setHistory([undefined]);
-    setIndex(0);
     setLoading(true);
     setData(undefined);
     setDetails(undefined);
     setNotice('');
     setError('');
+  }
+
+  function turnPage(direction: 'previous' | 'next') {
+    if (locked) return;
+    const next = changeShopPage(page, direction, data?.nextCursor);
+    if (next === page) return;
+    setBrowsing((values) => ({ ...values, [tab]: next }));
+    reset();
   }
 
   function tryOn(entry: Readonly<CosmeticDefinition>, palette = false) {
@@ -263,7 +276,7 @@ export function ShopDialog({
               <Button
                 disabled={locked || index === 0}
                 onClick={() => {
-                  setIndex((value) => value - 1);
+                  turnPage('previous');
                 }}
               >
                 {t('previous')}
@@ -272,9 +285,7 @@ export function ShopDialog({
               <Button
                 disabled={locked || !data?.nextCursor}
                 onClick={() => {
-                  if (!data?.nextCursor) return;
-                  setHistory((values) => [...values.slice(0, index + 1), data.nextCursor!]);
-                  setIndex((value) => value + 1);
+                  turnPage('next');
                 }}
               >
                 {t('next')}

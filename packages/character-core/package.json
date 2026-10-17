@@ -39,6 +39,10 @@
     "./cosmetic-catalog": {
       "types": "./dist/cosmetic-catalog.d.ts",
       "default": "./dist/cosmetic-catalog.js"
+    },
+    "./cosmetic-index": {
+      "types": "./dist/cosmetic-index.d.ts",
+      "default": "./dist/cosmetic-index.js"
     }
   },
   "files": [

@@ -4,6 +4,7 @@ import {
   type CosmeticCategory,
   type CosmeticDefinition,
 } from '@chibi-town/character-core/cosmetic-catalog';
+import { COSMETIC_INDEX } from '@chibi-town/character-core/cosmetic-index';
 import { defaultOutfit } from '@chibi-town/character-core/outfit-logic';
 import type { CharacterCosmeticInstance, CosmeticShopOffer } from '@chibi-town/game-content/cosmetic-economy';
 import { COSMETIC_SHOP_IDS, type CosmeticShopId } from '@chibi-town/game-content/cosmetic-shop';
@@ -56,8 +57,7 @@ export function validateCharacterInventoryQuery(query: CharacterInventoryQuery) 
       (value) => value !== undefined && (typeof value !== 'string' || value.length > 256),
     ) ||
     (query.limit !== undefined && (!Number.isSafeInteger(query.limit) || query.limit < 1 || query.limit > 50)) ||
-    (query.slot !== undefined &&
-      !Object.values(COSMETIC_CATALOG).some((entry) => 'slot' in entry && entry.slot === query.slot))
+    (query.slot !== undefined && !COSMETIC_INDEX.hasSlot(query.slot))
   )
     throw new ApiSdkError('INVALID_COMMAND');
 }

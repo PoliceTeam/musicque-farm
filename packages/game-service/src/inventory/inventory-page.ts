@@ -1,4 +1,5 @@
-import { COSMETIC_CATALOG, type CosmeticDefinition } from '@chibi-town/character-core/cosmetic-catalog';
+import type { CosmeticDefinition } from '@chibi-town/character-core/cosmetic-catalog';
+import { COSMETIC_INDEX } from '@chibi-town/character-core/cosmetic-index';
 import { defaultOutfit, outfitFields } from '@chibi-town/character-core/outfit-logic';
 import { ApiSdkError } from '@chibi-town/contracts';
 import type { CharacterInventoryPage, CharacterInventoryQuery } from '@chibi-town/contracts/character-inventory';
@@ -15,7 +16,7 @@ export function characterInventoryPage(
   now: number,
 ): CharacterInventoryPage {
   const state = ensureCharacterInventory(document, now);
-  let definitions = Object.values(COSMETIC_CATALOG).filter(
+  let definitions = COSMETIC_INDEX.select(query).filter(
     (entry) =>
       (!query.category || entry.category === query.category) &&
       (!query.shop || cosmeticShop(entry) === query.shop) &&
@@ -49,49 +50,46 @@ export function characterInventoryPage(
     worn.add(item.cosmeticId);
     if (item.colorUnlockId) worn.add(item.colorUnlockId);
   }
-  const rows = definitions
-    .flatMap((entry) => {
-      const item = instanceByCosmetic.get(entry.id as CharacterCosmeticInstance['cosmeticId']);
-      if (
-        query.view === 'owned' || query.view === 'unequipped'
-          ? !own(state, entry.id) || (query.view === 'unequipped' && worn.has(entry.id))
-          : query.view !== 'shop' && item?.location.container !== query.view
-      )
-        return [];
-      return [
-        {
-          definition: entry,
-          owned: own(state, entry.id),
-          canUnequip:
-            item?.location.container === 'equipped' &&
-            (entry.kind === 'pet' ||
-              (entry.kind === 'item' && outfitFields.some((field) => field.slot === entry.slot && field.optional))),
-          canApply:
-            own(state, entry.id) &&
-            (entry.kind === 'skin-color' ||
-              (entry.kind === 'item-color' &&
-                instanceByCosmetic.get(entry.requires as CharacterCosmeticInstance['cosmeticId'])?.location
-                  .container === 'equipped')),
-          canBuy:
-            isBaseCosmetic(entry) &&
-            !own(state, entry.id) &&
-            (entry.kind !== 'item-color' || own(state, entry.requires)),
-          ...(item ? { instance: structuredClone(item) } : {}),
-          ...(query.view === 'shop' ? { offer: cosmeticOffer(entry.id) } : {}),
-        },
-      ];
-    })
-    .sort((a, b) => a.definition.id.localeCompare(b.definition.id, 'en'));
-  const after = query.cursor ? rows.findIndex((row) => row.definition.id === query.cursor) + 1 : 0;
+  const visible = definitions.filter((entry) => {
+    const item = instanceByCosmetic.get(entry.id as CharacterCosmeticInstance['cosmeticId']);
+    if (
+      query.view === 'owned' || query.view === 'unequipped'
+        ? !own(state, entry.id) || (query.view === 'unequipped' && worn.has(entry.id))
+        : query.view !== 'shop' && item?.location.container !== query.view
+    )
+      return false;
+    return true;
+  });
+  const after = query.cursor ? visible.findIndex((entry) => entry.id === query.cursor) + 1 : 0;
   if (query.cursor && !after) throw new ApiSdkError('INVALID_COMMAND');
   const limit = query.limit ?? 24;
-  const page = rows.slice(after, after + limit);
+  const page = visible.slice(after, after + limit).map((entry) => {
+    const item = instanceByCosmetic.get(entry.id as CharacterCosmeticInstance['cosmeticId']);
+    return {
+      definition: entry,
+      owned: own(state, entry.id),
+      canUnequip:
+        item?.location.container === 'equipped' &&
+        (entry.kind === 'pet' ||
+          (entry.kind === 'item' && outfitFields.some((field) => field.slot === entry.slot && field.optional))),
+      canApply:
+        own(state, entry.id) &&
+        (entry.kind === 'skin-color' ||
+          (entry.kind === 'item-color' &&
+            instanceByCosmetic.get(entry.requires as CharacterCosmeticInstance['cosmeticId'])?.location.container ===
+              'equipped')),
+      canBuy:
+        isBaseCosmetic(entry) && !own(state, entry.id) && (entry.kind !== 'item-color' || own(state, entry.requires)),
+      ...(item ? { instance: structuredClone(item) } : {}),
+      ...(query.view === 'shop' ? { offer: cosmeticOffer(entry.id) } : {}),
+    };
+  });
   return {
     characterId: state.characterId,
     revision: document.revision,
     rows: page,
-    nextCursor: after + limit < rows.length ? page.at(-1)!.definition.id : null,
-    total: rows.length,
+    nextCursor: after + limit < visible.length ? page.at(-1)!.definition.id : null,
+    total: visible.length,
     bagSlots: state.bagSlots,
     bagUsed: Object.values(state.instances).filter((item) => item.location.container === 'bag').length,
     coins: document.farm.coins,

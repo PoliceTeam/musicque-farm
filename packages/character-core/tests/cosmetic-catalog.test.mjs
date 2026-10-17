@@ -67,3 +67,58 @@ test('all unlocks belong to one business category and grouped cards keep exact o
   assert.equal(COSMETIC_GROUPS['pet/cat'].category, 'pet');
   assert.throws(() => cosmeticCategoryForSlot('new-unclassified-slot'), /Unclassified/);
 });
+
+test('catalog index preserves ordering, intersects filters and safely rejects unknown buckets', async () => {
+  const { COSMETIC_INDEX } = await import('@chibi-town/character-core/cosmetic-index');
+  const compare = new Intl.Collator('en').compare;
+  for (const filters of [
+    {},
+    { slot: 'hair' },
+    { groupId: 'item/hair.goku' },
+    { category: 'pet' },
+    { slot: 'hair', category: 'equipment' },
+    { groupId: '__proto__' },
+  ]) {
+    const expected = Object.values(COSMETIC_CATALOG)
+      .filter(
+        (entry) =>
+          (!filters.category || entry.category === filters.category) &&
+          (!filters.slot || ('slot' in entry && entry.slot === filters.slot)) &&
+          (!filters.groupId || entry.groupId === filters.groupId),
+      )
+      .sort((a, b) => compare(a.id, b.id));
+    assert.deepEqual(COSMETIC_INDEX.select(filters), expected);
+  }
+  assert.equal(COSMETIC_INDEX.hasSlot('hair'), true);
+  assert.equal(COSMETIC_INDEX.hasSlot('__proto__'), false);
+});
+
+test('a group query inspects its small bucket instead of every entry in a large catalog', async () => {
+  const { createCosmeticIndex } = await import('@chibi-town/character-core/cosmetic-index');
+  let reads = 0;
+  const catalog = {};
+  for (let i = 0; i < 20_000; i++) {
+    const entry = {
+      id: `item/test.${i}`,
+      kind: 'item',
+      category: 'appearance',
+      itemId: `test.${i}`,
+      slot: 'hair',
+      label: `Test ${i}`,
+    };
+    Object.defineProperty(entry, 'groupId', {
+      get() {
+        reads++;
+        return `item/family.${Math.floor(i / 10)}`;
+      },
+    });
+    catalog[entry.id] = entry;
+  }
+  const index = createCosmeticIndex(catalog);
+  reads = 0;
+  const result = index.select({ slot: 'hair', groupId: 'item/family.1234' });
+  assert.equal(result.length, 10);
+  assert.equal(reads, 10);
+  result.pop();
+  assert.equal(index.select({ groupId: 'item/family.1234' }).length, 10);
+});
