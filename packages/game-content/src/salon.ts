@@ -25,9 +25,20 @@ for (const [i, x] of [80, 240, 400].entries()) {
   prop(`chair-${i}`, 'stool', x + 55, 675, 64, (64 * 120) / 76);
 }
 // Supplied employee and reception desk use the supplied source module.
-prop('reception', 'counter', 605, 310, 390, (390 * 163) / 313);
+layers.push({
+  id: 'employee',
+  npc: 'salon',
+  asset: 'npc:salon',
+  x: 750,
+  y: 275,
+  width: 100,
+  height: 130,
+  depth: 400,
+  shop: 'salon',
+  shopInteraction: [800, 570],
+});
+prop('reception', 'counter-empty', 605, 350, 390, 165, 515);
 layers[layers.length - 1].shop = 'salon';
-layers[layers.length - 1].shopInteraction = [800, 570];
 for (const x of [650, 890]) prop(`guest-stool-${x}`, 'stool', x, 510, 60, (60 * 120) / 76);
 prop('sofa', 'sofa', 1150, 365, 285, (285 * 104) / 188);
 prop('armchair', 'armchair', 1410, 490, 115, (115 * 116) / 98);

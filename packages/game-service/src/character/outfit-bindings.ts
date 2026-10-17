@@ -5,7 +5,7 @@ import {
   type CosmeticId,
 } from '@chibi-town/character-core/cosmetic-catalog';
 import { families, itemAtLevel, items, petAtLevel } from '@chibi-town/character-core/item-catalog';
-import { defaultOutfit, femaleOutfit, outfitFields } from '@chibi-town/character-core/outfit-logic';
+import { defaultItemOutfit, outfitFields } from '@chibi-town/character-core/outfit-logic';
 import { ApiSdkError } from '@chibi-town/contracts';
 
 export type Binding = { cosmeticId: CosmeticId; slot: string; colorUnlockId?: `item-color/${string}/${string}` };
@@ -51,7 +51,7 @@ export function skinId(outfit: Outfit): CosmeticId {
 
 export function initialColor(entry: Readonly<CosmeticDefinition>): CosmeticId | undefined {
   if (entry.kind !== 'item') return undefined;
-  const preset = entry.gender === 'female' ? femaleOutfit : defaultOutfit;
+  const preset = defaultItemOutfit(entry.itemId, entry.gender);
   const field = outfitFields.find((f) => f.colors === entry.slot);
   if (!field) return undefined;
   return `item-color/${entry.itemId}/${COSMETIC_COLOR_IDS[entry.slot][preset[field.key]]}`;

@@ -1,5 +1,11 @@
 import { arcadeVi } from '@chibi-town/arcade-games-react/locales/vi';
 export default {
+  shopEmployee: 'Nhân viên',
+  jewelryTitle: 'Cửa hàng đá quý',
+  jewelryPreparing: 'Quầy đá quý đang chuẩn bị. Chưa mở mua bán hoặc nâng cấp.',
+  premiumShopStaff: 'Nhân viên cao cấp',
+  heldShopStaff: 'Nhân viên đồ cầm tay',
+  petShopStaff: 'Nhân viên thú cưng',
   shopStaff: 'Nhân viên Mỹ viện',
   returnLocation: 'Về {{name}}',
   petRace: {

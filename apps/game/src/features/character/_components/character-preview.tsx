@@ -1,9 +1,9 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import { items } from '@chibi-town/character-core/item-catalog';
 import { layoutAvatar } from '@chibi-town/character-core/layout-logic';
-import { toEquip } from '@chibi-town/character-core/outfit-logic';
+import { toEquip, wornPet } from '@chibi-town/character-core/outfit-logic';
 import { useEffect, useRef } from 'react';
-import { sheet } from '@/assets/asset-catalog';
+import { petSheet, sheet } from '@/assets/asset-catalog';
 import { characterPreviewCss } from '@/assets/generated-styles';
 import { drawOps, PieceCache } from '@/game/rendering/canvas-renderer';
 
@@ -21,6 +21,21 @@ export function CharacterPreview({ outfit, label }: { outfit: Outfit; label: str
     context.scale(2, 2);
     context.translate(160, 240);
     context.scale(2.4, 2.4);
+    const pet = wornPet(outfit);
+    if (pet) {
+      const piece = petSheet.pieces[pet.piece];
+      context.save();
+      context.translate(-38, -(pet.fly ?? 0));
+      context.scale(0.8, 0.8);
+      drawOps(
+        context,
+        new PieceCache(petSheet),
+        [{ piece: pet.piece, x: -piece.width / 2, y: -piece.rows.length, flip: false, recolor: pet.recolor }],
+        0,
+        0,
+      );
+      context.restore();
+    }
     drawOps(context, new PieceCache(sheet), ops, 0, 0);
     context.restore();
   }, [outfit]);

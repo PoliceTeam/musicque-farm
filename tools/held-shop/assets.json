@@ -1,0 +1,270 @@
+[
+  {
+    "key": "wall",
+    "box": [
+      746,
+      25,
+      1097,
+      99
+    ],
+    "tile": true
+  },
+  {
+    "key": "floor",
+    "source": "reference.png",
+    "box": [
+      742,
+      540,
+      798,
+      596
+    ],
+    "tile": true
+  },
+  {
+    "key": "front-wall",
+    "source": "reference.png",
+    "box": [
+      90,
+      818,
+      600,
+      910
+    ],
+    "tile": true
+  },
+  {
+    "key": "sign",
+    "box": [
+      29,
+      25,
+      482,
+      133
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "door",
+    "box": [
+      741,
+      110,
+      857,
+      225
+    ]
+  },
+  {
+    "key": "window",
+    "box": [
+      869,
+      118,
+      1002,
+      195
+    ]
+  },
+  {
+    "key": "clock",
+    "box": [
+      1017,
+      111,
+      1119,
+      210
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "plant",
+    "box": [
+      1121,
+      94,
+      1213,
+      225
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "tree",
+    "box": [
+      1219,
+      167,
+      1309,
+      313
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "mat",
+    "box": [
+      1219,
+      98,
+      1361,
+      166
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "counter",
+    "box": [
+      34,
+      260,
+      434,
+      322
+    ],
+    "counter": true
+  },
+  {
+    "key": "book",
+    "box": [
+      181,
+      208,
+      249,
+      249
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "computer",
+    "box": [
+      312,
+      170,
+      411,
+      248
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "desk-plant",
+    "box": [
+      28,
+      166,
+      106,
+      262
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "stool",
+    "box": [
+      438,
+      170,
+      512,
+      279
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "shelf",
+    "box": [
+      1365,
+      21,
+      1510,
+      223
+    ]
+  },
+  {
+    "key": "hats-display",
+    "box": [
+      515,
+      230,
+      756,
+      355
+    ]
+  },
+  {
+    "key": "face-display",
+    "box": [
+      873,
+      228,
+      1217,
+      357
+    ]
+  },
+  {
+    "key": "charms-display",
+    "box": [
+      636,
+      365,
+      852,
+      499
+    ]
+  },
+  {
+    "key": "wands-display",
+    "box": [
+      868,
+      365,
+      1064,
+      508
+    ]
+  },
+  {
+    "key": "guitars-display",
+    "box": [
+      1067,
+      364,
+      1254,
+      505
+    ]
+  },
+  {
+    "key": "umbrellas-display",
+    "box": [
+      1365,
+      301,
+      1514,
+      439
+    ]
+  },
+  {
+    "key": "waterguns-display",
+    "box": [
+      883,
+      518,
+      1053,
+      697
+    ]
+  },
+  {
+    "key": "toys-display",
+    "box": [
+      1064,
+      511,
+      1243,
+      697
+    ]
+  },
+  {
+    "key": "flowers-display",
+    "box": [
+      1252,
+      483,
+      1357,
+      692
+    ]
+  },
+  {
+    "key": "bags-display",
+    "box": [
+      513,
+      503,
+      615,
+      666
+    ]
+  },
+  {
+    "key": "bag-stand",
+    "box": [
+      654,
+      498,
+      770,
+      717
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "empty-display",
+    "box": [
+      31,
+      329,
+      222,
+      442
+    ]
+  }
+]

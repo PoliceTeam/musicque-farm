@@ -37,7 +37,7 @@ describe('location input', () => {
       delta = state.delta;
     state.target = [200, 100];
     updateLocationInput(map, state, [1, 1], 0.05, false);
-    expect(Math.hypot(state.x - 100, state.y - 100)).toBeCloseTo(5);
+    expect(Math.hypot(state.x - 100, state.y - 100)).toBeCloseTo(6);
     expect(state.target).toBeUndefined();
     expect(state.position).toBe(position);
     expect(state.delta).toBe(delta);
@@ -49,7 +49,7 @@ describe('location input', () => {
     expect(state.x).toBe(100);
     expect(state.moving).toBe(false);
     updateLocationInput(map, state, undefined, 0.05, false);
-    expect(state.x).toBe(105);
+    expect(state.x).toBe(106);
     updateLocationInput(map, state, undefined, 0.05, false);
     expect(state.target).toBeUndefined();
   });

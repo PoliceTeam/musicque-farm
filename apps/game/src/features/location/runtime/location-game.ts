@@ -1,8 +1,8 @@
 import { Action, AvatarState } from '@chibi-town/character-core/animation-logic';
 import type { Outfit } from '@chibi-town/character-core/character-types';
-import { toEquip } from '@chibi-town/character-core/outfit-logic';
+import { toEquip, wornPet } from '@chibi-town/character-core/outfit-logic';
 import type { ChannelDirectory } from '@chibi-town/contracts';
-import type { MapDefinition } from '@chibi-town/game-content';
+import type { MapDefinition, MapLayer } from '@chibi-town/game-content';
 import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-types';
 import { blocksGameInput } from '@chibi-town/ui';
 import type { LocationPlayer } from '@/application/_components/location-layout';
@@ -26,8 +26,10 @@ import {
   createEntertainmentWires,
 } from '@/features/location/rendering/entertainment-ground';
 import { createLocationView, type LocationLabels } from '@/features/location/rendering/location-view';
+import { makePet, stepPet } from '@/game/movement/pet-follow-logic';
 import { acquireMapAssets } from '@/game/rendering/map-assets';
 import { createPreviewProviders } from '@/game/rendering/renderer-providers';
+import { LOCATION_WALK_SPEED } from '@/game/runtime/game-config';
 
 export function createLocationGame(options: {
   parent: HTMLElement;
@@ -41,7 +43,7 @@ export function createLocationGame(options: {
   selectedPlayer?(): string | undefined;
   onPlayerPosition?(point?: [number, number]): void;
   onAttraction(id: Attraction): void;
-  onShop?(shop: 'salon' | 'premium'): void;
+  onShop?(shop: NonNullable<MapLayer['shop']>): void;
   navigate(path: string): void;
   onError(): void;
 }) {
@@ -92,6 +94,8 @@ export function createLocationGame(options: {
     const hero = new AvatarState(toEquip(player.outfit));
     let equipped = player.outfit;
     const state = createLocationInputState(map);
+    const initialPet = wornPet(player.outfit);
+    state.pet = initialPet ? makePet(initialPet, state.x, state.y, hero.mirror) : undefined;
     const cameraTarget: [number, number] = [state.x, state.y];
 
     /** Maps with channels are shared: show the other players of this channel and report our own position. */
@@ -189,6 +193,9 @@ export function createLocationGame(options: {
           equipped = nextOutfit;
           hero.equip = toEquip(nextOutfit);
           player.outfit = nextOutfit;
+          const nextPet = wornPet(nextOutfit);
+          if (nextPet?.id !== state.pet?.def.id)
+            state.pet = nextPet ? makePet(nextPet, state.x, state.y, hero.mirror) : undefined;
           realtime?.send({ type: 'map.enter', regionId: map.regionId, mapId: map.id, x: state.x, y: state.y });
         }
         const channelId = options.channel()?.currentChannelId;
@@ -201,6 +208,8 @@ export function createLocationGame(options: {
         updateLocationInput(map, state, input?.direction, dt, blocksGameInput());
         if (state.dx) hero.mirror = state.dx < 0;
         hero.setAction(state.moving ? Action.Walk : Action.Stand);
+        if (state.pet)
+          stepPet(state.pet, { x: state.x, y: state.y, speed: LOCATION_WALK_SPEED, mirror: hero.mirror }, dt);
         others.step(dt);
         if (realtime) {
           // The server picks the channel from the saved choice, so a channel switch means entering again.

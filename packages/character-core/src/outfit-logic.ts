@@ -88,6 +88,17 @@ export const femaleOutfit: Outfit = {
   wrist: NONE,
 };
 
+/** Canonical base palette for each item family, shared by shop rewards and previews. */
+export function defaultItemOutfit(itemId: string, gender?: CharacterGender): Outfit {
+  if (
+    /^(hair|shirt|pants|shoes|wrist)\.goku(?:\.|$)/.test(itemId) ||
+    itemId === 'held.nyoibo' ||
+    itemId === 'tail.monkey'
+  )
+    return gokuOutfit;
+  return gender === 'female' ? femaleOutfit : defaultOutfit;
+}
+
 /**
  * A field picks an item in `slot`, a colour in `colors`, a pet id (with `pet`), or the upgrade level
  * of the family chosen in another field (with `levelOf`). In a slot with upgradable items (wings),

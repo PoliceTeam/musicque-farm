@@ -1,15 +1,16 @@
 import type { AvatarState } from '@chibi-town/character-core/animation-logic';
 import type { DrawOp } from '@chibi-town/character-core/character-types';
-import { items } from '@chibi-town/character-core/item-catalog';
+import { items, pets } from '@chibi-town/character-core/item-catalog';
 import { layoutAvatar } from '@chibi-town/character-core/layout-logic';
 import type { MapDefinition } from '@chibi-town/game-content';
 import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-types';
 import type { TFunction } from 'i18next';
 import type { LocationPlayer } from '@/application/_components/location-layout';
-import { sheet } from '@/assets/asset-catalog';
+import { petSheet, sheet } from '@/assets/asset-catalog';
 import type { LocationInputState } from '@/features/location/_utils/location-input-logic';
 import type { RemotePlayer } from '@/features/location/_utils/remote-players-logic';
 import { createEntertainmentShadow } from '@/features/location/rendering/entertainment-ground';
+import { layoutPet } from '@/game/movement/pet-follow-logic';
 import { createEntranceHint } from '@/game/rendering/entrance-hint';
 
 export type LocationLabels = TFunction<'common'>;
@@ -69,6 +70,18 @@ export function createLocationView(
             layer.width,
             layer.height,
             layer.rotationSeconds ? ((now / (layer.rotationSeconds * 1000)) % 1) * Math.PI * 2 : 0,
+          );
+        } else if (layer.pet && pets[layer.pet]) {
+          const piece = pets[layer.pet].piece;
+          const native = petSheet.pieces[piece];
+          const scale = Math.min(layer.width / native.width, layer.height / native.rows.length);
+          view.drawPieces(
+            'pet',
+            petSheet,
+            [{ piece, x: -native.width / 2, y: -native.rows.length, flip: false }],
+            layer.x + layer.width / 2,
+            layer.y + layer.height,
+            scale,
           );
         } else if (layer.color !== undefined) view.rectangle(layer.x, layer.y, layer.width, layer.height, layer.color);
       },
@@ -157,6 +170,15 @@ export function createLocationView(
         },
       },
     ];
+    entries.push({
+      depth: at.y + 4,
+      offset: 4,
+      player: at,
+
+      paint(view) {
+        if (at.pet) view.drawPieces('pet', petSheet, [layoutPet(at.pet, petSheet)], at.pet.x, at.pet.y);
+      },
+    });
     if (shadow)
       entries.unshift({
         depth: at.y - 0.1,

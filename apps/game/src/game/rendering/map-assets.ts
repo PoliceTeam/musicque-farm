@@ -1,6 +1,18 @@
 import type { MapDefinition } from '@chibi-town/game-content';
 
-import { entertainmentUrls, publicAssetUrls, salonUrls, sceneryUrls, shoppingUrls } from '@/assets/generated-assets';
+import {
+  entertainmentUrls,
+  fashionShopUrls,
+  heldShopUrls,
+  jewelryShopUrls,
+  npcUrls,
+  petShopUrls,
+  premiumShopUrls,
+  publicAssetUrls,
+  salonUrls,
+  sceneryUrls,
+  shoppingUrls,
+} from '@/assets/generated-assets';
 
 const cache = new Map<string, { source: Promise<HTMLCanvasElement>; users: number }>();
 
@@ -10,6 +22,12 @@ export function sceneAssetUrl(id: string) {
     sceneryUrls[id] ??
     sceneryUrls[id.replace('entertainment:', 'scenery:')] ??
     salonUrls[id] ??
+    petShopUrls[id] ??
+    heldShopUrls[id] ??
+    premiumShopUrls[id] ??
+    jewelryShopUrls[id] ??
+    fashionShopUrls[id] ??
+    npcUrls[id] ??
     shoppingUrls[id] ??
     entertainmentUrls[id] ??
     publicAssetUrls[id] ??

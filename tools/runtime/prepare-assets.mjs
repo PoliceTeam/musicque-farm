@@ -17,7 +17,7 @@ const sprites = {}, sources = {}, publicAssets = {};
 for (const file of entries) {
   const relative = path.relative(source,file).split(path.sep).join('/');
   if (relative.endsWith('.txt') && relative.startsWith('sprites/')) sources[`./${relative}`] = await readFile(file,'utf8');
-  if (!/\.(png|webp|jpe?g|mp3)$/.test(relative) || (relative.startsWith('farm/') || relative.startsWith('entertainment/') || relative.startsWith('arcade/') || relative.startsWith('shopping/') || relative.startsWith('salon/') || relative.startsWith('common/scenery/'))) continue;
+  if (!/\.(png|webp|jpe?g|mp3)$/.test(relative) || (relative.startsWith('farm/') || relative.startsWith('entertainment/') || relative.startsWith('arcade/') || relative.startsWith('shopping/') || relative.startsWith('salon/') || relative.startsWith('pet-shop/') || relative.startsWith('held-shop/') || relative.startsWith('premium-shop/') || relative.startsWith('jewelry-shop/') || relative.startsWith('fashion-shop/') || relative.startsWith('common/shop-npcs/') || relative.startsWith('common/scenery/'))) continue;
   const destination = path.join(target,relative);
   await mkdir(path.dirname(destination), { recursive:true }); await copyFile(file,destination);
   const version = createHash('sha256').update(await readFile(file)).digest('hex').slice(0,12);
@@ -73,6 +73,60 @@ for (const [index, entry] of salonManifest.entries()) {
   salonEntries.push(`${JSON.stringify('salon:' + entry.key)}: imageSrc(${name})`);
 }
 await rm(path.join(target, 'salon'), {recursive:true, force:true});
+const petShopManifest = JSON.parse(await readFile(path.resolve(app, '../../tools/pet-shop/assets.json'), 'utf8'));
+const petShopEntries = [];
+for (const [index, entry] of petShopManifest.entries()) {
+  const name = `petShopImage${index}`;
+  imports.push(`import ${name} from ${JSON.stringify('./pet-shop/' + entry.key + '.webp')};`);
+  imageEntries.push(`${JSON.stringify('pet-shop:' + entry.key)}: imageAsset(${name})`);
+  petShopEntries.push(`${JSON.stringify('pet-shop:' + entry.key)}: imageSrc(${name})`);
+}
+await rm(path.join(target, 'pet-shop'), {recursive:true, force:true});
+const heldShopManifest = JSON.parse(await readFile(path.resolve(app, '../../tools/held-shop/assets.json'), 'utf8'));
+const heldShopEntries = [];
+for (const [index, entry] of heldShopManifest.entries()) {
+  const name = `heldShopImage${index}`;
+  imports.push(`import ${name} from ${JSON.stringify('./held-shop/' + entry.key + '.webp')};`);
+  imageEntries.push(`${JSON.stringify('held-shop:' + entry.key)}: imageAsset(${name})`);
+  heldShopEntries.push(`${JSON.stringify('held-shop:' + entry.key)}: imageSrc(${name})`);
+}
+await rm(path.join(target, 'held-shop'), {recursive:true, force:true});
+const premiumShopManifest = JSON.parse(await readFile(path.resolve(app, '../../tools/premium-shop/assets.json'), 'utf8'));
+const premiumShopEntries = [];
+for (const [index, entry] of premiumShopManifest.entries()) {
+  const name = `premiumShopImage${index}`;
+  imports.push(`import ${name} from ${JSON.stringify('./premium-shop/' + entry.key + '.webp')};`);
+  imageEntries.push(`${JSON.stringify('premium-shop:' + entry.key)}: imageAsset(${name})`);
+  premiumShopEntries.push(`${JSON.stringify('premium-shop:' + entry.key)}: imageSrc(${name})`);
+}
+await rm(path.join(target, 'premium-shop'), {recursive:true, force:true});
+const jewelryShopManifest = JSON.parse(await readFile(path.resolve(app, '../../tools/jewelry-shop/assets.json'), 'utf8'));
+const jewelryShopEntries = [];
+for (const [index, entry] of jewelryShopManifest.entries()) {
+  const name = `jewelryShopImage${index}`;
+  imports.push(`import ${name} from ${JSON.stringify('./jewelry-shop/' + entry.key + '.webp')};`);
+  imageEntries.push(`${JSON.stringify('jewelry-shop:' + entry.key)}: imageAsset(${name})`);
+  jewelryShopEntries.push(`${JSON.stringify('jewelry-shop:' + entry.key)}: imageSrc(${name})`);
+}
+await rm(path.join(target, 'jewelry-shop'), {recursive:true, force:true});
+const fashionShopManifest = JSON.parse(await readFile(path.resolve(app, '../../tools/fashion-shop/assets.json'), 'utf8'));
+const fashionShopEntries = [];
+for (const [index, entry] of fashionShopManifest.entries()) {
+  const name = `fashionShopImage${index}`;
+  imports.push(`import ${name} from ${JSON.stringify('./fashion-shop/' + entry.key + '.webp')};`);
+  imageEntries.push(`${JSON.stringify('fashion-shop:' + entry.key)}: imageAsset(${name})`);
+  fashionShopEntries.push(`${JSON.stringify('fashion-shop:' + entry.key)}: imageSrc(${name})`);
+}
+await rm(path.join(target, 'fashion-shop'), {recursive:true, force:true});
+const npcManifest = JSON.parse(await readFile(path.resolve(app, '../../tools/shop-npcs/assets.json'), 'utf8'));
+const npcEntries = [];
+for (const [index, entry] of npcManifest.entries()) {
+  const name = `npcImage${index}`;
+  imports.push(`import ${name} from ${JSON.stringify('./common/shop-npcs/' + entry.key + '.webp')};`);
+  imageEntries.push(`${JSON.stringify('npc:' + entry.key)}: imageAsset(${name})`);
+  npcEntries.push(`${JSON.stringify('npc:' + entry.key)}: imageSrc(${name})`);
+}
+await rm(path.join(target, 'common/shop-npcs'), {recursive:true, force:true});
 const arcadeManifest = JSON.parse(await readFile(path.resolve(app, '../../tools/arcade/assets.json'), 'utf8'));
 const arcadeEntries = [];
 for (const [index, entry] of arcadeManifest.entries()) {
@@ -98,6 +152,12 @@ export const farmUrls: Record<string,string> = {${farmEntries.join(',')}};
 export const farmSceneUrls: Record<string,string> = {${sceneEntries.join(',')}};
 export const arcadeUrls: Record<string,string> = {${arcadeEntries.join(',')}};
 export const sceneryUrls: Record<string,string> = {${sceneryEntries.join(',')}};
+export const jewelryShopUrls: Record<string,string> = {${jewelryShopEntries.join(',')}};
+export const fashionShopUrls: Record<string,string> = {${fashionShopEntries.join(',')}};
+export const npcUrls: Record<string,string> = {${npcEntries.join(',')}};
+export const premiumShopUrls: Record<string,string> = {${premiumShopEntries.join(',')}};
+export const heldShopUrls: Record<string,string> = {${heldShopEntries.join(',')}};
+export const petShopUrls: Record<string,string> = {${petShopEntries.join(',')}};
 export const salonUrls: Record<string,string> = {${salonEntries.join(',')}};
 export const shoppingUrls: Record<string,string> = {${shoppingEntries.join(',')}};
 export const entertainmentUrls: Record<string,string> = {${entertainmentEntries.join(',')}};

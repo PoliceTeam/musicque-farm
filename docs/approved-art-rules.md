@@ -69,3 +69,7 @@ Người dùng từ chối bản búi rời ở screenshot 02:05:29: dịch và 
 ## Chốt bản ghép nữ (09/10/2026)
 
 Người dùng xác nhận “okey push code đi” sau bản sửa lớp búi tóc: tóc/outfit v6, neo mũ nữ và mũ len nữ hiện tại được chốt để push. Búi giữ hình gốc, lớp 54 nằm sau mũ 55; thân mũ che tóc bên trong. Các ghi chú “chưa duyệt” phía trên mô tả trạng thái trong những lần thử trước; bản búi dịch/cắt và bản tóc đè lên mũ vẫn bị loại.
+
+## Đồ cầm tay bổ sung (17/10/2026)
+
+Tách tám món từ atlas người dùng gửi (nguồn trong `docs/art/held-shop/`), không thay các món đã duyệt. Cấu hình crop, kích thước native, góc nghiêng và neo nắm nằm trong `tools/held-shop/items.json`. Xuất bằng `export-items.py`, giữ grip x9/y−15 và hướng món đồ ra ngoài mặt. Đã xem contact sheet ở kích thước native/phóng lớn trên nam/nữ và hai hướng; chưa có xác nhận duyệt riêng bộ mới.

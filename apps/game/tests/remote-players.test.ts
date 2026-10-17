@@ -15,6 +15,22 @@ const player = (id: string, x = 0, y = 0): MapPlayer => ({
 });
 
 describe('remote players in a map channel', () => {
+  it('keeps an equipped pet with remote players and clears it when the outfit changes', () => {
+    const others = createRemotePlayers('me');
+    others.apply({
+      type: 'map.join',
+      player: { ...player('a', 100, 100), outfit: { ...defaultOutfit, pet: 'panda', petLevel: '1' } },
+    });
+    const remote = others.players.get('a')!;
+    expect(remote.pet?.def.id).toBe('panda');
+    const initialX = remote.pet!.x;
+    others.apply({ type: 'map.moves', moves: [{ id: 'a', x: 200, y: 100 }] });
+    for (let i = 0; i < 20; i++) others.step(0.05);
+    expect(remote.pet!.x).toBeGreaterThan(initialX);
+    others.apply({ type: 'map.join', player: player('a', 200, 100) });
+    expect(others.players.get('a')?.pet).toBeUndefined();
+  });
+
   it('follows server events and never adds the local player', () => {
     const others = createRemotePlayers('me');
     others.apply({ type: 'map.state', mapId: 'street', channelId: 0, players: [player('a'), player('me')] });
@@ -55,7 +71,7 @@ describe('remote players in a map channel', () => {
     others.apply({ type: 'map.moves', moves: [{ id: 'a', x: 40, y: 100 }] });
     others.step(0.25);
     const walker = others.players.get('a')!;
-    expect([walker.x, walker.y]).toEqual([75, 100]);
+    expect([walker.x, walker.y]).toEqual([70, 100]);
     expect([walker.avatar.action, walker.avatar.mirror]).toEqual([Action.Walk, true]);
     others.step(1);
     others.step(0.1);

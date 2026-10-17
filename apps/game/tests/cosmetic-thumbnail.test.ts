@@ -29,3 +29,10 @@ describe('existing cosmetic sprite thumbnails', () => {
     expect(cosmeticThumbnailModel(COSMETIC_CATALOG['pet/cat.3']).ops[0].piece).toBe('pet.cat.3');
   });
 });
+
+it('shows Goku pieces in their own canonical palette instead of starter clothes colors', () => {
+  expect(cosmeticThumbnailModel(COSMETIC_CATALOG['item/shirt.goku']).ops[0].recolor?.T).toBe(colors.shirt.Cam.T);
+  expect(cosmeticThumbnailModel(COSMETIC_CATALOG['item/pants.goku']).ops[0].recolor?.N).toBe(colors.pants.Cam.N);
+  expect(cosmeticThumbnailModel(COSMETIC_CATALOG['item/shoes.goku']).ops[0].recolor?.O).toBe(colors.shoes.Xanh.O);
+  expect(cosmeticThumbnailModel(COSMETIC_CATALOG['item/wrist.goku']).ops[0].recolor?.M).toBe(colors.wrist.Xanh.M);
+});

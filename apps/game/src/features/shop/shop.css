@@ -3,6 +3,21 @@
   height: min(690px, calc(100dvh - 24px));
   grid-template-rows: auto minmax(0, 1fr);
 }
+.game-ui .shop-dialog > .ui-folder-tabs {
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #bda781 transparent;
+}
+.game-ui .shop-dialog > .ui-folder-tabs .ui-button {
+  flex: 0 0 auto;
+  padding: 12px 14px;
+  white-space: nowrap;
+  font-size: 13px;
+}
 .game-ui .shop-dialog .ui-dialog-surface {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -35,9 +50,6 @@
   gap: 14px;
   min-width: 0;
   min-height: 0;
-}
-.shop-face-filters {
-  flex-shrink: 0;
 }
 .shop-list {
   flex: 1;
@@ -126,9 +138,14 @@
 .shop-preview-stage {
   display: grid;
   place-items: center;
-  flex: 0 0 190px;
+  flex: 0 0 clamp(110px, calc(100dvh - 520px), 190px);
   width: 100%;
   min-height: 0;
+}
+@media (min-width: 651px) {
+  .shop-preview-stage .character-preview-frame {
+    width: clamp(100px, calc(100dvh - 540px), 176px);
+  }
 }
 .shop-selection {
   display: grid;
@@ -312,7 +329,7 @@
     height: 64px;
   }
 }
-@media (max-height: 560px) and (min-width: 651px) {
+@media (max-height: 700px) and (min-width: 651px) {
   .shop-preview {
     gap: 8px;
     padding: 12px;

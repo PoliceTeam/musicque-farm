@@ -1,0 +1,209 @@
+[
+  {
+    "key": "wall",
+    "box": [
+      1203,
+      82,
+      1427,
+      154
+    ],
+    "tile": true
+  },
+  {
+    "key": "front-wall",
+    "box": [
+      1206,
+      92,
+      1425,
+      144
+    ],
+    "tile": true
+  },
+  {
+    "key": "door",
+    "box": [
+      803,
+      500,
+      974,
+      616
+    ]
+  },
+  {
+    "key": "sign",
+    "box": [
+      18,
+      512,
+      513,
+      608
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "banner",
+    "box": [
+      1154,
+      506,
+      1247,
+      624
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "mat",
+    "box": [
+      97,
+      438,
+      390,
+      515
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "plant",
+    "box": [
+      711,
+      487,
+      803,
+      616
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "flowers",
+    "box": [
+      25,
+      607,
+      104,
+      699
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "mirror",
+    "box": [
+      1434,
+      646,
+      1547,
+      816
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "stool",
+    "box": [
+      533,
+      493,
+      621,
+      597
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "counter",
+    "box": [
+      31,
+      703,
+      404,
+      770
+    ],
+    "counter": true
+  },
+  {
+    "key": "computer",
+    "box": [
+      101,
+      616,
+      197,
+      692
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "terminal",
+    "box": [
+      187,
+      651,
+      242,
+      692
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "hats-display",
+    "box": [
+      414,
+      612,
+      599,
+      812
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "hair-display",
+    "box": [
+      615,
+      612,
+      774,
+      818
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "dresses-display",
+    "box": [
+      782,
+      612,
+      985,
+      782
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "bags-display",
+    "box": [
+      992,
+      615,
+      1180,
+      816
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "accessories-display",
+    "box": [
+      1183,
+      629,
+      1298,
+      818
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "bottles-display",
+    "box": [
+      1305,
+      626,
+      1428,
+      819
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "frame",
+    "box": [
+      1067,
+      502,
+      1157,
+      619
+    ]
+  },
+  {
+    "key": "lamp",
+    "box": [
+      1360,
+      495,
+      1657,
+      550
+    ]
+  }
+]

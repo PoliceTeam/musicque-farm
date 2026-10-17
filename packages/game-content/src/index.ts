@@ -5,4 +5,5 @@ export * from './farm-catalog.js';
 export * from './farm-land-config.js';
 export * from './farm-recipes.js';
 export * from './farm-upgrade-catalog.js';
+export * from './shop-npcs.js';
 export * from './world.js';

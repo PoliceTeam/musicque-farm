@@ -1,6 +1,6 @@
 import { MAPS, REGIONS, validateWorld } from '@chibi-town/game-content';
 import { expect, it } from 'vitest';
-import { salonUrls } from '@/assets/generated-assets';
+import { npcUrls, salonUrls } from '@/assets/generated-assets';
 import { locationInputAt } from '@/features/location/_utils/location-input-logic';
 import { moveInLocation } from '@/features/location/_utils/location-logic';
 
@@ -16,5 +16,6 @@ it('opens the salon counter as a shop and returns to the shopping street through
   expect(salon.portals[0]).toMatchObject({ target: 'shopping-street', spawn: [165, 580] });
   expect(moveInLocation(salon, salon.spawn, [0, 80])).toEqual([800, 890]);
   expect(moveInLocation(salon, [800, 550], [0, -100])[1]).toBeGreaterThanOrEqual(500);
-  for (const layer of salon.layers ?? []) if (layer.asset) expect(salonUrls[layer.asset]).toBeTruthy();
+  for (const layer of salon.layers ?? [])
+    if (layer.asset) expect(salonUrls[layer.asset] ?? npcUrls[layer.asset]).toBeTruthy();
 });

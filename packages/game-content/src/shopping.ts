@@ -55,7 +55,11 @@ for (const [id, x, w, sourceW, sourceH] of [
   prop(id, `shopping:${id}`, x, 545 - h, w, h, 545);
   layers[layers.length - 1].entrance = [x + w / 2, 545];
   if (id === 'salon') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'salon' };
-  if (id === 'premium') layers[layers.length - 1].shop = 'premium';
+  if (id === 'gifts') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'held-shop' };
+  if (id === 'pets') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'pet-shop' };
+  if (id === 'jewelry') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'jewelry-shop' };
+  if (id === 'fashion') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'fashion-shop' };
+  if (id === 'premium') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'premium-shop' };
 }
 prop('atm', 'scenery:atm', 610, 391.5, 160, 153.5, 545);
 layers[layers.length - 1].entrance = [690, 545];

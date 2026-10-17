@@ -70,6 +70,12 @@
         "$TURBO_ROOT$/tools/scenery/assets.json",
         "$TURBO_ROOT$/tools/shopping/assets.json",
         "$TURBO_ROOT$/tools/salon/assets.json",
+        "$TURBO_ROOT$/tools/pet-shop/assets.json",
+        "$TURBO_ROOT$/tools/held-shop/assets.json",
+        "$TURBO_ROOT$/tools/premium-shop/assets.json",
+        "$TURBO_ROOT$/tools/jewelry-shop/assets.json",
+        "$TURBO_ROOT$/tools/fashion-shop/assets.json",
+        "$TURBO_ROOT$/tools/shop-npcs/assets.json",
         "$TURBO_ROOT$/tools/arcade/assets.json"
       ],
       "outputs": [

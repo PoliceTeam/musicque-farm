@@ -46,9 +46,11 @@ Premium dùng xu theo yêu cầu, không tiêu Lượng. Toàn bộ 5 món Goku 
 ## Quy tắc mua và nâng cấp
 
 - `COSMETIC_SHOP_PRICES`, `COSMETIC_SLOT_PRICES` và `PREMIUM_SLOT_PRICES` trong game-content là nguồn giá duy nhất. Server tự tính giá từ offer ID; client không được quyết định số xu hoặc tiền tệ.
+- Cửa hàng đồ cầm tay bán riêng slot `held` qua shop `accessories`. Tám món bổ sung từ atlas dùng giá đồ thường 40.000 xu/món; không có cấp nâng cấp mới hoặc quyền mua nội thất.
+- Shop thú cưng tại khu mua sắm bán pet cấp đầu với giá 80.000 xu/con. Các loài mới dùng cùng quy tắc sở hữu và nâng cấp; đồ nội thất của shop được tách asset để tái sử dụng, chưa có giao dịch nội thất.
 - Mỹ viện chỉ bán `appearance` thường; Goku ở Premium. API lọc theo shop và giới tính phù hợp khi truy vấn cửa hàng cụ thể. Danh mục tổng trong Lab vẫn dùng cho phát triển.
 - Mỗi dòng có cấp chỉ bán cấp thấp nhất tồn tại trong catalog. Cấp cao và màu của cấp cao không hiện trong cửa hàng, kể cả khi gọi danh sách chi tiết nhóm; gọi thẳng lệnh mua cũng bị từ chối. Bỏ công thức giá nhân cấp bình phương. Nâng cấp chưa triển khai.
 - Đồ cấp cao đang sở hữu tiếp tục dùng bình thường. Migration, quest/event hoặc nâng cấp tin cậy trong tương lai có thể cấp đồ; quy tắc cửa hàng không thu hồi đồ.
-- Mua kiểu gốc kèm bảng màu mặc định. Quyền màu gắn với chính vật phẩm, mở một lần và dùng lại miễn phí. Thử đồ không ghi vào DB; thao tác sử dụng phải qua kiểm tra sở hữu thật.
+- Mua kiểu gốc kèm bảng màu chuẩn của chính món đó. Goku dùng preset riêng: tóc đen, áo/quần cam, giày/vòng tay xanh. Thumbnail, thử đồ và grant mua dùng cùng nguồn màu; món đã mua bằng shop mà thiếu màu gốc chuẩn được bổ sung quyền màu miễn phí, giữ nguyên màu khác và outfit đang mặc. Quyền màu gắn với chính vật phẩm, mở một lần và dùng lại miễn phí. Thử đồ không ghi vào DB; thao tác sử dụng phải qua kiểm tra sở hữu thật.
 - Giao dịch giữ nguyên cơ chế chống trùng, ví bị giữ cược và rollback SQL. Grant mới ghi shop, offer ID, tiền tệ và số tiền thực trả để giá lịch sử không thay đổi khi sửa config. Grant cũ vẫn đọc được.
 - Chưa có cơ chế bán lại mỹ phẩm/ngoại hình. Không suy ra giá bán lại từ bảng giá mua mới hoặc cho phép đổi ngược nâng cấp; nếu triển khai sau phải dựa trên lịch sử thanh toán và quy tắc riêng để tránh mua/bán sinh lời vô hạn.

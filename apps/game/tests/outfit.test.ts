@@ -281,7 +281,24 @@ describe('hairstyles', () => {
 });
 
 describe('evolving pets', () => {
-  const species = ['cat', 'corgi', 'bunny', 'chick', 'slime', 'dragon', 'fox', 'robot'];
+  const species = [
+    'cat',
+    'corgi',
+    'bunny',
+    'chick',
+    'slime',
+    'dragon',
+    'fox',
+    'robot',
+    'ginger-cat',
+    'puppy',
+    'deer',
+    'panda',
+    'pig',
+    'turtle',
+    'clownfish',
+    'songbird',
+  ];
 
   it('every species has three levels, each bigger than the last', () => {
     for (const id of species) {

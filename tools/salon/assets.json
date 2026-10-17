@@ -192,5 +192,15 @@
       1324,
       301
     ]
+  },
+  {
+    "key": "counter-empty",
+    "file": "counter-empty.webp",
+    "box": [
+      30,
+      649,
+      306,
+      777
+    ]
   }
 ]

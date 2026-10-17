@@ -320,6 +320,14 @@
   {"id": "hair.female-ponytail.tie.w6", "gender": "female", "label": "Búi và dây buộc tóc", "slot": "hairTie", "layer": 54, "poses": {"0": ["hair.female-ponytail.tie.w6", -33, -68], "1": ["hair.female-ponytail.tie.w6", -33, -67], "2": ["hair.female-ponytail.tie.w6", -33, -67], "3": ["hair.female-ponytail.tie.w6", -33, -67]}, "hidden": true},
   {"id": "shirt.female", "gender": "female", "label": "Váy liền (áo)", "slot": "shirt", "layer": 30, "poses": {"0": ["shirt.female", -16, -27]}},
   {"id": "pants.female", "gender": "female", "label": "Váy liền (chân váy)", "slot": "pants", "layer": 20, "poses": {"0": ["pants.female", -13, -16]}},
-  {"id": "shoes.female", "gender": "female", "label": "Giày + tất trắng", "slot": "shoes", "layer": 15, "poses": {"0": ["shoes.female", -14, -9], "2": ["shoes.female.step", -12, -11], "3": ["shoes.female.step2", -15, -10]}}
+  {"id": "shoes.female", "gender": "female", "label": "Giày + tất trắng", "slot": "shoes", "layer": 15, "poses": {"0": ["shoes.female", -14, -9], "2": ["shoes.female.step", -12, -11], "3": ["shoes.female.step2", -15, -10]}},
+  {"id": "held.star-wand", "label": "Gậy ngôi sao", "slot": "held", "layer": 35, "poses": {"0": ["held.star-wand", 3, -45]}},
+  {"id": "held.heart-wand", "label": "Gậy trái tim", "slot": "held", "layer": 35, "poses": {"0": ["held.heart-wand", 5, -46]}},
+  {"id": "held.moon-wand", "label": "Gậy mặt trăng", "slot": "held", "layer": 35, "poses": {"0": ["held.moon-wand", 4, -48]}},
+  {"id": "held.snow-wand", "label": "Gậy bông tuyết", "slot": "held", "layer": 35, "poses": {"0": ["held.snow-wand", 4, -46]}},
+  {"id": "held.sunflower-wand", "label": "Gậy hướng dương", "slot": "held", "layer": 35, "poses": {"0": ["held.sunflower-wand", 5, -45]}},
+  {"id": "held.pink-guitar", "label": "Đàn guitar hồng", "slot": "held", "layer": 35, "poses": {"0": ["held.pink-guitar", -3, -40]}},
+  {"id": "held.tennis-racket", "label": "Vợt tennis", "slot": "held", "layer": 35, "poses": {"0": ["held.tennis-racket", 3, -46]}},
+  {"id": "held.rose", "label": "Hoa hồng", "slot": "held", "layer": 35, "poses": {"0": ["held.rose", 3, -41]}}
  ]
 }

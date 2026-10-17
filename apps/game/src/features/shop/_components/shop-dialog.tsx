@@ -1,3 +1,4 @@
+import type { Outfit } from '@chibi-town/character-core/character-types';
 import type { CosmeticDefinition } from '@chibi-town/character-core/cosmetic-catalog';
 import { colors } from '@chibi-town/character-core/item-catalog';
 import { ApiSdkError } from '@chibi-town/contracts';
@@ -11,9 +12,21 @@ import { CharacterPreview } from '@/features/character/_components/character-pre
 import { CosmeticThumbnail } from '@/features/character/_components/cosmetic-thumbnail';
 import { previewCosmetic } from '@/features/shop/_utils/preview-outfit';
 
-type Tab = 'hair' | 'face' | 'decoration' | 'equipment';
-type Face = 'head' | 'eyes' | 'mouth' | 'nose' | 'skin';
-type Shop = 'salon' | 'premium';
+type Tab =
+  | 'hair'
+  | 'head'
+  | 'eyes'
+  | 'mouth'
+  | 'nose'
+  | 'skin'
+  | 'sticker'
+  | 'pants'
+  | 'shirt'
+  | 'shoes'
+  | 'wrist'
+  | 'pets'
+  | 'held';
+type Shop = 'salon' | 'premium' | 'pets' | 'accessories' | 'fashion';
 
 function paletteColor(entry: Readonly<CosmeticDefinition>) {
   return entry.kind === 'item-color' ? Object.values(colors[entry.colorGroup][entry.colorValue])[2] : undefined;
@@ -29,12 +42,15 @@ export function ShopDialog({
   onChanged(page: CharacterInventoryPage): void;
 }) {
   const { t } = useTranslation('shop');
-  const [tab, setTab] = useState<Tab>('hair');
-  const [face, setFace] = useState<Face>('head');
+  const [tab, setTab] = useState<Tab>(
+    shop === 'pets' ? 'pets' : shop === 'accessories' ? 'held' : shop === 'fashion' ? 'shirt' : 'hair',
+  );
   const [data, setData] = useState<CharacterInventoryPage>();
   const [details, setDetails] = useState<CharacterInventoryPage>();
-  const [selected, setSelected] = useState<string>();
-  const [color, setColor] = useState<string>();
+  const [selections, setSelections] = useState<Partial<Record<Tab, { id: string; color?: string }>>>({});
+  const [draft, setDraft] = useState<Outfit>();
+  const selected = selections[tab]?.id;
+  const color = selections[tab]?.color;
   const [history, setHistory] = useState<(string | undefined)[]>([undefined]);
   const [index, setIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -56,18 +72,18 @@ export function ShopDialog({
       shop,
       limit: 9,
       cursor,
-      ...(tab === 'equipment'
-        ? { category: 'equipment' }
-        : tab === 'face' && face === 'skin'
+      ...(tab === 'pets'
+        ? { category: 'pet' as const }
+        : tab === 'skin'
           ? { groupId: 'appearance/skin' }
-          : { slot: tab === 'hair' ? 'hair' : tab === 'decoration' ? 'sticker' : face }),
+          : { slot: tab }),
     };
     void getApiSdk()
       .getCharacterInventory(query)
       .then((page) => {
         if (generation !== current.current) return;
         setData(page);
-        setSelected((id) => (page.rows.some((row) => row.definition.id === id) ? id : page.rows[0]?.definition.id));
+        setDraft((value) => value ?? page.outfit);
         changed.current(page);
       })
       .catch(() => {
@@ -83,7 +99,7 @@ export function ShopDialog({
     return () => {
       current.current++;
     };
-  }, [shop, tab, face, cursor, refresh, t]);
+  }, [shop, tab, cursor, refresh, t]);
   const root = data?.rows.find((row) => row.definition.id === selected);
   const groupId = root?.definition.groupId;
   // biome-ignore lint/correctness/useExhaustiveDependencies: refresh updates ownership without changing the selected group.
@@ -106,22 +122,34 @@ export function ShopDialog({
       active = false;
     };
   }, [shop, groupId, refresh, t]);
-  const choice = (color && details?.rows.find((row) => row.definition.id === color)) || root;
-  const preview = data && choice ? previewCosmetic(data.outfit, choice.definition) : data?.outfit;
+  const choice = color ? details?.rows.find((row) => row.definition.id === color) : root;
+  const preview = draft ?? data?.outfit;
   const locked = loading || mutating;
   const price = choice?.offer?.price.amount ?? 0;
 
   function reset() {
     setHistory([undefined]);
     setIndex(0);
-    setSelected(undefined);
-    setColor(undefined);
+    setLoading(true);
+    setData(undefined);
+    setDetails(undefined);
     setNotice('');
     setError('');
   }
 
+  function tryOn(entry: Readonly<CosmeticDefinition>, palette = false) {
+    if (!data || locked || (palette && entry.groupId !== groupId)) return;
+    if (entry.groupId !== groupId) setDetails(undefined);
+    setSelections((values) => ({
+      ...values,
+      [tab]: { id: palette ? selected! : entry.id, color: palette ? entry.id : undefined },
+    }));
+    setDraft((value) => previewCosmetic(value ?? data.outfit, entry));
+    setNotice('');
+  }
+
   async function execute(use: boolean) {
-    if (!choice || !preview || busy.current || locked) return;
+    if (!choice || !data || busy.current || locked) return;
     const row = choice;
     const generation = current.current;
     busy.current = true;
@@ -131,7 +159,7 @@ export function ShopDialog({
     try {
       await getApiSdk().execute({
         ...(use
-          ? { type: 'equip-outfit' as const, outfit: preview }
+          ? { type: 'equip-outfit' as const, outfit: previewCosmetic(data.outfit, row.definition) }
           : { type: 'buy-cosmetic' as const, offerId: row.definition.id }),
         requestId: crypto.randomUUID(),
         mapInstanceId: 'home',
@@ -156,7 +184,16 @@ export function ShopDialog({
     }
   }
 
-  const tabs: Tab[] = shop === 'salon' ? ['hair', 'face', 'decoration'] : ['hair', 'equipment'];
+  const tabs: Tab[] =
+    shop === 'salon'
+      ? ['hair', 'head', 'eyes', 'mouth', 'nose', 'skin', 'sticker']
+      : shop === 'fashion'
+        ? ['shirt', 'pants', 'shoes']
+        : shop === 'accessories'
+          ? ['held']
+          : shop === 'pets'
+            ? ['pets']
+            : ['hair', 'pants', 'shirt', 'shoes', 'wrist'];
   return (
     <Dialog
       title={t(shop)}
@@ -174,7 +211,7 @@ export function ShopDialog({
           value={tab}
           items={tabs.map((id) => ({ id, label: t(`tabs.${id}`) }))}
           onChange={(id) => {
-            if (!busy.current) {
+            if (!busy.current && id !== tab) {
               setTab(id as Tab);
               reset();
             }
@@ -185,24 +222,6 @@ export function ShopDialog({
       <style>{shopCss}</style>
       <div className="shop-content" aria-busy={locked}>
         <section className="shop-catalog" aria-label={t(`tabs.${tab}`)}>
-          {tab === 'face' && (
-            <div className="shop-face-filters">
-              <Tabs
-                label={t('tabs.face')}
-                value={face}
-                items={(['head', 'eyes', 'mouth', 'nose', 'skin'] as const).map((id) => ({
-                  id,
-                  label: t(`filters.${id}`),
-                }))}
-                onChange={(id) => {
-                  if (!busy.current) {
-                    setFace(id as Face);
-                    reset();
-                  }
-                }}
-              />
-            </div>
-          )}
           <section className="shop-list" aria-label={t(`tabs.${tab}`)}>
             <div className="shop-grid">
               {data?.rows.map((row) => (
@@ -211,11 +230,9 @@ export function ShopDialog({
                   key={row.definition.id}
                   className={`shop-card${row.definition.id === selected ? ' is-selected' : ''}`}
                   aria-pressed={row.definition.id === selected}
-                  disabled={mutating}
+                  disabled={locked}
                   onClick={() => {
-                    setSelected(row.definition.id);
-                    setColor(undefined);
-                    setNotice('');
+                    tryOn(row.definition);
                   }}
                 >
                   <CosmeticThumbnail definition={row.definition} />
@@ -247,7 +264,6 @@ export function ShopDialog({
                 disabled={locked || index === 0}
                 onClick={() => {
                   setIndex((value) => value - 1);
-                  setColor(undefined);
                 }}
               >
                 {t('previous')}
@@ -259,7 +275,6 @@ export function ShopDialog({
                   if (!data?.nextCursor) return;
                   setHistory((values) => [...values.slice(0, index + 1), data.nextCursor!]);
                   setIndex((value) => value + 1);
-                  setColor(undefined);
                 }}
               >
                 {t('next')}
@@ -281,10 +296,12 @@ export function ShopDialog({
               <button
                 type="button"
                 className="shop-base-palette"
-                disabled={mutating}
+                disabled={locked}
                 aria-pressed={!color}
                 title={t('base')}
-                onClick={() => setColor(undefined)}
+                onClick={() => {
+                  if (root) tryOn(root.definition);
+                }}
               >
                 {t('base')}
               </button>
@@ -294,11 +311,11 @@ export function ShopDialog({
                   <button
                     type="button"
                     key={row.definition.id}
-                    disabled={mutating}
+                    disabled={locked}
                     aria-label={row.definition.label}
                     title={`${row.definition.label}${row.owned ? ` · ${t('owned')}` : ''}`}
                     aria-pressed={color === row.definition.id}
-                    onClick={() => setColor(row.definition.id)}
+                    onClick={() => tryOn(row.definition, true)}
                     style={{ background: paletteColor(row.definition) }}
                   >
                     <span>{row.owned ? '✓' : ''}</span>

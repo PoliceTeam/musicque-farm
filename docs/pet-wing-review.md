@@ -29,3 +29,7 @@ Art guide nhắc các script `tools/pets`, `tools/pets2` và `tools/wings`, như
 Bản v2 đã bị từ chối sau đối chiếu trực tiếp: đầu hẹp, thân cao, mắt nhỏ và bóng lông quá phẳng. Đã khôi phục chính xác 3 dáng đứng và 6 frame bước chân cũ. Kích thước, anchor, hiệu ứng và các loài khác giữ nguyên.
 
 Đã xóa nguồn raster, exporter và ảnh review của bản thử bị loại. Khi sửa tiếp, lấy sprite cũ làm nền, giữ silhouette tròn mập và khuôn mặt; chỉ sửa vùng nét bị bết sau khi duyệt ở kích thước game.
+
+## Bộ pet bổ sung ngày 17/10/2026
+
+Tách 8 loài mới từ sheet người dùng cung cấp: mèo vàng, chó tai cụp, hươu, gấu trúc, heo, rùa, cá hề, chim hồng. Nguồn, crop frame và exporter giữ trong `docs/art/pet-shop/` và `tools/pet-shop/`. Mỗi loài có 3 cấp, frame chung kích thước/neo chân trong từng cấp; chỉ cấp đầu được bán. Giữ nguyên mọi pixel và palette của pet cũ, gồm mèo trắng đã khôi phục. Bộ mới đã được kiểm tra bằng contact sheet trên nền sáng; chưa có xác nhận duyệt mỹ thuật từ người dùng và chưa xác minh trực tiếp UI bằng trình duyệt.

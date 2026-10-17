@@ -1,0 +1,9 @@
+# Premium shop interior
+
+`center/premium-shop` is entered through the existing Premium storefront on Shopping Street. The storefront now navigates into the shared location scene; the employee, counter and front yellow marker open the existing Premium shop modal. The exit returns to the same storefront. Movement, channels, presence, profile/header and return navigation use the common location runtime.
+
+The user-supplied originals are in `docs/art/premium-shop/`. `assets.json` records separately reusable modules: wall/floor tiles, sign, flags, door, mats, plants, flowers, counter, desk accessories, stools, display furniture, mirror, mannequins and jewel showcase. Run `python3 tools/premium-shop/export-assets.py` (Pillow) to export lossless WebP. The empty tabletop is restored with pixels from the supplied empty furniture module. Employee, books, computer and flowers are separate layers. The reference screenshot is never baked into the full room. Populated display shelves remain their own props; they do not grant wearable items.
+
+This change retains the existing Premium catalog, coin prices, canonical Goku palettes and minimum-level-only purchase policy. Hair, pants, shirt, shoes and wrist have separate direct tabs. Trial is local and ownership/purchase/equip commands remain server-validated. No new catalog item, new currency, furniture transaction or upgrade operation is added by the room artwork. See `docs/cosmetic-economy.md`.
+
+The aisle and exit remain clear; the jewel showcase sits beside the central aisle. Artwork is checked using a temporary composition preview, not claimed as direct browser UI verification or user approval. `tests/premium-shop.test.ts` covers storefront navigation, staff/marker interaction, exit, clear aisle, resource resolution and retained inventory policies.

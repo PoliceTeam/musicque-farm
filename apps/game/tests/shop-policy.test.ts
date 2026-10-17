@@ -93,3 +93,88 @@ it('previews base items and their colors without mutating or granting the real o
   ).rejects.toMatchObject({ code: 'NOT_ALLOWED' });
   expect((await sdk.getPlayer()).outfit).toEqual(defaultOutfit);
 });
+
+it('uses the original Goku palette for trial, purchase and equip, retaining purchased alternate colors', async () => {
+  const { sdk, repository } = fixture();
+  for (const [id, field, expected] of [
+    ['item/shirt.goku', 'shirtColor', 'Cam'],
+    ['item/pants.goku', 'pantsColor', 'Cam'],
+    ['item/shoes.goku', 'shoesColor', 'Xanh'],
+    ['item/wrist.goku', 'wristColor', 'Xanh'],
+  ] as const) {
+    const entry = COSMETIC_CATALOG[id];
+    const outfit = previewCosmetic((await sdk.getPlayer()).outfit, entry);
+    expect(outfit[field]).toBe(expected);
+    const offer = cosmeticOffer(id);
+    expect(
+      offer.reward.cosmeticIds.some((colorId) =>
+        Object.values(COSMETIC_CATALOG).some(
+          (color) => color.id === colorId && color.kind === 'item-color' && color.colorValue === expected,
+        ),
+      ),
+    ).toBe(true);
+    await sdk.execute({ type: 'buy-cosmetic', offerId: id, requestId: id, mapInstanceId: 'home' });
+    await sdk.execute({ type: 'equip-outfit', outfit, requestId: `${id}/wear`, mapInstanceId: 'home' });
+    expect((await sdk.getPlayer()).outfit[field]).toBe(expected);
+  }
+  const alternate = Object.values(COSMETIC_CATALOG).find(
+    (entry) => entry.kind === 'item-color' && entry.requires === 'item/shirt.goku' && entry.colorValue === 'Đỏ',
+  )!;
+  await sdk.execute({ type: 'buy-cosmetic', offerId: alternate.id, requestId: 'red-goku', mapInstanceId: 'home' });
+  await sdk.execute({
+    type: 'equip-outfit',
+    outfit: { ...(await sdk.getPlayer()).outfit, shirtColor: 'Đỏ' },
+    requestId: 'wear-red-goku',
+    mapInstanceId: 'home',
+  });
+  // Emulate an old shop grant that lacked the canonical orange palette.
+  await repository.transaction((document) => {
+    delete document.characterInventory!.unlocks['item-color/shirt.goku/orange'];
+  });
+  const coins = (await sdk.getInventory()).farm.coins;
+  const repaired = await sdk.getCharacterInventory({ view: 'shop', shop: 'premium', groupId: 'item/shirt.goku' });
+  expect(repaired.rows.find((row) => row.definition.id === 'item-color/shirt.goku/orange')?.owned).toBe(true);
+  expect(repaired.rows.find((row) => row.definition.id === alternate.id)?.owned).toBe(true);
+  expect((await sdk.getPlayer()).outfit.shirtColor).toBe('Đỏ');
+  expect((await sdk.getInventory()).farm.coins).toBe(coins);
+});
+
+it('layers trial choices across slots and colors while purchases leave the real outfit unchanged', async () => {
+  const { sdk } = fixture();
+  const real = (await sdk.getPlayer()).outfit;
+  const hair = previewCosmetic(real, COSMETIC_CATALOG['item-color/hair.slick/blue']);
+  const shirt = previewCosmetic(hair, COSMETIC_CATALOG['item/shirt.goku']);
+  const pants = previewCosmetic(shirt, COSMETIC_CATALOG['item/pants.goku']);
+  const skin = Object.values(COSMETIC_CATALOG).find((entry) => entry.kind === 'skin-color')!;
+  const combined = previewCosmetic(pants, skin);
+  expect(combined).toMatchObject({
+    hair: 'hair.slick',
+    hairColor: 'Xanh dương',
+    shirt: shirt.shirt,
+    shirtColor: 'Cam',
+    pants: pants.pants,
+    pantsColor: 'Cam',
+  });
+  expect(combined.skin).toBe(skin.kind === 'skin-color' && skin.colorValue);
+  const changedHair = previewCosmetic(combined, COSMETIC_CATALOG['item/hair.goku.1']);
+  expect(changedHair).toMatchObject({
+    shirt: combined.shirt,
+    shirtColor: combined.shirtColor,
+    pants: combined.pants,
+    pantsColor: combined.pantsColor,
+    skin: combined.skin,
+  });
+  expect(combined.hair).toBe('hair.slick');
+  expect(real).toEqual(defaultOutfit);
+  await sdk.execute({
+    type: 'buy-cosmetic',
+    offerId: 'item/shirt.goku',
+    requestId: 'trial-shirt',
+    mapInstanceId: 'home',
+  });
+  expect((await sdk.getPlayer()).outfit).toEqual(real);
+  // Using the purchased item applies that item, not unrelated unowned trial pieces.
+  const wear = previewCosmetic((await sdk.getPlayer()).outfit, COSMETIC_CATALOG['item/shirt.goku']);
+  await sdk.execute({ type: 'equip-outfit', outfit: wear, requestId: 'wear-trial-shirt', mapInstanceId: 'home' });
+  expect((await sdk.getPlayer()).outfit).toMatchObject({ hair: real.hair, pants: real.pants, shirt: shirt.shirt });
+});

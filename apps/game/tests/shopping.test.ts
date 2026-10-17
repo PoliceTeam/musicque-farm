@@ -19,8 +19,18 @@ it('opens the shared shopping street from Center with all six supplied shops reg
     if (layer.id === 'salon') {
       expect(layer.destination).toEqual({ regionId: 'center', mapId: 'salon' });
       expect(locationInputAt(map, layer.x + layer.width / 2, 565).kind).toBe('destination');
+    } else if (layer.id === 'gifts') {
+      expect(layer.destination).toEqual({ regionId: 'center', mapId: 'held-shop' });
+      expect(locationInputAt(map, layer.x + layer.width / 2, 565).kind).toBe('destination');
+    } else if (layer.id === 'pets') {
+      expect(layer.destination).toEqual({ regionId: 'center', mapId: 'pet-shop' });
+      expect(locationInputAt(map, layer.x + layer.width / 2, 565).kind).toBe('destination');
     } else if (layer.id === 'premium') {
-      expect(locationInputAt(map, layer.x + layer.width / 2, 565)).toEqual({ kind: 'shop', shop: 'premium' });
+      expect(layer.destination).toEqual({ regionId: 'center', mapId: 'premium-shop' });
+      expect(locationInputAt(map, layer.x + layer.width / 2, 565).kind).toBe('destination');
+    } else if (layer.id === 'jewelry' || layer.id === 'fashion') {
+      expect(layer.destination).toEqual({ regionId: 'center', mapId: `${layer.id}-shop` });
+      expect(locationInputAt(map, layer.x + layer.width / 2, 565).kind).toBe('destination');
     } else {
       expect(layer.destination).toBeUndefined();
       expect(locationInputAt(map, layer.x + layer.width / 2, 565).kind).toBe('move');

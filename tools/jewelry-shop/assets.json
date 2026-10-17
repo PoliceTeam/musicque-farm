@@ -1,0 +1,305 @@
+[
+  {
+    "key": "wall",
+    "box": [
+      1070,
+      31,
+      1470,
+      78
+    ],
+    "tile": true
+  },
+  {
+    "key": "floor",
+    "box": [
+      385,
+      385,
+      425,
+      420
+    ],
+    "tile": true
+  },
+  {
+    "key": "front-wall",
+    "box": [
+      1030,
+      887,
+      1110,
+      912
+    ],
+    "tile": true
+  },
+  {
+    "key": "door",
+    "box": [
+      1021,
+      246,
+      1203,
+      379
+    ]
+  },
+  {
+    "key": "sign",
+    "box": [
+      371,
+      23,
+      699,
+      127
+    ],
+    "largestComponent": true,
+    "polygon": [
+      [
+        0,
+        47
+      ],
+      [
+        24,
+        25
+      ],
+      [
+        69,
+        25
+      ],
+      [
+        82,
+        8
+      ],
+      [
+        103,
+        25
+      ],
+      [
+        133,
+        25
+      ],
+      [
+        148,
+        0
+      ],
+      [
+        182,
+        0
+      ],
+      [
+        198,
+        25
+      ],
+      [
+        249,
+        25
+      ],
+      [
+        264,
+        13
+      ],
+      [
+        279,
+        28
+      ],
+      [
+        305,
+        34
+      ],
+      [
+        327,
+        55
+      ],
+      [
+        318,
+        86
+      ],
+      [
+        291,
+        101
+      ],
+      [
+        31,
+        101
+      ],
+      [
+        5,
+        81
+      ]
+    ]
+  },
+  {
+    "key": "banner",
+    "box": [
+      1325,
+      231,
+      1394,
+      369
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "mat",
+    "box": [
+      1024,
+      383,
+      1212,
+      460
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "mirror",
+    "box": [
+      1209,
+      346,
+      1316,
+      507
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "plant",
+    "box": [
+      843,
+      478,
+      923,
+      596
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "flowers",
+    "box": [
+      920,
+      478,
+      997,
+      596
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "stool",
+    "box": [
+      999,
+      652,
+      1057,
+      735
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "counter",
+    "box": [
+      694,
+      707,
+      977,
+      770
+    ],
+    "counter": true
+  },
+  {
+    "key": "computer",
+    "box": [
+      896,
+      646,
+      973,
+      711
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "book",
+    "box": [
+      767,
+      672,
+      823,
+      710
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "rings-display",
+    "box": [
+      16,
+      477,
+      214,
+      651
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "amulets-display",
+    "box": [
+      215,
+      477,
+      426,
+      651
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "crowns-display",
+    "box": [
+      433,
+      478,
+      635,
+      650
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "gems-display",
+    "box": [
+      19,
+      656,
+      182,
+      802
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "hearts-display",
+    "box": [
+      190,
+      656,
+      315,
+      802
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "stones-display",
+    "box": [
+      321,
+      655,
+      486,
+      803
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "colors-display",
+    "box": [
+      490,
+      655,
+      632,
+      803
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "gem-showcase",
+    "box": [
+      638,
+      481,
+      838,
+      637
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "pedestal",
+    "box": [
+      1433,
+      363,
+      1528,
+      510
+    ],
+    "largestComponent": true
+  }
+]

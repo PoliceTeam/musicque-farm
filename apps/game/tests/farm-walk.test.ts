@@ -29,8 +29,8 @@ describe('farm movement simulation', () => {
     const player = state.town.player;
     player.x = 590;
     player.y = 215;
-    for (let i = 0; i < 100; i++) updateFarmWalk(state, 0.05, [1, 0]);
-    expect(player.x).toBeCloseTo(980);
+    for (let i = 0; i < 80; i++) updateFarmWalk(state, 0.05, [1, 0]);
+    expect(player.x).toBeCloseTo(966);
     expect(player.y).toBe(215);
     expect(player.avatar.action).not.toBe(Action.Stand);
     expect(farmWalkable(player.x, player.y, state.obstacles)).toBe(true);

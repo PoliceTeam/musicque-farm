@@ -12,6 +12,7 @@ import { farmRoute, farmSegmentClear } from '@/features/farm/_utils/farm-path-lo
 import { type Area, stepWalker } from '@/game/movement/movement-logic';
 import { stepPet } from '@/game/movement/pet-follow-logic';
 import { createTownState, type TownState, updateTownEffects } from '@/game/movement/town-logic';
+import { FARM_PLAYER_SPEED } from '@/game/runtime/game-config';
 
 export type FarmWalkState = { town: TownState; route: FarmPoint[]; obstacles: Area[] };
 
@@ -24,7 +25,7 @@ export function createFarmWalkState(
   town.residents = [town.player];
   const player = town.player;
   [player.x, player.y] = FARM_SPAWN;
-  player.speed = 78;
+  player.speed = FARM_PLAYER_SPEED;
   if (player.pet) {
     player.pet.x = player.x - 24;
     player.pet.y = player.y;

@@ -185,7 +185,7 @@ describe('character ownership, containers and permanent colors', () => {
       }),
     ).rejects.toMatchObject({ code: 'NOT_ALLOWED' });
     const first = await t.sdk.getCharacterInventory({ view: 'shop', limit: 3 });
-    expect(first.total).toBe(97);
+    expect(first.total).toBe(113);
     const shirts = await t.sdk.getCharacterInventory({ view: 'shop', slot: 'shirt' });
     expect(shirts.rows.every((row) => 'slot' in row.definition && row.definition.slot === 'shirt')).toBe(true);
     await expect(t.sdk.getCharacterInventory({ view: 'shop', slot: 'unknown-slot' })).rejects.toMatchObject({

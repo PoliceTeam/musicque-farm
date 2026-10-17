@@ -1,6 +1,6 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import { COSMETIC_CATALOG, type CosmeticDefinition } from '@chibi-town/character-core/cosmetic-catalog';
-import { defaultOutfit, femaleOutfit, outfitFields } from '@chibi-town/character-core/outfit-logic';
+import { defaultItemOutfit, outfitFields } from '@chibi-town/character-core/outfit-logic';
 
 /** Preview is local only. Equipping still passes the server's ownership and palette validation. */
 export function previewCosmetic(outfit: Outfit, entry: Readonly<CosmeticDefinition>): Outfit {
@@ -17,8 +17,6 @@ export function previewCosmetic(outfit: Outfit, entry: Readonly<CosmeticDefiniti
   const palette = outfitFields.find((value) => value.colors === entry.slot);
   if (palette)
     next[palette.key] =
-      entry.kind === 'item-color'
-        ? entry.colorValue
-        : (root.gender === 'female' ? femaleOutfit : defaultOutfit)[palette.key];
+      entry.kind === 'item-color' ? entry.colorValue : defaultItemOutfit(root.itemId, root.gender)[palette.key];
   return next;
 }

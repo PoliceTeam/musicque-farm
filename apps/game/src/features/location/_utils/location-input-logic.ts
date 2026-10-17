@@ -1,9 +1,12 @@
 import type { MapDefinition } from '@chibi-town/game-content';
 import { moveInLocation } from '@/features/location/_utils/location-logic';
+import type { Pet } from '@/game/movement/pet-follow-logic';
+import { LOCATION_WALK_SPEED } from '@/game/runtime/game-config';
 
 const attractionIds = ['atm', 'arcade', 'hall', 'auction', 'prizes', 'racing'] as const;
 export type Attraction = (typeof attractionIds)[number];
 export type LocationInputState = {
+  pet?: Pet;
   x: number;
   y: number;
   target?: [number, number];
@@ -41,7 +44,7 @@ export function updateLocationInput(
   }
   const distance = Math.hypot(dx, dy);
   if (distance) {
-    const travel = state.target ? Math.min(distance, 100 * seconds) : 100 * seconds;
+    const travel = state.target ? Math.min(distance, LOCATION_WALK_SPEED * seconds) : LOCATION_WALK_SPEED * seconds;
     state.position[0] = state.x;
     state.position[1] = state.y;
     state.delta[0] = (dx / distance) * travel;

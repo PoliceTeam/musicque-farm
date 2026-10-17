@@ -1,0 +1,130 @@
+[
+  {
+    "id": "star-wand",
+    "label": "Gậy ngôi sao",
+    "box": [
+      836,
+      717,
+      879,
+      810
+    ],
+    "height": 40,
+    "grip": [
+      0.5,
+      0.82
+    ],
+    "angle": -28
+  },
+  {
+    "id": "heart-wand",
+    "label": "Gậy trái tim",
+    "box": [
+      781,
+      725,
+      831,
+      811
+    ],
+    "height": 38,
+    "grip": [
+      0.5,
+      0.82
+    ],
+    "angle": -28
+  },
+  {
+    "id": "moon-wand",
+    "label": "Gậy mặt trăng",
+    "box": [
+      1015,
+      703,
+      1068,
+      803
+    ],
+    "height": 42,
+    "grip": [
+      0.5,
+      0.83
+    ],
+    "angle": -28
+  },
+  {
+    "id": "snow-wand",
+    "label": "Gậy bông tuyết",
+    "box": [
+      1134,
+      703,
+      1183,
+      811
+    ],
+    "height": 42,
+    "grip": [
+      0.5,
+      0.82
+    ],
+    "angle": -28
+  },
+  {
+    "id": "sunflower-wand",
+    "label": "Gậy hướng dương",
+    "box": [
+      1196,
+      703,
+      1252,
+      806
+    ],
+    "height": 40,
+    "grip": [
+      0.5,
+      0.82
+    ],
+    "angle": -28
+  },
+  {
+    "id": "pink-guitar",
+    "label": "Đàn guitar hồng",
+    "box": [
+      1178,
+      809,
+      1244,
+      955
+    ],
+    "height": 46,
+    "grip": [
+      0.55,
+      0.57
+    ],
+    "angle": -10
+  },
+  {
+    "id": "tennis-racket",
+    "label": "Vợt tennis",
+    "box": [
+      1400,
+      795,
+      1456,
+      879
+    ],
+    "height": 38,
+    "grip": [
+      0.65,
+      0.82
+    ],
+    "angle": -28
+  },
+  {
+    "id": "rose",
+    "label": "Hoa hồng",
+    "box": [
+      1309,
+      808,
+      1363,
+      901
+    ],
+    "height": 36,
+    "grip": [
+      0.4,
+      0.8
+    ],
+    "angle": -28
+  }
+]

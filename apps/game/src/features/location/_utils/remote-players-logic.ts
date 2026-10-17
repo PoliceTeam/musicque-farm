@@ -1,8 +1,11 @@
 import { Action, AvatarState } from '@chibi-town/character-core/animation-logic';
-import { toEquip } from '@chibi-town/character-core/outfit-logic';
+import { toEquip, wornPet } from '@chibi-town/character-core/outfit-logic';
 import type { RealtimeEvent, RealtimeNotification } from '@chibi-town/contracts/realtime';
+import { makePet, type Pet, stepPet } from '@/game/movement/pet-follow-logic';
+import { LOCATION_WALK_SPEED } from '@/game/runtime/game-config';
 
 export type RemotePlayer = {
+  pet?: Pet;
   id: string;
   name: string;
   level: number;
@@ -11,7 +14,7 @@ export type RemotePlayer = {
   y: number;
   target: [number, number];
 };
-const WALK_SPEED = 100;
+
 /** Further than this the walk would look like a chase, so the avatar is placed directly. */
 const SNAP_DISTANCE = 320;
 
@@ -21,7 +24,9 @@ export function createRemotePlayers(selfId: string) {
 
   function add(player: Extract<RealtimeEvent, { type: 'map.join' }>['player']) {
     if (player.id === selfId) return;
+    const pet = wornPet(player.outfit);
     players.set(player.id, {
+      pet: pet ? makePet(pet, player.x, player.y, false) : undefined,
       id: player.id,
       name: player.name,
       level: player.level,
@@ -65,12 +70,19 @@ export function createRemotePlayers(selfId: string) {
           player.avatar.setAction(Action.Stand);
           continue;
         }
-        const travel = Math.min(distance, WALK_SPEED * seconds);
+        const travel = Math.min(distance, LOCATION_WALK_SPEED * seconds);
         player.x += (dx / distance) * travel;
         player.y += (dy / distance) * travel;
         if (Math.abs(dx) > 0.5) player.avatar.mirror = dx < 0;
         player.avatar.setAction(Action.Walk);
       }
+      for (const player of players.values())
+        if (player.pet)
+          stepPet(
+            player.pet,
+            { x: player.x, y: player.y, speed: LOCATION_WALK_SPEED, mirror: player.avatar.mirror },
+            seconds,
+          );
     },
   };
 }

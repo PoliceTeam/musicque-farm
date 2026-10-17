@@ -5,7 +5,7 @@ import {
   type CosmeticId,
 } from '@chibi-town/character-core/cosmetic-catalog';
 import { colors, items, pets } from '@chibi-town/character-core/item-catalog';
-import { defaultOutfit, femaleOutfit, outfitFields } from '@chibi-town/character-core/outfit-logic';
+import { defaultItemOutfit, outfitFields } from '@chibi-town/character-core/outfit-logic';
 import type { SpriteSheet } from '@chibi-town/character-core/sprite-types';
 import { petSheet, sheet } from '@/assets/asset-catalog';
 
@@ -15,7 +15,10 @@ export function cosmeticThumbnailModel(definition: Readonly<CosmeticDefinition>,
     const pet = pets[definition.petId];
     return { sheet: petSheet, ops: [{ piece: pet.piece, recolor: pet.recolor, x: 0, y: 0, flip: false }] };
   }
-  const preset = 'gender' in definition && definition.gender === 'female' ? femaleOutfit : defaultOutfit;
+  const preset = defaultItemOutfit(
+    'itemId' in definition ? definition.itemId : '',
+    'gender' in definition ? definition.gender : undefined,
+  );
   const recolor: Recolor = {};
   for (const field of outfitFields) if (field.colors) Object.assign(recolor, colors[field.colors][preset[field.key]]);
   const ownedColor =

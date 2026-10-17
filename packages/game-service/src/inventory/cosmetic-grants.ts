@@ -3,7 +3,7 @@ import { defaultOutfit, sanitizeOutfit } from '@chibi-town/character-core/outfit
 import { ApiSdkError } from '@chibi-town/contracts';
 import type { CharacterCosmeticInstance, CosmeticGrantSource } from '@chibi-town/game-content/cosmetic-economy';
 import { CHARACTER_BAG_SLOTS } from '@chibi-town/game-content/cosmetic-shop';
-import { bindings, skinId } from '../character/outfit-bindings.js';
+import { bindings, initialColor, skinId } from '../character/outfit-bindings.js';
 import type { PlayerDocument } from '../player-document.js';
 import { bagSlot, type CharacterInventoryState, definition, own } from './inventory-state.js';
 
@@ -58,9 +58,25 @@ export function grantCharacterCosmetics(
   return true;
 }
 
-/** Runs once from a trusted saved outfit, retaining only the exact worn items and palettes. */
+/** Migrate trusted outfits once and repair missing base palettes on historical shop purchases. */
 export function ensureCharacterInventory(document: PlayerDocument, now: number): CharacterInventoryState {
-  if (document.characterInventory) return document.characterInventory;
+  if (document.characterInventory) {
+    const state = document.characterInventory;
+    // Previously bought items retain every palette and also receive their canonical base color.
+    for (const instance of Object.values(state.instances)) {
+      if (state.grants[instance.firstGrantId]?.source.kind !== 'shop') continue;
+      const color = initialColor(definition(instance.cosmeticId));
+      if (color && !own(state, color))
+        grantCharacterCosmetics(
+          state,
+          `migration/base-color/${instance.cosmeticId}`,
+          [color],
+          { kind: 'migration', migrationId: 'base-colors/v1' },
+          now,
+        );
+    }
+    return state;
+  }
   const state: CharacterInventoryState = {
     version: 1,
     characterId: 'main',

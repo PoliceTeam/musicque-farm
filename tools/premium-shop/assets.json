@@ -1,0 +1,308 @@
+[
+  {
+    "key": "wall",
+    "box": [
+      946,
+      36,
+      1159,
+      155
+    ],
+    "tile": true
+  },
+  {
+    "key": "floor",
+    "source": "reference.png",
+    "box": [
+      590,
+      465,
+      650,
+      525
+    ],
+    "tile": true
+  },
+  {
+    "key": "front-wall",
+    "source": "reference.png",
+    "box": [
+      90,
+      817,
+      590,
+      907
+    ],
+    "tile": true
+  },
+  {
+    "key": "sign",
+    "box": [
+      29,
+      0,
+      598,
+      143
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "banner",
+    "box": [
+      597,
+      14,
+      736,
+      151
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "door",
+    "box": [
+      29,
+      149,
+      207,
+      296
+    ]
+  },
+  {
+    "key": "mat",
+    "box": [
+      25,
+      298,
+      221,
+      385
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "small-mat",
+    "box": [
+      718,
+      312,
+      851,
+      362
+    ]
+  },
+  {
+    "key": "plant",
+    "box": [
+      204,
+      224,
+      279,
+      330
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "flowers",
+    "box": [
+      1038,
+      238,
+      1106,
+      343
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "counter",
+    "box": [
+      547,
+      432,
+      1045,
+      510
+    ],
+    "counter": true
+  },
+  {
+    "key": "book",
+    "box": [
+      688,
+      394,
+      755,
+      435
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "computer",
+    "box": [
+      860,
+      347,
+      951,
+      435
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "desk-flowers",
+    "box": [
+      550,
+      348,
+      618,
+      435
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "stool",
+    "box": [
+      248,
+      315,
+      317,
+      402
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "crowns-display",
+    "box": [
+      383,
+      237,
+      535,
+      363
+    ]
+  },
+  {
+    "key": "wings-display",
+    "box": [
+      547,
+      235,
+      690,
+      351
+    ]
+  },
+  {
+    "key": "crown-showcase",
+    "box": [
+      697,
+      153,
+      865,
+      310
+    ]
+  },
+  {
+    "key": "hair-display",
+    "box": [
+      883,
+      242,
+      1024,
+      337
+    ]
+  },
+  {
+    "key": "mirror",
+    "box": [
+      1162,
+      164,
+      1261,
+      351
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "mannequins",
+    "box": [
+      1246,
+      163,
+      1527,
+      403
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "hats-display",
+    "box": [
+      19,
+      403,
+      290,
+      544
+    ]
+  },
+  {
+    "key": "hairbands-display",
+    "box": [
+      296,
+      402,
+      455,
+      546
+    ]
+  },
+  {
+    "key": "dresses-display",
+    "box": [
+      24,
+      548,
+      287,
+      750
+    ]
+  },
+  {
+    "key": "hairstyles-display",
+    "box": [
+      292,
+      549,
+      524,
+      750
+    ],
+    "largestComponent": true
+  },
+  {
+    "key": "charms-display",
+    "box": [
+      527,
+      550,
+      636,
+      756
+    ]
+  },
+  {
+    "key": "gem-showcase",
+    "box": [
+      699,
+      600,
+      838,
+      763
+    ]
+  },
+  {
+    "key": "bags-display",
+    "box": [
+      892,
+      546,
+      1007,
+      762
+    ]
+  },
+  {
+    "key": "accessories-display",
+    "box": [
+      1015,
+      552,
+      1239,
+      755
+    ]
+  },
+  {
+    "key": "suits-display",
+    "box": [
+      1242,
+      552,
+      1524,
+      756
+    ]
+  },
+  {
+    "key": "wands-display",
+    "box": [
+      1241,
+      406,
+      1526,
+      556
+    ]
+  },
+  {
+    "key": "star-display",
+    "box": [
+      1155,
+      401,
+      1236,
+      556
+    ]
+  }
+]

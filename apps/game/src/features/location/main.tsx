@@ -1,7 +1,7 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import type { ChannelDirectory } from '@chibi-town/contracts';
 import type { createGameAudio } from '@chibi-town/game-audio';
-import type { MapDefinition } from '@chibi-town/game-content';
+import type { MapDefinition, MapLayer } from '@chibi-town/game-content';
 import { Button, Dialog } from '@chibi-town/ui/react';
 import { useRouter } from 'next/navigation';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
@@ -57,7 +57,7 @@ export function Screen({
     channelRef.current = directory;
     setChannelDirectory(directory);
   }, []);
-  const [shop, setShop] = useState<'salon' | 'premium'>();
+  const [shop, setShop] = useState<MapLayer['shop']>();
   const [attraction, setAttraction] = useState<Attraction>();
   const host = useRef<HTMLDivElement>(null);
   const equippedOutfit = useRef<Outfit | undefined>(undefined);
@@ -168,7 +168,12 @@ export function Screen({
         )
       }
     >
-      {shop && (
+      {shop === 'jewelry' && (
+        <Dialog title={t('jewelryTitle')} closeLabel={t('close')} onClose={() => setShop(undefined)}>
+          <p>{t('jewelryPreparing')}</p>
+        </Dialog>
+      )}
+      {shop && shop !== 'jewelry' && (
         <Suspense fallback={null}>
           <ShopDialog
             shop={shop}
@@ -226,9 +231,12 @@ export function Screen({
           ))}
         {error && <p role="alert">{error}</p>}
       </nav>
-      {definition?.id === 'salon' && (
-        <Button className="location-controls-toggle" onClick={() => setShop('salon')}>
-          {t('shopStaff')}
+      {definition?.layers?.some((layer) => layer.shop) && (
+        <Button
+          className="location-controls-toggle"
+          onClick={() => setShop(definition.layers?.find((layer) => layer.shop)?.shop)}
+        >
+          {t('shopEmployee')}
         </Button>
       )}
       {definition?.regionId === 'fun' && (

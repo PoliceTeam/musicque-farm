@@ -1,0 +1,23 @@
+export const SHOP_NPC_ROLES = [
+  'store',
+  'jewelry',
+  'salon',
+  'hairdresser',
+  'premium',
+  'held',
+  'pets',
+  'plants',
+  'furniture',
+  'music',
+  'fashion',
+  'accessories',
+  'electronics',
+  'sports',
+  'books',
+  'bakery',
+  'food',
+  'drinks',
+  'flowers',
+  'photography',
+] as const;
+export type ShopNpcRole = (typeof SHOP_NPC_ROLES)[number];

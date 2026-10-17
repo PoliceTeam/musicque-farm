@@ -1,6 +1,12 @@
 import { arcadeMap } from './arcade-map.js';
 import { entertainmentMap } from './entertainment.js';
+import { fashionShopMap } from './fashion-shop.js';
+import { heldShopMap } from './held-shop.js';
+import { jewelryShopMap } from './jewelry-shop.js';
+import { petShopMap } from './pet-shop.js';
+import { premiumShopMap } from './premium-shop.js';
 import { salonMap } from './salon.js';
+import type { ShopNpcRole } from './shop-npcs.js';
 import { shoppingMap } from './shopping.js';
 export type RegionDefinition = { id: string; label: string; maps: readonly string[] };
 export type MapLayer = {
@@ -15,7 +21,9 @@ export type MapLayer = {
   rotationSeconds?: number;
   drift?: { distance: number; seconds: number };
   destination?: { regionId: string; mapId: string };
-  shop?: 'salon' | 'premium';
+  shop?: 'salon' | 'premium' | 'pets' | 'accessories' | 'fashion' | 'jewelry';
+  npc?: ShopNpcRole;
+  pet?: string;
   shopInteraction?: readonly [number, number];
   entrance?: readonly [number, number];
 };
@@ -58,7 +66,7 @@ export const REGIONS = [
   {
     id: 'center',
     label: 'Trung tâm',
-    maps: ['shopping-street', 'salon'],
+    maps: ['shopping-street', 'salon', 'pet-shop', 'held-shop', 'premium-shop', 'jewelry-shop', 'fashion-shop'],
   },
   {
     id: 'fun',
@@ -96,6 +104,11 @@ export const MAPS: readonly MapDefinition[] = [
   entertainmentMap,
   shoppingMap,
   salonMap,
+  petShopMap,
+  heldShopMap,
+  premiumShopMap,
+  jewelryShopMap,
+  fashionShopMap,
   arcadeMap,
 ];
 
