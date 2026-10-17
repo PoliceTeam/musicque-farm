@@ -1,3 +1,4 @@
+import type { Outfit } from '@chibi-town/character-core/character-types';
 import type { ChannelDirectory } from '@chibi-town/contracts';
 import type { createGameAudio } from '@chibi-town/game-audio';
 import type { MapDefinition } from '@chibi-town/game-content';
@@ -36,6 +37,7 @@ export function Screen({
   const channelVersion = useRef(0);
   const [channelDirectory, setChannelDirectory] = useState<ChannelDirectory>();
   const [channelDialog, setChannelDialog] = useState(false);
+  const [controlsOpen, setControlsOpen] = useState(false);
   const updateChannels = useCallback((directory: ChannelDirectory) => {
     channelVersion.current++;
     channelRef.current = directory;
@@ -43,6 +45,7 @@ export function Screen({
   }, []);
   const [attraction, setAttraction] = useState<Attraction>();
   const host = useRef<HTMLDivElement>(null);
+  const equippedOutfit = useRef<Outfit | undefined>(undefined);
   const navigation = useRouter();
   const [portalLabels, setPortalLabels] = useState<Record<string, string>>({});
   useEffect(() => {
@@ -91,6 +94,8 @@ export function Screen({
 
       onHeader: setHeader,
 
+      outfit: () => equippedOutfit.current,
+
       onChannels: () => setChannelDialog(true),
 
       onAttraction: (value) => {
@@ -110,6 +115,10 @@ export function Screen({
       coins={header?.coins}
       gems={header?.gems}
       audio={audio}
+      onOutfitChange={(next) => {
+        equippedOutfit.current = next;
+        setHeader((value) => value && { ...value, player: { ...value.player, outfit: next } });
+      }}
       menuActions={
         definition?.channels && (
           <Button onClick={() => setChannelDialog(true)}>
@@ -146,10 +155,14 @@ export function Screen({
         {error && <p role="alert">{error}</p>}
       </nav>
       {definition?.regionId === 'fun' && (
-        <details className="location-hint">
-          <summary>{t('locationControls')}</summary>
+        <Button className="location-controls-toggle" onClick={() => setControlsOpen(true)}>
+          {t('locationControls')}
+        </Button>
+      )}
+      {controlsOpen && (
+        <Dialog title={t('locationControls')} closeLabel={t('close')} onClose={() => setControlsOpen(false)}>
           <p>{t('entertainmentHint')}</p>
-        </details>
+        </Dialog>
       )}
       {channelDialog && definition?.channels && (
         <ChannelDialog

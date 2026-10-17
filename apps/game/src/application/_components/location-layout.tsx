@@ -4,13 +4,17 @@ import type { GameSdk } from '@chibi-town/contracts';
 import type { createGameAudio } from '@chibi-town/game-audio';
 import { CurrencyCounter, CurrencyIcon, GameHeader, ProfileMenu } from '@chibi-town/ui/react';
 import Link from 'next/link';
-import { type ReactNode, type RefObject, useContext, useEffect, useRef, useState } from 'react';
+import { lazy, type ReactNode, type RefObject, Suspense, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getAuthClient } from '@/application/auth-client';
 import { AuthContext } from '@/application/auth-context';
 import { RenameDialog } from '@/features/auth/rename-dialog';
 import { AudioSettings } from '@/features/settings/_components/audio-settings';
 import { drawPlayerPortrait } from '@/game/rendering/player-portrait-view';
+
+const CharacterDialog = lazy(() =>
+  import('@/features/character/_components/character-dialog').then((module) => ({ default: module.CharacterDialog })),
+);
 
 export type LocationPlayer = Awaited<ReturnType<GameSdk['getPlayer']>>;
 
@@ -28,6 +32,7 @@ export function LocationLayout({
   menuRef,
   counters,
   children,
+  onOutfitChange,
 }: {
   title: string;
   accessibleTitle?: string;
@@ -41,20 +46,24 @@ export function LocationLayout({
   menuRef?: RefObject<HTMLDetailsElement | null>;
   counters?: ReactNode;
   children: ReactNode;
+  onOutfitChange?: (outfit: Outfit) => void;
 }) {
   const { t } = useTranslation('common');
   const authClient = getAuthClient();
   const auth = useContext(AuthContext);
   const [renameOpen, setRenameOpen] = useState(false);
+  const [characterOpen, setCharacterOpen] = useState(false);
+  const [wornOutfit, setWornOutfit] = useState<Outfit>();
   const portrait = useRef<HTMLCanvasElement>(null);
   const drawnOutfit = useRef('');
   useEffect(() => {
-    if (!outfit || !portrait.current) return;
-    const key = JSON.stringify(outfit);
+    const current = wornOutfit ?? outfit;
+    if (!current || !portrait.current) return;
+    const key = JSON.stringify(current);
     if (drawnOutfit.current === key) return;
-    drawPlayerPortrait(portrait.current, outfit);
+    drawPlayerPortrait(portrait.current, current);
     drawnOutfit.current = key;
-  }, [outfit]);
+  }, [outfit, wornOutfit]);
   return (
     <main className="game-ui ui-location-layout" aria-label={accessibleTitle}>
       <GameHeader
@@ -71,7 +80,15 @@ export function LocationLayout({
             label={t('playerMenu')}
             portrait={<canvas id="player-portrait" ref={portrait} role="img" aria-label={t('portrait')} />}
           >
-            <Link href="/character">{t('character')}</Link>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.currentTarget.closest('details')?.removeAttribute('open');
+                setCharacterOpen(true);
+              }}
+            >
+              {t('character')}
+            </button>
             <Link href="/">{t('worldMap')}</Link>
             {menuActions}
             {authClient && auth.player && (
@@ -106,6 +123,17 @@ export function LocationLayout({
         />
       )}
       {children}
+      {characterOpen && (
+        <Suspense fallback={null}>
+          <CharacterDialog
+            onClose={() => setCharacterOpen(false)}
+            onOutfit={(next) => {
+              setWornOutfit(next);
+              onOutfitChange?.(next);
+            }}
+          />
+        </Suspense>
+      )}
     </main>
   );
 }

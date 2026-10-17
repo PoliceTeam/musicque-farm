@@ -3,6 +3,7 @@ import { defaultOutfit, outfitFields } from '@chibi-town/character-core/outfit-l
 import { ApiSdkError } from '@chibi-town/contracts';
 import type { CharacterInventoryPage, CharacterInventoryQuery } from '@chibi-town/contracts/character-inventory';
 import type { CharacterCosmeticInstance } from '@chibi-town/game-content/cosmetic-economy';
+import { skinId } from '../character/outfit-bindings.js';
 import type { PlayerDocument } from '../player-document.js';
 import { cosmeticOffer } from '../shop/cosmetic-offers.js';
 import { ensureCharacterInventory } from './cosmetic-grants.js';
@@ -35,10 +36,21 @@ export function characterInventoryPage(
     definitions = [...groups.values()];
   }
   const instanceByCosmetic = new Map(Object.values(state.instances).map((item) => [item.cosmeticId, item]));
+  const worn = new Set<string>([skinId(document.outfit ?? defaultOutfit)]);
+  for (const item of Object.values(state.instances)) {
+    if (item.location.container !== 'equipped') continue;
+    worn.add(item.cosmeticId);
+    if (item.colorUnlockId) worn.add(item.colorUnlockId);
+  }
   const rows = definitions
     .flatMap((entry) => {
       const item = instanceByCosmetic.get(entry.id as CharacterCosmeticInstance['cosmeticId']);
-      if (query.view !== 'shop' && item?.location.container !== query.view) return [];
+      if (
+        query.view === 'owned' || query.view === 'unequipped'
+          ? !own(state, entry.id) || (query.view === 'unequipped' && worn.has(entry.id))
+          : query.view !== 'shop' && item?.location.container !== query.view
+      )
+        return [];
       return [
         {
           definition: entry,

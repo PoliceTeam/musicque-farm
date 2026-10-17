@@ -1,4 +1,5 @@
 import { Action, AvatarState } from '@chibi-town/character-core/animation-logic';
+import type { Outfit } from '@chibi-town/character-core/character-types';
 import { toEquip } from '@chibi-town/character-core/outfit-logic';
 import type { ChannelDirectory } from '@chibi-town/contracts';
 import type { MapDefinition } from '@chibi-town/game-content';
@@ -31,6 +32,7 @@ export function createLocationGame(options: {
   parent: HTMLElement;
   map: MapDefinition;
   labels(): LocationLabels;
+  outfit?(): Outfit | undefined;
   channel(): ChannelDirectory | undefined;
   onHeader(header: { player: LocationPlayer; coins: number; gems: number }): void;
   onChannels(): void;
@@ -84,6 +86,7 @@ export function createLocationGame(options: {
     }
     release = resource.release;
     const hero = new AvatarState(toEquip(player.outfit));
+    let equipped = player.outfit;
     const state = createLocationInputState(map);
     const cameraTarget: [number, number] = [state.x, state.y];
 
@@ -148,6 +151,13 @@ export function createLocationGame(options: {
       },
 
       onFrame(view, now, delta, input) {
+        const nextOutfit = options.outfit?.();
+        if (nextOutfit && nextOutfit !== equipped) {
+          equipped = nextOutfit;
+          hero.equip = toEquip(nextOutfit);
+          player.outfit = nextOutfit;
+          realtime?.send({ type: 'map.enter', regionId: map.regionId, mapId: map.id, x: state.x, y: state.y });
+        }
         const channelId = options.channel()?.currentChannelId;
         if (signSource && (channelId !== renderedChannel || signLabel !== options.labels()('channelSign'))) {
           resource.assets.set(

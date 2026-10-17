@@ -1,7 +1,22 @@
-import { Button, FormField, InventoryGrid, Meter } from '@chibi-town/ui/react';
+import { Button, Dialog, FormField, InventoryGrid, Meter } from '@chibi-town/ui/react';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, it } from 'vitest';
+
+it('can omit a redundant visible dialog title while retaining its accessible name and close action', () => {
+  const props = {
+    title: 'Nhân vật',
+
+    onClose() {},
+
+    children: 'Hồ sơ',
+  };
+  const compact = renderToStaticMarkup(<Dialog {...props} hideTitle />);
+  expect(compact).not.toContain('<h2>');
+  expect(compact).toContain('aria-label="Nhân vật"');
+  expect(compact).toContain('aria-label="Đóng nhân vật"');
+  expect(renderToStaticMarkup(<Dialog {...props} />)).toContain('<h2>Nhân vật</h2>');
+});
 
 it('shared React inventory hides missing stock and preserves empty slots', () => {
   const html = renderToStaticMarkup(

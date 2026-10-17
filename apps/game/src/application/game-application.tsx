@@ -11,7 +11,7 @@ import { getApiSdk } from '@/application/api-sdk';
 import type { AuthPlayer } from '@/application/auth-client';
 import { AUTH_REQUIRED_EVENT, getAuthClient } from '@/application/auth-client';
 import { AuthContext, shouldShowGuestPrompt } from '@/application/auth-context';
-import { createGameI18n } from '@/application/i18n/instance';
+import { createGameI18n, refreshGameI18nResources } from '@/application/i18n/instance';
 import { gameRoute } from '@/application/screen-router';
 import { registeredImageAssets } from '@/assets/generated-assets';
 import { authCss, themeCss } from '@/assets/generated-styles';
@@ -30,8 +30,6 @@ const loaders: Record<string, () => Promise<ScreenModule>> = {
       ? import('@/devtools/farm-art-review/farm-review-screen')
       : import('@/features/farm/main'),
 
-  '/character': () => import('@/features/character/main'),
-
   '/arcade': () => import('@/features/arcade/main'),
 
   '/location': () => import('@/features/location/main'),
@@ -40,6 +38,8 @@ const loaders: Record<string, () => Promise<ScreenModule>> = {
 
   ...(process.env.NODE_ENV !== 'production'
     ? {
+        '/character': () => import('@/devtools/character/screen'),
+
         '/farm-art-review': () => import('@/devtools/farm-art-review/art-review-screen'),
 
         '/ui': () => import('@/devtools/ui/showcase'),
@@ -60,6 +60,9 @@ function resolveRoute(path: string) {
 /** Persistent React shell owns SDK/runtime services; screens remain in the Next React tree. */
 export function GameApplication() {
   const [i18n] = useState(() => createGameI18n());
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') refreshGameI18nResources(i18n);
+  }, [i18n]);
   return (
     <I18nextProvider i18n={i18n}>
       <ImageProvider assets={registeredImageAssets} Image={AppImage}>

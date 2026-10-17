@@ -38,6 +38,7 @@ import { FARM_RECIPES, type RecipeId } from '@chibi-town/game-content/farm-recip
 import type { FarmChest } from '@chibi-town/game-content/farm-upgrade-catalog';
 import type { FarmAction, FarmProduct, FarmProgress, FarmUnit } from '@chibi-town/gameplay';
 import { parseFarmProgress } from '@chibi-town/gameplay/farm-crop-logic';
+import { type CharacterStats, decodeCharacterStats } from './character-stats.js';
 export type Snapshot = {
   mapInstanceId: string;
   revision: number;
@@ -160,7 +161,14 @@ export interface GameSdk {
   playDiamond(command: DiamondCommand): Promise<GemPublicResult>;
   getMapChannels(input: MapChannelInput): Promise<ChannelDirectory>;
   joinMapChannel(input: MapChannelInput & { channelId: number }): Promise<ChannelDirectory>;
-  getPlayer(): Promise<{ id: string; name: string; username: string | null; level: number; outfit: Outfit }>;
+  getPlayer(): Promise<{
+    id: string;
+    name: string;
+    username: string | null;
+    level: number;
+    outfit: Outfit;
+    stats?: CharacterStats;
+  }>;
   getWorld(): Promise<{ regions: readonly RegionDefinition[]; maps: readonly MapDefinition[] }>;
   getMap(input: { regionId: string; mapId: string; instanceId: string }): Promise<Snapshot>;
   getInventory(): Promise<Snapshot>;
@@ -326,6 +334,7 @@ export function decodePlayer(value: unknown): Awaited<ReturnType<GameSdk['getPla
     username: player.username ?? null,
     level: player.level,
     outfit: sanitizeOutfit(player.outfit),
+    ...(player.stats !== undefined ? { stats: decodeCharacterStats(player.stats) } : {}),
   };
 }
 

@@ -61,11 +61,14 @@ async function flush() {
 it('keeps one renderer and subscription across label changes, receives batches and resets on reconnect', async () => {
   const i18n = createGameI18n();
   let translate = i18n.getFixedT('vi', 'common');
+  let outfit = defaultOutfit;
   const cleanup = createLocationGame({
     parent: {} as HTMLElement,
     map,
 
     labels: () => translate,
+
+    outfit: () => outfit,
 
     channel: () => undefined,
 
@@ -89,6 +92,19 @@ it('keeps one renderer and subscription across label changes, receives batches a
   expect(fixture.create).toHaveBeenCalledOnce();
   expect(fixture.subscribe).toHaveBeenCalledOnce();
   expect(fixture.send.mock.calls.map((call) => call[0].type)).toEqual(['map.enter']);
+  outfit = { ...defaultOutfit, hairColor: 'Đỏ' };
+  options.onFrame({} as never, 216, 16);
+  expect(fixture.send).toHaveBeenLastCalledWith({
+    type: 'map.enter',
+    regionId: 'school',
+    mapId: 'shared',
+    x: 100,
+    y: 100,
+  });
+  expect(fixture.create).toHaveBeenCalledOnce();
+  const publishes = fixture.send.mock.calls.length;
+  options.onFrame({} as never, 232, 16);
+  expect(fixture.send).toHaveBeenCalledTimes(publishes);
   apply({ type: 'reconnected' });
   expect(players.size).toBe(0);
   cleanup();

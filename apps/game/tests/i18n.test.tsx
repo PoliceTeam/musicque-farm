@@ -1,10 +1,24 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { I18nextProvider } from 'react-i18next';
 import { describe, expect, it } from 'vitest';
-import { createGameI18n } from '@/application/i18n/instance';
+import { createGameI18n, refreshGameI18nResources } from '@/application/i18n/instance';
 import { InventoryDialog } from '@/features/inventory/_components/inventory-dialog';
 
 describe('game locale', () => {
+  it('refreshes a mounted locale store so new character labels do not remain untranslated', () => {
+    const i18n = createGameI18n();
+    i18n.removeResourceBundle('vi', 'inventory');
+    expect(i18n.t('inventory:character.levelLabel')).toBe('character.levelLabel');
+    let refreshed = 0;
+    i18n.store.on('added', () => {
+      refreshed++;
+    });
+    refreshGameI18nResources(i18n);
+    expect(i18n.t('inventory:character.levelLabel')).toBe('Cấp độ');
+    expect(i18n.t('inventory:character.stats.health')).toBe('Sức khỏe');
+    expect(i18n.t('inventory:character.equipped')).toBe('Bản thân');
+    expect(refreshed).toBeGreaterThan(0);
+  });
   it('initializes synchronously with typed Vietnamese namespaces and interpolation', () => {
     const i18n = createGameI18n();
     expect(i18n.isInitialized).toBe(true);

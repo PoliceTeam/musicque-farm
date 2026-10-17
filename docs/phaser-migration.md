@@ -57,7 +57,7 @@ pnpm check
 pnpm build
 ```
 
-Town: `/`; Lab: `/character.html`. Production build có cả hai entry. Renderer được ghi trên `#game[data-renderer]` và `#big[data-renderer]`.
+Town: `/`; Lab: `/character` (hoặc `/character.html`), chỉ bật trong môi trường dev. Production mở bảng nhân vật từ header ngay trên map. Renderer được ghi trên `#game[data-renderer]` và `#big[data-renderer]`.
 
 Regression bao gồm ghép sprite pixel-for-pixel, upgrade/màu/clip/frame/pose, di chuyển và pet. `state-boundaries.test.ts` kiểm tra thay đồ, level, input, animation và state sau khi tách mà không cần trình duyệt.
 

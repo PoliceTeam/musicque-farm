@@ -11,6 +11,7 @@ export function Dialog({
   footer,
   closeLabel,
   className,
+  hideTitle = false,
 }: {
   title: string;
   children: ReactNode;
@@ -20,6 +21,7 @@ export function Dialog({
   footer?: ReactNode;
   closeLabel?: string;
   className?: string;
+  hideTitle?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -30,7 +32,7 @@ export function Dialog({
   const content = (
     <>
       <header className="ui-dialog-header">
-        <h2>{title}</h2>
+        {!hideTitle && <h2>{title}</h2>}
         {onClose && (
           <Button
             className="ui-icon-button"

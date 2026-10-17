@@ -7,6 +7,7 @@ import type {
 import type { PlayerDocument, TableRecord } from '@chibi-town/game-service';
 import { sql } from 'drizzle-orm';
 import {
+  bigint,
   boolean,
   check,
   foreignKey,
@@ -21,21 +22,38 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
-export const players = pgTable('players', {
-  id: uuid('id').primaryKey(),
-  name: text('name').notNull(),
-  username: text('username').unique(),
-  usernameRequired: boolean('username_required').notNull().default(false),
-  registrationBonusAt: timestamp('registration_bonus_at', { withTimezone: true }),
-  lastRenamedAt: timestamp('last_renamed_at', { withTimezone: true }),
-  level: integer('level').notNull().default(1),
-  email: text('email').unique(),
-  guest: boolean('guest').notNull().default(false),
-  lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
-  /** Null for accounts that only sign in through an external provider. */
-  passwordHash: text('password_hash'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const players = pgTable(
+  'players',
+  {
+    id: uuid('id').primaryKey(),
+    name: text('name').notNull(),
+    username: text('username').unique(),
+    usernameRequired: boolean('username_required').notNull().default(false),
+    registrationBonusAt: timestamp('registration_bonus_at', { withTimezone: true }),
+    lastRenamedAt: timestamp('last_renamed_at', { withTimezone: true }),
+    level: integer('level').notNull().default(1),
+    experience: bigint('experience', { mode: 'number' }).notNull().default(0),
+    fashion: integer('fashion').notNull().default(0),
+    friendliness: integer('friendliness').notNull().default(0),
+    happiness: integer('happiness').notNull().default(0),
+    mischief: integer('mischief').notNull().default(0),
+    health: integer('health').notNull().default(0),
+    email: text('email').unique(),
+    guest: boolean('guest').notNull().default(false),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    /** Null for accounts that only sign in through an external provider. */
+    passwordHash: text('password_hash'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    check('player_experience_range', sql`${table.experience} >= 0 AND ${table.experience} <= 9007199254740991`),
+    check('player_fashion_nonnegative', sql`${table.fashion} >= 0`),
+    check('player_friendliness_nonnegative', sql`${table.friendliness} >= 0`),
+    check('player_happiness_nonnegative', sql`${table.happiness} >= 0`),
+    check('player_mischief_nonnegative', sql`${table.mischief} >= 0`),
+    check('player_health_nonnegative', sql`${table.health} >= 0`),
+  ],
+);
 
 export const identities = pgTable(
   'identities',

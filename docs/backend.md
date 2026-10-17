@@ -4,6 +4,8 @@ Trạng thái ngày 2026-10-16. Server phục vụ farm, kho, outfit, đăng nh�
 
 ## Quyết định đã chốt
 
+- **Chỉ số nhân vật**: `players.level` giữ cấp hiện tại; các cột `experience` (bigint an toàn với JavaScript), `fashion`, `friendliness`, `happiness`, `mischief`, `health` lưu điểm riêng từng tài khoản. Migration bổ sung mặc định 0, giữ nguyên cấp và dữ liệu tài khoản cũ. `/api/player` trả `stats` theo session; client không có API tự ghi điểm. Chưa chốt ngưỡng lên cấp, giới hạn hay nguồn tăng/giảm điểm, nên các chỉ số là điểm không âm, chưa phải phần trăm. Các tác vụ thưởng sau này phải cập nhật điểm/cấp trong cùng transaction với phần thưởng và dùng receipt để chống cộng lặp.
+
 - **Stack**: Node ≥ 22.13, Fastify, PostgreSQL, Drizzle. Production chạy HTTP API và worker thành hai process riêng dùng chung Postgres/Redis. BullMQ giữ lịch và retry; Postgres giữ tiền, cược pending và dấu reset. Dev/test một process vẫn hỗ trợ `BACKGROUND_JOBS_MODE=embedded`.
 - **Tài khoản**: tự tạo khách khi trình duyệt chưa có phiên; popup đăng ký bằng email + mật khẩu hoặc Google là tùy chọn. Khách chỉ truy cập được bằng cookie trong trình duyệt hiện tại. Đăng ký nâng cấp cùng player/save; đăng nhập tài khoản có sẵn chuyển tài khoản, không gộp tiến độ khách.
 - **Lưu tiến trình**: server là nguồn chính. Adapter local chỉ dùng để phát triển và test; không có luồng nhập save local lên tài khoản.

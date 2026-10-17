@@ -209,3 +209,52 @@ it('rejects malformed successful HTTP inventory responses before passing them to
   crossCharacter.rows[0].instance!.characterId = 'someone-else';
   expect(() => decodeCharacterInventoryPage(crossCharacter)).toThrowError('Invalid character inventory response');
 });
+
+it('basket excludes worn equipment and active colors before pagination and updates after equip and unequip', async () => {
+  const t = fixture();
+  expect((await t.sdk.getCharacterInventory({ view: 'unequipped' })).total).toBe(0);
+  await buy(t, 'pet/cat');
+  await buy(t, 'item-color/shirt.tank/red');
+  const first = await t.sdk.getCharacterInventory({ view: 'unequipped', limit: 1 });
+  expect(first.total).toBe(2);
+  const second = await t.sdk.getCharacterInventory({ view: 'unequipped', limit: 1, cursor: first.nextCursor! });
+  expect(second.nextCursor).toBeNull();
+  const rows = [...first.rows, ...second.rows];
+  expect(rows.map((row) => row.definition.id).sort()).toEqual(['item-color/shirt.tank/red', 'pet/cat']);
+  const cat = rows.find((row) => row.definition.id === 'pet/cat')!;
+  await t.execute({ type: 'equip-character-item', instanceId: cat.instance!.instanceId });
+  expect(
+    (await t.sdk.getCharacterInventory({ view: 'unequipped' })).rows.some((row) => row.definition.id === 'pet/cat'),
+  ).toBe(false);
+  expect(
+    (await t.sdk.getCharacterInventory({ view: 'equipped' })).rows.some((row) => row.definition.id === 'pet/cat'),
+  ).toBe(true);
+  await t.execute({ type: 'unequip-character-item', instanceId: cat.instance!.instanceId });
+  await t.execute({ type: 'apply-cosmetic-color', cosmeticId: 'item-color/shirt.tank/red' });
+  const basket = await t.sdk.getCharacterInventory({ view: 'unequipped' });
+  expect(basket.rows.some((row) => row.definition.id === 'pet/cat')).toBe(true);
+  expect(basket.rows.some((row) => row.definition.id === 'item-color/shirt.tank/red')).toBe(false);
+  expect(basket.rows.some((row) => row.definition.id === 'item-color/shirt.tank/dark-purple')).toBe(true);
+});
+
+it('owned inventory includes equipped, bag, warehouse and permanent colors, but never shop-only items', async () => {
+  const t = fixture();
+  await buy(t, 'pet/cat');
+  const bag = await t.sdk.getCharacterInventory({ view: 'bag' });
+  const cat = bag.rows.find((row) => row.definition.id === 'pet/cat')!;
+  await t.execute({ type: 'move-character-item', instanceId: cat.instance!.instanceId, to: 'warehouse' });
+  await buy(t, 'item-color/shirt.tank/red');
+  const rows = [];
+  let cursor: string | undefined;
+  do {
+    const page = decodeCharacterInventoryPage(await t.sdk.getCharacterInventory({ view: 'owned', limit: 2, cursor }));
+    expect(page.rows.every((row) => row.owned)).toBe(true);
+    rows.push(...page.rows);
+    cursor = page.nextCursor ?? undefined;
+  } while (cursor);
+  expect(new Set(rows.map((row) => row.definition.id)).size).toBe(rows.length);
+  expect(rows.some((row) => row.instance?.location.container === 'equipped')).toBe(true);
+  expect(rows.find((row) => row.definition.id === 'pet/cat')?.instance?.location.container).toBe('warehouse');
+  expect(rows.some((row) => row.definition.id === 'item-color/shirt.tank/red')).toBe(true);
+  expect(rows.some((row) => row.definition.id === 'pet/corgi')).toBe(false);
+});

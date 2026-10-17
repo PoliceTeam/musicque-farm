@@ -37,7 +37,16 @@ export function gameRoute(path: string, production = process.env.NODE_ENV === 'p
   const normalized = path.replace(/\/$/, '') || '/';
   if (
     production &&
-    ['/ui', '/ui.html', '/town', '/town.html', '/farm-art-review', '/farm-art-review.html'].includes(normalized)
+    [
+      '/character',
+      '/character.html',
+      '/ui',
+      '/ui.html',
+      '/town',
+      '/town.html',
+      '/farm-art-review',
+      '/farm-art-review.html',
+    ].includes(normalized)
   )
     return undefined;
   const routes: Record<string, string> = {

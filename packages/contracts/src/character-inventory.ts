@@ -9,7 +9,7 @@ import type { CharacterCosmeticInstance, CosmeticShopOffer } from '@chibi-town/g
 import { ApiSdkError } from './index.js';
 
 export type CharacterInventoryQuery = {
-  view: 'bag' | 'equipped' | 'warehouse' | 'shop';
+  view: 'bag' | 'equipped' | 'warehouse' | 'shop' | 'owned' | 'unequipped';
   category?: CosmeticCategory;
   slot?: string;
   groupId?: string;
@@ -47,7 +47,7 @@ export type CharacterInventoryCommand =
 export function validateCharacterInventoryQuery(query: CharacterInventoryQuery) {
   if (
     !query ||
-    !['bag', 'equipped', 'warehouse', 'shop'].includes(query.view) ||
+    !['bag', 'equipped', 'warehouse', 'shop', 'owned', 'unequipped'].includes(query.view) ||
     (query.category !== undefined && !['equipment', 'appearance', 'pet'].includes(query.category)) ||
     [query.groupId, query.cursor, query.slot].some(
       (value) => value !== undefined && (typeof value !== 'string' || value.length > 256),

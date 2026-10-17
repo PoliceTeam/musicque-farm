@@ -25,6 +25,16 @@ describe('server character inventory transactions', () => {
     await sdk.execute({ type: 'buy-cosmetic', offerId: 'pet/cat', requestId: 'a-cat', mapInstanceId: 'home' });
     expect((await sdk.getCharacterInventory({ view: 'bag' })).rows).toHaveLength(1);
     expect((await t.sdkFor(b.cookie).getCharacterInventory({ view: 'bag' })).rows).toHaveLength(0);
+    const ownedA = await sdk.getCharacterInventory({ view: 'owned', limit: 50 });
+    const ownedB = await t.sdkFor(b.cookie).getCharacterInventory({ view: 'owned', limit: 50 });
+    expect(ownedA.rows.some((row) => row.definition.id === 'pet/cat')).toBe(true);
+    expect(ownedB.rows.some((row) => row.definition.id === 'pet/cat')).toBe(false);
+    expect(ownedA.rows.every((row) => row.owned)).toBe(true);
+    const basketA = await sdk.getCharacterInventory({ view: 'unequipped', limit: 50 });
+    expect(basketA.rows.some((row) => row.definition.id === 'pet/cat')).toBe(true);
+    expect(basketA.rows.every((row) => row.owned && row.instance?.location.container !== 'equipped')).toBe(true);
+    expect((await t.sdkFor(b.cookie).getCharacterInventory({ view: 'unequipped' })).total).toBe(0);
+
     const [row] = await t.db.select().from(playerDocuments).where(eq(playerDocuments.playerId, a.player.id));
     expect(row.document.characterInventory).toBeUndefined();
     expect((await sdk.getInventory()) as unknown as Record<string, unknown>).not.toHaveProperty('characterInventory');
