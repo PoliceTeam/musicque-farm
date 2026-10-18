@@ -21,7 +21,7 @@ import {
 } from './farm-unit-logic.js';
 /** Serializable farm simulation. Time is supplied by the caller, in milliseconds. */
 export type CropStage = 'dry' | 'tilled' | 'seeded' | 'growing' | 'ripe';
-export type FarmCrop = { stage: CropStage; wateredAt: number | null; cropId?: CropId };
+export type FarmCrop = { stage: CropStage; wateredAt: number | null; cropId?: CropId; stolen?: boolean };
 export type FarmProgress = {
   version: 1;
   coins: number;
@@ -110,17 +110,20 @@ export function farmAction(
       state[definition.currency] -= definition.seedPrice;
     }
     crop.cropId = cropId;
+    delete crop.stolen;
     crop.stage = 'seeded';
   } else if (action === 'water' && stage === 'seeded') {
     crop.stage = 'growing';
     crop.wateredAt = now;
   } else if (action === 'harvest' && stage === 'ripe') {
     const id = crop.cropId ?? 'strawberry';
-    const quantity = (state.inventory[id] ?? 0) + FARM_CROPS[id].yield;
-    if (!canStoreFarmGoods(state, { [id]: FARM_CROPS[id].yield })) return false;
+    const harvestYield = FARM_CROPS[id].yield - (crop.stolen ? 1 : 0);
+    const quantity = (state.inventory[id] ?? 0) + harvestYield;
+    if (!canStoreFarmGoods(state, { [id]: harvestYield })) return false;
     state.inventory[id] = quantity;
     crop.stage = 'tilled';
     delete crop.cropId;
+    delete crop.stolen;
     crop.wateredAt = null;
     state.harvested++;
   } else return false;
@@ -263,7 +266,12 @@ export function parseFarmProgress(value: unknown, invalid: () => FarmProgress = 
     plots: Array.from({ length: FARM_PLOT_LIMIT }, (_, index) => {
       const p = v.plots![index];
       return p
-        ? { stage: p.stage, wateredAt: p.wateredAt, ...(p.cropId ? { cropId: p.cropId } : {}) }
+        ? {
+            stage: p.stage,
+            wateredAt: p.wateredAt,
+            ...(p.cropId ? { cropId: p.cropId } : {}),
+            ...(p.stolen === true ? { stolen: true } : {}),
+          }
         : { stage: 'dry', wateredAt: null };
     }),
   };

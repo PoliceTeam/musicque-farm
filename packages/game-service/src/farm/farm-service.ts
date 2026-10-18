@@ -5,7 +5,9 @@ import { playerInstance as instance, playerSnapshot as snapshot } from '../playe
 import type { PlayerDocument } from '../player-document.js';
 import type { GameService, GameServiceOptions } from '../service-types.js';
 
-export function createFarmService(options: GameServiceOptions): Pick<GameService, 'getMap' | 'getInventory'> {
+export function createFarmService(
+  options: GameServiceOptions,
+): Pick<GameService, 'getMap' | 'getInventory' | 'getFarmVisit' | 'stealFarmCrop' | 'getFarmTheftHistory'> {
   const clock = options.clock;
 
   function read() {
@@ -17,6 +19,22 @@ export function createFarmService(options: GameServiceOptions): Pick<GameService
   }
 
   return {
+    getFarmVisit() {
+      return () => {
+        throw new ApiSdkError('ACCOUNT_REQUIRED');
+      };
+    },
+
+    stealFarmCrop() {
+      return () => {
+        throw new ApiSdkError('ACCOUNT_REQUIRED');
+      };
+    },
+
+    getFarmTheftHistory() {
+      return (document) => structuredClone(document.farmTheftHistory ?? []);
+    },
+
     getMap(input) {
       if (
         !(

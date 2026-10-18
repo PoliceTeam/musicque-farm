@@ -1,6 +1,19 @@
 import type { DrawOp } from '@chibi-town/character-core/character-types';
 import type { SpriteSheet } from '@chibi-town/character-core/sprite-types';
 
+/** Shared map typography, in CSS pixels, independent of world/camera scale. */
+export const MAP_LABEL_STYLE = {
+  fontFamily: 'system-ui, sans-serif',
+  fontStyle: 'bold',
+  fontSize: 14,
+  stroke: '#49320e',
+  strokeWidth: 3,
+  resolution: 1,
+  playerColor: '#ffe066',
+  otherColor: '#ffffff',
+  headClearance: 14,
+} as const;
+
 /** Native pixel coordinates. Draw calls preserve submission order. Resources stay stable during a mount. */
 export type CharacterRenderer = {
   readonly kind: string;

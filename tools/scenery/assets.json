@@ -259,5 +259,535 @@
     ],
     "alphaFloor": 180,
     "largestComponent": true
+  },
+  {
+    "key": "rustic-fence",
+    "file": "rustic-fence.webp",
+    "source": "farm-entrance/source-atlas.png",
+    "box": [
+      610,
+      739,
+      777,
+      806
+    ],
+    "clear": [
+      [
+        0,
+        0,
+        167,
+        12
+      ]
+    ]
+  },
+  {
+    "key": "stone-steps",
+    "file": "stone-steps.webp",
+    "source": "farm-entrance/source-atlas.png",
+    "box": [
+      826,
+      660,
+      962,
+      721
+    ]
+  },
+  {
+    "key": "meadow-grass",
+    "source": "farm-entrance/source-art/terrain-atlas.png",
+    "box": [
+      0,
+      0,
+      627,
+      627
+    ],
+    "file": "meadow-grass.webp"
+  },
+  {
+    "key": "country-dirt",
+    "source": "farm-entrance/source-art/terrain-atlas.png",
+    "box": [
+      627,
+      0,
+      1254,
+      627
+    ],
+    "file": "country-dirt.webp"
+  },
+  {
+    "key": "meadow-edge",
+    "source": "farm-entrance/source-art/terrain-atlas.png",
+    "box": [
+      0,
+      840,
+      627,
+      1000
+    ],
+    "file": "meadow-edge.webp"
+  },
+  {
+    "key": "meadow-bank",
+    "source": "farm-entrance/source-art/terrain-atlas.png",
+    "box": [
+      627,
+      800,
+      1254,
+      1075
+    ],
+    "file": "meadow-bank.webp"
+  },
+  {
+    "key": "white-country-fence",
+    "source": "farm-entrance/source-art/scenery-atlas.png",
+    "box": [
+      0,
+      225,
+      565,
+      515
+    ],
+    "alphaFloor": 180,
+    "trim": true,
+    "file": "white-country-fence.webp"
+  },
+  {
+    "key": "country-grove",
+    "source": "farm-entrance/source-art/scenery-atlas.png",
+    "box": [
+      570,
+      205,
+      1536,
+      510
+    ],
+    "alphaFloor": 150,
+    "trim": true,
+    "file": "country-grove.webp"
+  },
+  {
+    "key": "country-daisies",
+    "source": "farm-entrance/source-art/foliage-atlas.png",
+    "box": [
+      0,
+      205,
+      835,
+      515
+    ],
+    "alphaFloor": 180,
+    "trim": true,
+    "file": "country-daisies.webp"
+  },
+  {
+    "key": "country-hedge",
+    "source": "farm-entrance/source-art/foliage-atlas.png",
+    "box": [
+      840,
+      180,
+      1536,
+      535
+    ],
+    "alphaFloor": 180,
+    "trim": true,
+    "file": "country-hedge.webp"
+  },
+  {
+    "key": "country-flowers",
+    "source": "farm-entrance/source-art/foliage-atlas.png",
+    "box": [
+      0,
+      620,
+      780,
+      940
+    ],
+    "alphaFloor": 180,
+    "trim": true,
+    "file": "country-flowers.webp"
+  },
+  {
+    "key": "country-golden-bush",
+    "source": "farm-entrance/source-art/foliage-atlas.png",
+    "box": [
+      800,
+      610,
+      1536,
+      955
+    ],
+    "alphaFloor": 180,
+    "trim": true,
+    "file": "country-golden-bush.webp"
+  },
+  {
+    "key": "farmstead-grass-bank",
+    "file": "farmstead-grass-bank.webp",
+    "source": "farm-entrance/source-art/country-v2-atlas.png",
+    "box": [
+      9,
+      734,
+      375,
+      814
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-sky",
+    "file": "farmstead-sky.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      16,
+      57,
+      705,
+      208
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-mountains",
+    "file": "farmstead-mountains.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      718,
+      48,
+      1665,
+      149
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-woodland",
+    "file": "farmstead-woodland.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      718,
+      151,
+      1668,
+      263
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-tree-orange",
+    "file": "farmstead-tree-orange.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      0,
+      216,
+      233,
+      447
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-tree-yellow",
+    "file": "farmstead-tree-yellow.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      234,
+      216,
+      449,
+      447
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-tree-green",
+    "file": "farmstead-tree-green.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      450,
+      218,
+      639,
+      447
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-distant-tree",
+    "file": "farmstead-distant-tree.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      640,
+      238,
+      826,
+      447
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-hedge-low",
+    "file": "farmstead-hedge-low.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      823,
+      355,
+      933,
+      446
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-hedge-tall",
+    "file": "farmstead-hedge-tall.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      826,
+      275,
+      923,
+      351
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-daisies",
+    "file": "farmstead-daisies.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      988,
+      273,
+      1116,
+      362
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-flower-rocks",
+    "file": "farmstead-flower-rocks.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      935,
+      362,
+      1117,
+      448
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-fence-long",
+    "file": "farmstead-fence-long.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1122,
+      274,
+      1375,
+      367
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-fence",
+    "file": "farmstead-fence.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1381,
+      274,
+      1580,
+      368
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-fence-short",
+    "file": "farmstead-fence-short.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1585,
+      275,
+      1665,
+      367
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-grass-tuft",
+    "file": "farmstead-grass-tuft.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      881,
+      675,
+      1009,
+      745
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-hedge-wide",
+    "file": "farmstead-hedge-wide.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1012,
+      675,
+      1106,
+      743
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-flower-bush",
+    "file": "farmstead-flower-bush.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1108,
+      675,
+      1200,
+      744
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-crate",
+    "file": "farmstead-crate.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1473,
+      677,
+      1565,
+      744
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-logs",
+    "file": "farmstead-logs.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1467,
+      747,
+      1581,
+      815
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-lantern",
+    "file": "farmstead-lantern.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1364,
+      459,
+      1461,
+      671
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-pink-pot",
+    "file": "farmstead-pink-pot.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1232,
+      502,
+      1306,
+      579
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-flowers-yellow",
+    "file": "farmstead-flowers-yellow.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1105,
+      744,
+      1205,
+      815
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-flowers-red",
+    "file": "farmstead-flowers-red.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1008,
+      745,
+      1106,
+      814
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-rock",
+    "file": "farmstead-rock.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1212,
+      746,
+      1290,
+      798
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-fence-end-left",
+    "file": "farmstead-fence-end-left.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1265,
+      370,
+      1335,
+      450
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
+  },
+  {
+    "key": "farmstead-fence-end-right",
+    "file": "farmstead-fence-end-right.webp",
+    "source": "farm-entrance/source-art/country-v3-atlas.png",
+    "box": [
+      1188,
+      370,
+      1261,
+      450
+    ],
+    "alphaFloor": 140,
+    "largestComponent": true,
+    "trim": true
   }
 ]

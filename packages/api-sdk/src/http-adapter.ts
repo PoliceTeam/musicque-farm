@@ -27,6 +27,7 @@ import {
   decodeCharacterInventoryPage,
   validateCharacterInventoryQuery,
 } from '@chibi-town/contracts/character-inventory';
+import { decodeFarmTheftHistory, decodeFarmVisit, validateStealFarmCrop } from '@chibi-town/contracts/farm-social';
 import {
   decodeMiniLobby,
   decodeMiniResult,
@@ -36,6 +37,7 @@ import {
 } from '@chibi-town/contracts/mini-games';
 import { decodeRaceLobby, validateRaceBet } from '@chibi-town/contracts/pet-racing';
 import { decodePhomLobby, decodePhomResult, decodePhomSnapshot, validPhomCommand } from '@chibi-town/contracts/phom';
+import { isPlayerId } from '@chibi-town/contracts/social';
 import {
   decodeTienLobby,
   decodeTienResult,
@@ -106,6 +108,18 @@ export function createHttpSdk(options: {
   };
 
   return {
+    getFarmVisit: async (ownerId) => {
+      if (!isPlayerId(ownerId)) throw new ApiSdkError('INVALID_COMMAND');
+      return decodeFarmVisit(await request(`/farms/${encodeURIComponent(ownerId)}`));
+    },
+
+    stealFarmCrop: async (input) => {
+      validateStealFarmCrop(input);
+      return decodeFarmVisit(await request('/farms/steal', input));
+    },
+
+    getFarmTheftHistory: async () => decodeFarmTheftHistory(await request('/farms/thefts')),
+
     getPetRace: async () => decodeRaceLobby(await request('/arcade/pet-racing')),
 
     betPetRace: async (input) => {

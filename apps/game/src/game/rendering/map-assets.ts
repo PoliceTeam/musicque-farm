@@ -9,6 +9,7 @@ import {
   petShopUrls,
   premiumShopUrls,
   publicAssetUrls,
+  registeredImageAssets,
   salonUrls,
   sceneryUrls,
   shoppingUrls,
@@ -31,6 +32,7 @@ export function sceneAssetUrl(id: string) {
     shoppingUrls[id] ??
     entertainmentUrls[id] ??
     publicAssetUrls[id] ??
+    registeredImageAssets[id as keyof typeof registeredImageAssets]?.src ??
     id
   );
 }

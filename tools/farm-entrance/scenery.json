@@ -1,0 +1,114 @@
+[
+  {
+    "key": "meadow-grass",
+    "source": "terrain-atlas.png",
+    "box": [
+      0,
+      0,
+      627,
+      627
+    ]
+  },
+  {
+    "key": "country-dirt",
+    "source": "terrain-atlas.png",
+    "box": [
+      627,
+      0,
+      1254,
+      627
+    ]
+  },
+  {
+    "key": "meadow-edge",
+    "source": "terrain-atlas.png",
+    "box": [
+      0,
+      840,
+      627,
+      1000
+    ]
+  },
+  {
+    "key": "meadow-bank",
+    "source": "terrain-atlas.png",
+    "box": [
+      627,
+      800,
+      1254,
+      1075
+    ]
+  },
+  {
+    "key": "white-country-fence",
+    "source": "scenery-atlas.png",
+    "box": [
+      0,
+      225,
+      565,
+      515
+    ],
+    "alphaFloor": 180,
+    "trim": true
+  },
+  {
+    "key": "country-grove",
+    "source": "scenery-atlas.png",
+    "box": [
+      570,
+      205,
+      1536,
+      510
+    ],
+    "alphaFloor": 150,
+    "trim": true
+  },
+  {
+    "key": "country-daisies",
+    "source": "foliage-atlas.png",
+    "box": [
+      0,
+      205,
+      835,
+      515
+    ],
+    "alphaFloor": 180,
+    "trim": true
+  },
+  {
+    "key": "country-hedge",
+    "source": "foliage-atlas.png",
+    "box": [
+      840,
+      180,
+      1536,
+      535
+    ],
+    "alphaFloor": 180,
+    "trim": true
+  },
+  {
+    "key": "country-flowers",
+    "source": "foliage-atlas.png",
+    "box": [
+      0,
+      620,
+      780,
+      940
+    ],
+    "alphaFloor": 180,
+    "trim": true
+  },
+  {
+    "key": "country-golden-bush",
+    "source": "foliage-atlas.png",
+    "box": [
+      800,
+      610,
+      1536,
+      955
+    ],
+    "alphaFloor": 180,
+    "trim": true
+  }
+]

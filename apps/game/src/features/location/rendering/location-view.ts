@@ -11,6 +11,7 @@ import type { LocationInputState } from '@/features/location/_utils/location-inp
 import type { RemotePlayer } from '@/features/location/_utils/remote-players-logic';
 import { createEntertainmentShadow } from '@/features/location/rendering/entertainment-ground';
 import { layoutPet } from '@/game/movement/pet-follow-logic';
+import { drawAvatarLabel } from '@/game/rendering/avatar-label';
 import { createEntranceHint } from '@/game/rendering/entrance-hint';
 
 export type LocationLabels = TFunction<'common'>;
@@ -250,9 +251,9 @@ export function createLocationView(
           42,
           32,
         );
-    view.label(t('avatarName', player), Math.round(state.x), Math.round(state.y) - 78, '#ffe066');
+    drawAvatarLabel(view, t('avatarName', player), hero, state.x, state.y, 1, true);
     for (const other of others.values())
-      view.label(t('avatarName', other), Math.round(other.x), Math.round(other.y) - 78, '#ffffff');
+      drawAvatarLabel(view, t('avatarName', other), other.avatar, other.x, other.y, 1);
     view.endFrame();
   };
 }

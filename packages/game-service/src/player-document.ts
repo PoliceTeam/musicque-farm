@@ -29,6 +29,7 @@ import type { CharacterInventoryState } from './character-inventory.js';
 import { pruneReceipts } from './receipt-order.js';
 export type PlayerDocument = {
   version: 1;
+  farmTheftHistory?: import('@chibi-town/contracts/farm-social').FarmTheftEntry[];
   petRacing?: {
     bet?: import('@chibi-town/contracts/pet-racing').RaceBet;
     lastRace?: import('@chibi-town/contracts/pet-racing').RaceResult;

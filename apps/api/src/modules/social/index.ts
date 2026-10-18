@@ -47,3 +47,5 @@ export const socialModule: FastifyPluginAsync<{
     return { relationship: await relationship(db, request.player!.id, targetId) };
   });
 };
+
+export { publicPlayer, relationship } from '@/modules/social/repository';

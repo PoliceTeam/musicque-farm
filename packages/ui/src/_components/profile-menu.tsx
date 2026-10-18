@@ -3,6 +3,7 @@ import { type ReactNode, type RefObject, useEffect, useRef } from 'react';
 
 export function ProfileMenu({
   menuRef,
+  triggerLabel,
   portrait,
   name,
   subtitle,
@@ -10,6 +11,7 @@ export function ProfileMenu({
   label = 'Menu người chơi',
 }: {
   menuRef?: RefObject<HTMLDetailsElement | null>;
+  triggerLabel?: string;
   portrait: ReactNode;
   name: string;
   subtitle: ReactNode;
@@ -55,6 +57,7 @@ export function ProfileMenu({
   return (
     <details ref={ref} className="ui-profile-menu">
       <summary aria-label={label}>
+        {triggerLabel && <span className="ui-profile-trigger-label">{triggerLabel}</span>}
         {portrait}
         <span className="ui-profile-info">
           <strong>{name}</strong>

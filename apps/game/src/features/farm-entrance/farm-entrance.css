@@ -1,0 +1,106 @@
+.farm-entrance-layout {
+  background: #8bb34b;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+.farm-entrance-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.farm-entrance-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.farm-entrance-canvas {
+  position: absolute;
+  inset: 0;
+}
+.farm-entrance-canvas canvas {
+  display: block;
+  touch-action: none;
+}
+.farm-entrance-portals {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1280px;
+  height: 720px;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+.game-ui .farm-entrance-portal {
+  position: absolute;
+  display: block;
+  padding: 0;
+  min-width: 44px;
+  min-height: 44px;
+  pointer-events: auto;
+  touch-action: manipulation;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  box-shadow: none;
+  outline-offset: 1px;
+  transition: none;
+  filter: none;
+}
+.game-ui .farm-entrance-portal:hover:enabled,
+.game-ui .farm-entrance-portal:active:enabled {
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  filter: none;
+  transition: none;
+}
+.farm-entrance-pan-hint {
+  display: none;
+}
+
+/* Use the same shared header, dialogs and controls as the main farm. */
+.farm-entrance-menu {
+  display: grid;
+  gap: 12px;
+  padding: 8px 0;
+}
+.game-ui .farm-entrance-menu .ui-button {
+  min-height: 52px;
+}
+.game-ui.farm-entrance-layout .farm-entrance-friends-control {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 8px;
+}
+.farm-entrance-friends-control svg {
+  width: 26px;
+  height: 26px;
+}
+.farm-social-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.farm-social-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid #ba9864;
+}
+.farm-social-list li strong {
+  flex: 1;
+}
+.farm-social-list small {
+  display: block;
+  margin-top: 6px;
+}
+.farm-social-list canvas {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}

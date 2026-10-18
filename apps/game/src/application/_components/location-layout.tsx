@@ -30,6 +30,8 @@ export type LocationPlayer = Awaited<ReturnType<GameSdk['getPlayer']>>;
 /** Shared location shell; each screen supplies its own scene, actions and extra counters. */
 export function LocationLayout({
   title,
+  className,
+  profileLabel,
   accessibleTitle = title,
   player,
   outfit = player?.outfit,
@@ -44,6 +46,8 @@ export function LocationLayout({
   onOutfitChange,
 }: {
   title: string;
+  className?: string;
+  profileLabel?: string;
   accessibleTitle?: string;
   player?: LocationPlayer;
   outfit?: Outfit;
@@ -78,13 +82,14 @@ export function LocationLayout({
     drawnOutfit.current = key;
   }, [outfit, wornOutfit]);
   return (
-    <main className="game-ui ui-location-layout" aria-label={accessibleTitle}>
+    <main className={['game-ui ui-location-layout', className].filter(Boolean).join(' ')} aria-label={accessibleTitle}>
       <style>{socialCss}</style>
       <GameHeader
         title={title}
         profile={
           <ProfileMenu
             menuRef={menuRef}
+            triggerLabel={profileLabel}
             name={auth.player?.name ?? player?.name ?? '…'}
             subtitle={
               inbox > 0

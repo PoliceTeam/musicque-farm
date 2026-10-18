@@ -1,6 +1,5 @@
-import type { Equip } from '@chibi-town/character-core/character-types';
 import { items } from '@chibi-town/character-core/item-catalog';
-import { equippedPose, layoutAvatar, nameplateTop } from '@chibi-town/character-core/layout-logic';
+import { equippedPose, layoutAvatar } from '@chibi-town/character-core/layout-logic';
 import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-types';
 import { petSheet, sheet } from '@/assets/asset-catalog';
 import { auraTagColor, hatLights } from '@/features/character/_utils/effect-logic';
@@ -8,13 +7,13 @@ import { Farm } from '@/features/farm/rendering/farm-view';
 import { layoutPet } from '@/game/movement/pet-follow-logic';
 import type { TownState } from '@/game/movement/town-logic';
 import { TOWN_CHARACTER_SCALE } from '@/game/movement/town-map';
+import { drawAvatarLabel } from '@/game/rendering/avatar-label';
 import { PieceCache } from '@/game/rendering/canvas-renderer';
 import { paintEmitter, paintHatLights } from '@/game/rendering/town-effects-view';
 
 /** World view submits native sprites, scenery and effects to the selected engine. */
 export class TownView {
   readonly pieces = new PieceCache(sheet);
-  private readonly nameplateTops = new WeakMap<Equip[], number>();
   private readonly scenery: ReturnType<Farm['surfaces']>;
 
   constructor(
@@ -37,17 +36,10 @@ export class TownView {
 
       draw: () => renderer.surface(s.key, s.source, s.x, s.y, s.width, s.height),
     }));
-    const labelAnchors = new Map<TownState['residents'][number], number>();
     for (const w of this.state.residents) {
       const x = Math.round(w.x);
       const y = Math.round(w.y);
       const ops = layoutAvatar(items, sheet, w.avatar.visibleEquip(items), w.avatar.pose, w.avatar.mirror, now);
-      let top = this.nameplateTops.get(w.avatar.equip);
-      if (top === undefined) {
-        top = nameplateTop(items, sheet, w.avatar.equip);
-        this.nameplateTops.set(w.avatar.equip, top);
-      }
-      labelAnchors.set(w, y + top * scale - 14);
       scene.push({
         y,
 
@@ -102,11 +94,14 @@ export class TownView {
       });
     if (this.state.marker) renderer.marker('destination', this.state.marker[0], this.state.marker[1]);
     for (const w of [...this.state.residents].sort((a, b) => a.y - b.y))
-      renderer.label(
+      drawAvatarLabel(
+        renderer,
         this.avatarLabel(w.level, w.name),
-        Math.round(w.x),
-        labelAnchors.get(w)!,
-        w.player ? '#ffe066' : '#ffffff',
+        w.avatar,
+        w.x,
+        w.y,
+        scale,
+        w.player,
         auraTagColor(w.fx?.aura ?? 0, now),
       );
     this.overlay?.(renderer);

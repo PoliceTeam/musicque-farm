@@ -59,7 +59,7 @@ import { useTranslation } from 'react-i18next';
 import { getApiSdk } from '@/application/api-sdk';
 import { createGameUi } from '@/application/game-ui-handler';
 import { AudioSettings } from '@/features/settings/_components/audio-settings';
-import { createPreviewProviders, createWorldMapRenderer } from '@/game/rendering/renderer-providers';
+import { createWorldMapRenderer } from '@/game/rendering/renderer-providers';
 
 const PRESETS = { real: undefined, dawn: 6.1, day: 11, evening: 16.8, sunset: 18, night: 22 } as const;
 type Mode = keyof typeof PRESETS | 'manual';
@@ -151,13 +151,7 @@ export function MapScreen({
       onSelect(zone) {
         if (backgroundOnly) return;
         if (zone.id === 'farm') {
-          void Promise.all([
-            import('@/features/farm/main'),
-            import('@/features/farm/rendering/farm-scene-assets').then(({ loadFarmSceneAssets }) =>
-              loadFarmSceneAssets(),
-            ),
-            createPreviewProviders('phaser'),
-          ]).catch(() => {});
+          void import('@/features/farm-entrance/main').catch(() => {});
         }
         setSelected(WORLD_ZONES.find((item) => item.id === zone.id));
         audio.play('select', zone.id);

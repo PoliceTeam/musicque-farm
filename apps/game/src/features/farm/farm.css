@@ -973,3 +973,18 @@ dialog small {
   object-fit: contain;
   flex: 0 0 36px;
 }
+
+.farm-visit-banner {
+  position: absolute;
+  inset: auto 16px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 2px solid #a47b3c;
+  border-radius: 14px;
+  color: #4c3119;
+  background: #fff1cfe8;
+  font-size: 13px;
+}

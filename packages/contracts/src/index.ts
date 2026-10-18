@@ -142,6 +142,9 @@ export function decodeChannelDirectory(value: unknown): ChannelDirectory {
 }
 
 export interface GameSdk {
+  getFarmVisit(ownerId: string): Promise<import('./farm-social.js').FarmVisit>;
+  stealFarmCrop(input: import('./farm-social.js').StealFarmCrop): Promise<import('./farm-social.js').FarmVisit>;
+  getFarmTheftHistory(): Promise<import('./farm-social.js').FarmTheftEntry[]>;
   getPetRace(): Promise<RaceLobby>;
   betPetRace(input: RaceBet): Promise<RaceLobby>;
   getMiniLobby(gameId: MiniGameId): Promise<MiniLobby>;

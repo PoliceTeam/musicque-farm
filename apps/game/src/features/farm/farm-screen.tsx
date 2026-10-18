@@ -1,4 +1,5 @@
 import type { GameSdk } from '@chibi-town/api-sdk';
+import type { FarmVisit } from '@chibi-town/contracts/farm-social';
 import type { createGameAudio } from '@chibi-town/game-audio';
 import type { MapDefinition } from '@chibi-town/game-content';
 import { type CropId, FARM_CROPS } from '@chibi-town/game-content/farm-catalog';
@@ -11,7 +12,7 @@ import {
   farmLandPrice,
 } from '@chibi-town/gameplay';
 import { Button } from '@chibi-town/ui/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
@@ -49,13 +50,34 @@ export function FarmScreen({
   const { t: inventory } = useTranslation('inventory');
   const LABELS = { livestock: t('livestock'), poultry: t('poultry'), pond: t('pond') };
   const navigation = useRouter();
+  const ownerId = useSearchParams().get('owner');
+  const [visit, setVisit] = useState<FarmVisit>();
+  const [visitorWallet, setVisitorWallet] = useState<{ coins: number; gems: number }>();
+  const [stealing, setStealing] = useState(false);
+  const stealRequest = useRef<{ index: number; wateredAt: number; requestId: string }>(undefined);
   const model = useMemo(
     () =>
       createFarmStore(
-        sdk ?? getApiSdk(),
+        ownerId
+          ? {
+              ...(sdk ?? getApiSdk()),
+
+              async getMap() {
+                const api = sdk ?? getApiSdk();
+                const [nextVisit, currentPlayer, wallet] = await Promise.all([
+                  api.getFarmVisit(ownerId),
+                  api.getPlayer(),
+                  api.getInventory(),
+                ]);
+                setVisit(nextVisit);
+                setVisitorWallet({ coins: wallet.farm.coins, gems: wallet.farm.gems });
+                return { ...nextVisit.snapshot, outfit: currentPlayer.outfit };
+              },
+            }
+          : (sdk ?? getApiSdk()),
         definition ? { regionId: definition.regionId, mapId: definition.id, instanceId: 'home' } : undefined,
       ),
-    [sdk, definition],
+    [sdk, definition, ownerId],
   );
   const snapshot = useStore(model.store, (state) => state.snapshot);
   const player = useStore(model.store, (state) => state.player);
@@ -142,8 +164,11 @@ export function FarmScreen({
         snapshot.outfit,
         (x, y) => {
           const hit = farmInputAt(progress.current, x, y);
-          if (hit.kind === 'exit') navigation.push('/');
-          else if (hit.kind === 'plot') setSelection({ plot: hit.index });
+          if (hit.kind === 'exit') navigation.push('/farm');
+          else if (ownerId) {
+            if (hit.kind === 'plot' && hit.index < progress.current.owned) setSelection({ plot: hit.index });
+            else setSelection(undefined);
+          } else if (hit.kind === 'plot') setSelection({ plot: hit.index });
           else if (hit.kind === 'unit') setSelection({ unit: hit.unit });
           else if (hit.kind === 'shop') {
             setSelection(undefined);
@@ -182,11 +207,11 @@ export function FarmScreen({
       obstacleLevels.current = levelsKey;
       game.current?.refresh();
     }
-  }, [snapshot, navigation, t, review, model.store, common]);
+  }, [snapshot, navigation, t, review, model.store, common, ownerId]);
 
   const execute = useCallback(
     async (command: FarmCommand, confirm?: { price: number; title: string; currency?: 'coins' | 'gems' }) => {
-      if (pending) return;
+      if (pending || ownerId) return;
       if (
         confirm &&
         !(await ui.current?.confirm({
@@ -226,15 +251,42 @@ export function FarmScreen({
         }
       }
     },
-    [pending, t, common, inventory, model, audio, i18n.language],
+    [pending, t, common, inventory, model, audio, i18n.language, ownerId],
   );
+
+  const steal = async (index: number) => {
+    const crop = snapshot?.farm.plots[index];
+    if (!ownerId || stealing || failure || crop?.wateredAt == null) return;
+    if (
+      !stealRequest.current ||
+      stealRequest.current.index !== index ||
+      stealRequest.current.wateredAt !== crop.wateredAt
+    )
+      stealRequest.current = { index, wateredAt: crop.wateredAt, requestId: crypto.randomUUID() };
+    setStealing(true);
+    try {
+      await (sdk ?? getApiSdk()).stealFarmCrop({ ...stealRequest.current, ownerId });
+      stealRequest.current = undefined;
+      await model.refresh();
+      if (alive.current) ui.current?.notify(t('stolenSuccess'), 'success');
+    } catch (error) {
+      if (alive.current)
+        ui.current?.notify(
+          error instanceof Error && error.message === 'INVENTORY_FULL' ? inventory('chestFull') : t('stealFailed'),
+          'error',
+        );
+      await model.refresh().catch(() => {});
+    } finally {
+      if (alive.current) setStealing(false);
+    }
+  };
 
   const state = snapshot?.farm;
   const unit = selection && 'unit' in selection ? selection.unit : undefined;
   return (
     <LocationLayout
       menuRef={menu}
-      title={review ? t('reviewTitle') : t('title')}
+      title={ownerId ? t('visitingTitle', { name: visit?.owner.name ?? '…' }) : review ? t('reviewTitle') : t('title')}
       accessibleTitle={t('accessibleTitle')}
       player={player}
       outfit={snapshot?.outfit}
@@ -243,20 +295,24 @@ export function FarmScreen({
         farmLevel: state ? 1 + Math.floor((state.owned - 6) / 6) : 1,
       })}
       audio={audio}
-      coins={state?.coins}
-      gems={state?.gems}
+      coins={ownerId ? visitorWallet?.coins : state?.coins}
+      gems={ownerId ? visitorWallet?.gems : state?.gems}
       menuActions={
-        <>
-          <Button
-            onClick={() => {
-              setSelection(undefined);
-              setDialog('animals');
-            }}
-          >
-            {t('animalShop')}
-          </Button>
-          <Button onClick={() => setDialog('batch')}>{t('batch')}</Button>
-        </>
+        ownerId ? (
+          <Button onClick={() => navigation.push('/farm')}>{t('returnEntrance')}</Button>
+        ) : (
+          <>
+            <Button
+              onClick={() => {
+                setSelection(undefined);
+                setDialog('animals');
+              }}
+            >
+              {t('animalShop')}
+            </Button>
+            <Button onClick={() => setDialog('batch')}>{t('batch')}</Button>
+          </>
+        )
       }
       counters={
         <strong className="ui-land-count">
@@ -265,6 +321,12 @@ export function FarmScreen({
       }
     >
       <div id="farm-canvas" ref={host} />
+      {ownerId && (
+        <div className="farm-visit-banner">
+          <span>{t('visitingHint')}</span>
+          <Button onClick={() => navigation.push('/farm')}>{t('returnEntrance')}</Button>
+        </div>
+      )}
       {failure && (
         <div className="ui-runtime-error" role="alert">
           {failure}
@@ -300,7 +362,7 @@ export function FarmScreen({
                         ripe: t('ripe'),
                       }[cropStage(state.plots[selection.plot], now)]}
                 </p>
-                {cropStage(state.plots[selection.plot], now) === 'tilled' && (
+                {!ownerId && cropStage(state.plots[selection.plot], now) === 'tilled' && (
                   <FarmCropSelector value={cropId} onChange={setCropId} />
                 )}
                 {state.plots[selection.plot].cropId && (
@@ -319,38 +381,64 @@ export function FarmScreen({
                     })}
                   </p>
                 )}
-                <div className="farm-tools">
-                  {(() => {
-                    const action: FarmAction =
-                      selection.plot >= state.owned
-                        ? 'buy'
-                        : ({ dry: 'till', tilled: 'sow', seeded: 'water', growing: 'water', ripe: 'harvest' } as const)[
-                            cropStage(state.plots[selection.plot], now)
-                          ];
-                    return (
-                      <Button
-                        variant="primary"
-                        disabled={pending || cropStage(state.plots[selection.plot], now) === 'growing'}
-                        onClick={() =>
-                          void execute(
-                            { type: 'plot', index: selection.plot, action, cropId },
-                            action === 'buy' ? { price: farmLandPrice(state.owned), title: t('buy') } : undefined,
-                          )
-                        }
-                      >
-                        {
+                {ownerId ? (
+                  <div className="farm-tools">
+                    {(state.plots[selection.plot].stolen || cropStage(state.plots[selection.plot], now) !== 'ripe') && (
+                      <p>{t(state.plots[selection.plot].stolen ? 'cropAlreadyStolen' : 'cropNotReadyToSteal')}</p>
+                    )}
+                    <Button
+                      variant="primary"
+                      disabled={
+                        stealing ||
+                        !!failure ||
+                        !!state.plots[selection.plot].stolen ||
+                        cropStage(state.plots[selection.plot], now) !== 'ripe'
+                      }
+                      onClick={() => void steal(selection.plot)}
+                    >
+                      {t('stealCrop')}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="farm-tools">
+                    {(() => {
+                      const action: FarmAction =
+                        selection.plot >= state.owned
+                          ? 'buy'
+                          : (
+                              {
+                                dry: 'till',
+                                tilled: 'sow',
+                                seeded: 'water',
+                                growing: 'water',
+                                ripe: 'harvest',
+                              } as const
+                            )[cropStage(state.plots[selection.plot], now)];
+                      return (
+                        <Button
+                          variant="primary"
+                          disabled={pending || cropStage(state.plots[selection.plot], now) === 'growing'}
+                          onClick={() =>
+                            void execute(
+                              { type: 'plot', index: selection.plot, action, cropId },
+                              action === 'buy' ? { price: farmLandPrice(state.owned), title: t('buy') } : undefined,
+                            )
+                          }
+                        >
                           {
-                            buy: t('buy'),
-                            till: t('till'),
-                            sow: t('sowSelected', { name: inventory(`products.${cropId}`) }),
-                            water: t('water'),
-                            harvest: t('harvest'),
-                          }[action]
-                        }
-                      </Button>
-                    );
-                  })()}
-                </div>
+                            {
+                              buy: t('buy'),
+                              till: t('till'),
+                              sow: t('sowSelected', { name: inventory(`products.${cropId}`) }),
+                              water: t('water'),
+                              harvest: t('harvest'),
+                            }[action]
+                          }
+                        </Button>
+                      );
+                    })()}
+                  </div>
+                )}
               </>
             )}
             {unit && (

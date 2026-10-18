@@ -55,6 +55,7 @@ export function gameRoute(path: string, production = process.env.NODE_ENV === 'p
     '/map': '/map',
     '/map.html': '/map',
     '/farm': '/farm',
+    '/farm/home': '/farm/home',
     '/farm.html': '/farm',
     '/play/fun/pet-racing': '/pet-racing',
     '/character': '/character',

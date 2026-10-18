@@ -73,6 +73,10 @@ Read `docs/README.md` inside that installed package first, then read the relevan
 This block is written and re-added by `turbo` before repository-scoped commands when an AI agent is detected. In the Turborepo source repository, its template is defined in `crates/turborepo-cli/src/cli/agent_guidance.rs`. Removing the managed block while updates are enabled means a later qualifying invocation will add it again. Set `"agentGuidance": false` in the root `turbo.json` or `turbo.jsonc` to opt out; this does not remove an existing block. Keep the block committed with your work to avoid an uncommitted change on the next agent invocation.
 <!-- END:turborepo-agent-rules -->
 
+# Player labels and visual consistency
+
+New or changed in-scene character labels must reuse `apps/game/src/game/rendering/avatar-label.ts`, including farm, entrance, TownView and all location street/interior maps. The player's label is yellow `#ffe066`, uses `MAP_LABEL_STYLE` from render-contracts for its shared font/size/stroke and fixed text resolution/nearest sampling and the localized `LV <level> <name>` format, and stays 14 world units above the highest visible outfit pose/frame (including hair and hats). Do not paint names into a separate canvas or substitute a cream/white player label. Remote/NPC labels retain their existing white color. For layout changes, compare against the existing farm UI and inspect actual landscape and portrait browser captures; an offline scene/contact sheet alone is not responsive UI verification.
+
 # CSS ownership
 
 Keep screen-specific styles beside the feature that owns them. `packages/ui/src/theme.css` owns shared controls and layout; it must not accumulate account or game-specific selectors. Account form and character-setup styles live in `apps/game/src/features/auth/auth.css`. Arcade game styles belong to `packages/arcade-games-react/src/theme.css`. Runtime stylesheet generation is declared in `tools/runtime/prepare-assets.mjs`; generated CSS modules are build artifacts and must not be edited manually. See the stylesheet ownership table in `docs/target-architecture.md`.

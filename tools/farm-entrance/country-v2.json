@@ -1,0 +1,287 @@
+[
+  {
+    "key": "farmstead-tree-orange",
+    "scenery": true,
+    "box": [
+      0,
+      0,
+      351,
+      325
+    ]
+  },
+  {
+    "key": "farmstead-tree-yellow",
+    "scenery": true,
+    "box": [
+      351,
+      30,
+      619,
+      325
+    ]
+  },
+  {
+    "key": "farmstead-tree-green",
+    "scenery": true,
+    "box": [
+      620,
+      57,
+      896,
+      322
+    ]
+  },
+  {
+    "key": "farmstead-distant-tree",
+    "scenery": true,
+    "box": [
+      981,
+      70,
+      1178,
+      279
+    ]
+  },
+  {
+    "key": "farmstead-hedge-tall",
+    "scenery": true,
+    "box": [
+      1180,
+      77,
+      1308,
+      200
+    ]
+  },
+  {
+    "key": "farmstead-daisies",
+    "scenery": true,
+    "box": [
+      1150,
+      201,
+      1310,
+      293
+    ]
+  },
+  {
+    "key": "farmstead-flower-rocks",
+    "scenery": true,
+    "box": [
+      1306,
+      220,
+      1446,
+      292
+    ]
+  },
+  {
+    "key": "farmstead-fence-long",
+    "scenery": true,
+    "box": [
+      9,
+      322,
+      356,
+      448
+    ]
+  },
+  {
+    "key": "farmstead-fence",
+    "scenery": true,
+    "box": [
+      356,
+      339,
+      580,
+      450
+    ]
+  },
+  {
+    "key": "farmstead-fence-short",
+    "scenery": true,
+    "box": [
+      1084,
+      308,
+      1250,
+      420
+    ]
+  },
+  {
+    "key": "farmstead-grass-bank",
+    "scenery": true,
+    "box": [
+      9,
+      734,
+      375,
+      814
+    ]
+  },
+  {
+    "key": "farmstead-grass-tuft",
+    "scenery": true,
+    "box": [
+      377,
+      738,
+      485,
+      813
+    ]
+  },
+  {
+    "key": "farmstead-hedge-low",
+    "scenery": true,
+    "box": [
+      485,
+      727,
+      592,
+      813
+    ]
+  },
+  {
+    "key": "farmstead-hedge-wide",
+    "scenery": true,
+    "box": [
+      592,
+      732,
+      740,
+      812
+    ]
+  },
+  {
+    "key": "farmstead-flower-bush",
+    "scenery": true,
+    "box": [
+      1415,
+      831,
+      1509,
+      912
+    ]
+  },
+  {
+    "key": "farmstead-crate",
+    "scenery": true,
+    "box": [
+      1139,
+      908,
+      1240,
+      1011
+    ]
+  },
+  {
+    "key": "farmstead-logs",
+    "scenery": true,
+    "box": [
+      1245,
+      908,
+      1384,
+      1024
+    ]
+  },
+  {
+    "key": "gate",
+    "box": [
+      774,
+      275,
+      1091,
+      486
+    ],
+    "polygon": [
+      [
+        807,
+        276
+      ],
+      [
+        1055,
+        276
+      ],
+      [
+        1090,
+        320
+      ],
+      [
+        1090,
+        484
+      ],
+      [
+        774,
+        484
+      ],
+      [
+        774,
+        432
+      ],
+      [
+        793,
+        322
+      ],
+      [
+        807,
+        322
+      ]
+    ]
+  },
+  {
+    "key": "shop",
+    "box": [
+      16,
+      463,
+      399,
+      718
+    ]
+  },
+  {
+    "key": "market",
+    "box": [
+      409,
+      455,
+      734,
+      738
+    ]
+  },
+  {
+    "key": "notice",
+    "box": [
+      1254,
+      303,
+      1448,
+      469
+    ]
+  },
+  {
+    "key": "farm-sign",
+    "box": [
+      741,
+      502,
+      961,
+      665
+    ]
+  },
+  {
+    "key": "chest",
+    "box": [
+      950,
+      532,
+      1092,
+      663
+    ]
+  },
+  {
+    "key": "farmer",
+    "box": [
+      1089,
+      479,
+      1184,
+      602
+    ]
+  },
+  {
+    "key": "gardener",
+    "box": [
+      1051,
+      682,
+      1203,
+      821
+    ]
+  },
+  {
+    "key": "arrow",
+    "box": [
+      766,
+      676,
+      832,
+      731
+    ]
+  }
+]

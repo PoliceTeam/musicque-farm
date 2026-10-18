@@ -1,4 +1,8 @@
-import type { CharacterRenderer, RendererProvider } from '@chibi-town/render-contracts/renderer-types';
+import {
+  type CharacterRenderer,
+  MAP_LABEL_STYLE,
+  type RendererProvider,
+} from '@chibi-town/render-contracts/renderer-types';
 import { spritePixels, spriteTextureKey } from '@chibi-town/render-contracts/sprite-pixels';
 
 /** Canvas adapter consumes the same native pixels and draw operations as Phaser. */
@@ -69,15 +73,15 @@ export const createCanvasProvider: RendererProvider = (options) => {
       context.restore();
     },
 
-    label(text, x, y, color, border, fontSize = 14) {
+    label(text, x, y, color, border, fontSize = MAP_LABEL_STYLE.fontSize) {
       if (destroyed) return;
       context.save();
-      context.font = `bold ${fontSize / 2}px system-ui, sans-serif`;
+      context.font = `${MAP_LABEL_STYLE.fontStyle} ${fontSize / 2}px ${MAP_LABEL_STYLE.fontFamily}`;
       context.textAlign = 'center';
       context.textBaseline = 'bottom';
       context.lineJoin = 'round';
-      context.strokeStyle = '#49320e';
-      context.lineWidth = 1.5;
+      context.strokeStyle = MAP_LABEL_STYLE.stroke;
+      context.lineWidth = MAP_LABEL_STYLE.strokeWidth / 2;
       if (border) {
         context.shadowColor = border;
         context.shadowBlur = 1.5;

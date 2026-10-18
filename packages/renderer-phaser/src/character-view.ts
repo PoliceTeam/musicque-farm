@@ -1,6 +1,6 @@
 import type { DrawOp } from '@chibi-town/character-core/character-types';
 import type { SpriteSheet } from '@chibi-town/character-core/sprite-types';
-import type { ParticleEffect } from '@chibi-town/render-contracts/renderer-types';
+import { MAP_LABEL_STYLE, type ParticleEffect } from '@chibi-town/render-contracts/renderer-types';
 import Phaser from 'phaser';
 import { EffectsView } from './effects-view.js';
 import { SpriteTextureFactory } from './sprite-texture-factory.js';
@@ -13,6 +13,11 @@ export class CharacterView {
   private readonly rectangles: Phaser.GameObjects.Rectangle[] = [];
   private readonly labels: Phaser.GameObjects.Text[] = [];
   private readonly surfaces = new Map<string, string>();
+  private readonly labelStyles = new Map<
+    Phaser.GameObjects.Text,
+    { text: string; color: string; fontSize: number; border?: string }
+  >();
+  private labelScale: number | undefined;
   private labelCount = 0;
   private imageCount = 0;
   private rectangleCount = 0;
@@ -28,6 +33,7 @@ export class CharacterView {
 
   beginFrame() {
     this.imageCount = this.rectangleCount = this.labelCount = this.order = 0;
+    this.labelScale = undefined;
     this.factory.beginFrame();
     this.effects.beginFrame();
   }
@@ -94,30 +100,52 @@ export class CharacterView {
     this.imageCount++;
   }
 
-  label(text: string, x: number, y: number, color: string, border?: string, fontSize = 14) {
+  label(
+    text: string,
+    x: number,
+    y: number,
+    color: string,
+    border?: string,
+    fontSize: number = MAP_LABEL_STYLE.fontSize,
+  ) {
     let label = this.labels[this.labelCount];
     if (!label) {
       label = this.scene.add
         .text(0, 0, '', {
-          fontFamily: 'system-ui, sans-serif',
-          fontSize: '14px',
-          fontStyle: 'bold',
+          fontFamily: MAP_LABEL_STYLE.fontFamily,
+          fontSize: MAP_LABEL_STYLE.fontSize,
+          fontStyle: MAP_LABEL_STYLE.fontStyle,
           padding: { left: 2, right: 2, top: 2, bottom: 2 },
         })
         .setOrigin(0.5, 1)
         .setScale(0.5)
-        .setResolution(2 * (window.devicePixelRatio || 1));
+        .setStroke(MAP_LABEL_STYLE.stroke, MAP_LABEL_STYLE.strokeWidth)
+        .setResolution(MAP_LABEL_STYLE.resolution);
+      label.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
       this.labels.push(label);
     }
-    const cssWidth = this.scene.game.canvas.getBoundingClientRect().width;
-    const scale = cssWidth > 0 ? this.scene.scale.width / cssWidth / this.scene.cameras.main.zoom : 0.5;
+    // TextStyle.setColor/setShadow rebuild and upload the canvas even if values are unchanged.
+    // Only transforms belong on the frame path; cache style per pooled Text object.
+    const previous = this.labelStyles.get(label);
+    if (!previous || previous.text !== text) label.setText(text);
+    if (!previous || previous.fontSize !== fontSize) label.setFontSize(fontSize);
+    if (!previous || previous.color !== color) label.setColor(color);
+    if (!previous || previous.border !== border)
+      label.setShadow(0, 0, border ?? MAP_LABEL_STYLE.stroke, border ? 3 : 0, true, false);
+    if (
+      !previous ||
+      previous.text !== text ||
+      previous.fontSize !== fontSize ||
+      previous.color !== color ||
+      previous.border !== border
+    )
+      this.labelStyles.set(label, { text, color, fontSize, border });
+    if (this.labelScale === undefined) {
+      const cssWidth = this.scene.game.canvas.getBoundingClientRect().width;
+      this.labelScale = cssWidth > 0 ? this.scene.scale.width / cssWidth / this.scene.cameras.main.zoom : 0.5;
+    }
     label
-      .setScale(scale)
-      .setText(text)
-      .setFontSize(fontSize)
-      .setColor(color)
-      .setStroke('#49320e', 3)
-      .setShadow(0, 0, border ?? '#49320e', border ? 3 : 0, true, false)
+      .setScale(this.labelScale)
       .setPosition(x, y)
       .setDepth(this.order++)
       .setVisible(true);

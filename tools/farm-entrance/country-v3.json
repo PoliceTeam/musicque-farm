@@ -1,0 +1,316 @@
+[
+  {
+    "key": "farmstead-sky",
+    "scenery": true,
+    "box": [
+      16,
+      57,
+      705,
+      208
+    ]
+  },
+  {
+    "key": "farmstead-mountains",
+    "scenery": true,
+    "box": [
+      718,
+      48,
+      1665,
+      149
+    ]
+  },
+  {
+    "key": "farmstead-woodland",
+    "scenery": true,
+    "box": [
+      718,
+      151,
+      1668,
+      263
+    ]
+  },
+  {
+    "key": "farmstead-tree-orange",
+    "scenery": true,
+    "box": [
+      0,
+      216,
+      233,
+      447
+    ]
+  },
+  {
+    "key": "farmstead-tree-yellow",
+    "scenery": true,
+    "box": [
+      234,
+      216,
+      449,
+      447
+    ]
+  },
+  {
+    "key": "farmstead-tree-green",
+    "scenery": true,
+    "box": [
+      450,
+      218,
+      639,
+      447
+    ]
+  },
+  {
+    "key": "farmstead-distant-tree",
+    "scenery": true,
+    "box": [
+      640,
+      238,
+      826,
+      447
+    ]
+  },
+  {
+    "key": "farmstead-hedge-low",
+    "scenery": true,
+    "box": [
+      823,
+      355,
+      933,
+      446
+    ]
+  },
+  {
+    "key": "farmstead-hedge-tall",
+    "scenery": true,
+    "box": [
+      826,
+      275,
+      923,
+      351
+    ]
+  },
+  {
+    "key": "farmstead-daisies",
+    "scenery": true,
+    "box": [
+      988,
+      273,
+      1116,
+      362
+    ]
+  },
+  {
+    "key": "farmstead-flower-rocks",
+    "scenery": true,
+    "box": [
+      935,
+      362,
+      1117,
+      448
+    ]
+  },
+  {
+    "key": "farmstead-fence-long",
+    "scenery": true,
+    "box": [
+      1122,
+      274,
+      1375,
+      367
+    ]
+  },
+  {
+    "key": "farmstead-fence",
+    "scenery": true,
+    "box": [
+      1381,
+      274,
+      1580,
+      368
+    ]
+  },
+  {
+    "key": "farmstead-fence-short",
+    "scenery": true,
+    "box": [
+      1585,
+      275,
+      1665,
+      367
+    ]
+  },
+  {
+    "key": "farmstead-grass-tuft",
+    "scenery": true,
+    "box": [
+      881,
+      675,
+      1009,
+      745
+    ]
+  },
+  {
+    "key": "farmstead-hedge-wide",
+    "scenery": true,
+    "box": [
+      1012,
+      675,
+      1106,
+      743
+    ]
+  },
+  {
+    "key": "farmstead-flower-bush",
+    "scenery": true,
+    "box": [
+      1108,
+      675,
+      1200,
+      744
+    ]
+  },
+  {
+    "key": "farmstead-crate",
+    "scenery": true,
+    "box": [
+      1473,
+      677,
+      1565,
+      744
+    ]
+  },
+  {
+    "key": "farmstead-logs",
+    "scenery": true,
+    "box": [
+      1467,
+      747,
+      1581,
+      815
+    ]
+  },
+  {
+    "key": "farmstead-lantern",
+    "scenery": true,
+    "box": [
+      1364,
+      459,
+      1461,
+      671
+    ]
+  },
+  {
+    "key": "farmstead-pink-pot",
+    "scenery": true,
+    "box": [
+      1232,
+      502,
+      1306,
+      579
+    ]
+  },
+  {
+    "key": "farmstead-flowers-yellow",
+    "scenery": true,
+    "box": [
+      1105,
+      744,
+      1205,
+      815
+    ]
+  },
+  {
+    "key": "farmstead-flowers-red",
+    "scenery": true,
+    "box": [
+      1008,
+      745,
+      1106,
+      814
+    ]
+  },
+  {
+    "key": "farmstead-rock",
+    "scenery": true,
+    "box": [
+      1212,
+      746,
+      1290,
+      798
+    ]
+  },
+  {
+    "key": "gate",
+    "box": [
+      0,
+      445,
+      304,
+      674
+    ]
+  },
+  {
+    "key": "shop",
+    "box": [
+      562,
+      449,
+      890,
+      674
+    ]
+  },
+  {
+    "key": "notice",
+    "box": [
+      389,
+      499,
+      566,
+      674
+    ]
+  },
+  {
+    "key": "market",
+    "box": [
+      890,
+      449,
+      1156,
+      674
+    ]
+  },
+  {
+    "key": "farm-sign",
+    "box": [
+      1462,
+      482,
+      1672,
+      669
+    ]
+  },
+  {
+    "key": "chest",
+    "box": [
+      1350,
+      672,
+      1487,
+      785
+    ]
+  },
+  {
+    "key": "farmstead-fence-end-left",
+    "scenery": true,
+    "box": [
+      1265,
+      370,
+      1335,
+      450
+    ]
+  },
+  {
+    "key": "farmstead-fence-end-right",
+    "scenery": true,
+    "box": [
+      1188,
+      370,
+      1261,
+      450
+    ]
+  }
+]

@@ -25,7 +25,9 @@ type ScreenModule = {
 const loaders: Record<string, () => Promise<ScreenModule>> = {
   '/map': () => import('@/features/world-map/main'),
 
-  '/farm': () =>
+  '/farm': () => import('@/features/farm-entrance/main'),
+
+  '/farm/home': () =>
     process.env.NODE_ENV === 'development'
       ? import('@/devtools/farm-art-review/farm-review-screen')
       : import('@/features/farm/main'),
@@ -229,6 +231,8 @@ function GameApplicationContent() {
           definition = { ...definition, spawn: [spawn[0], spawn[1]] };
         renderer = definition.scene === 'farm' ? '/farm' : definition.scene === 'arcade' ? '/arcade' : '/location';
       }
+      if (renderer === '/farm' && process.env.NODE_ENV !== 'production' && new URLSearchParams(search).has('review'))
+        renderer = '/farm/home';
       return { module: await loaders[renderer](), definition };
     };
 
