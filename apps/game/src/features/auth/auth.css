@@ -117,3 +117,24 @@
   scrollbar-width: thin;
   scrollbar-color: #bda781 transparent;
 }
+
+/* A quiet text link under the password field, not a second button competing with "Đăng nhập". */
+.game-ui .auth-forgot-link {
+  align-self: flex-end;
+  min-height: 0;
+  margin-top: -4px;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--ui-green-dark);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: var(--ui-cursor-pointer, pointer);
+}
+
+.game-ui .auth-forgot-link:hover,
+.game-ui .auth-forgot-link:focus-visible {
+  text-decoration: underline;
+}

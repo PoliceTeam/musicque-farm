@@ -328,3 +328,16 @@ it('tolerates a blocked sessionStorage property getter before storage methods ca
   ).toBe(true);
   expect(reads).toBe(1);
 });
+
+it('SSO renders ordinary account forms without popup controls or explanatory copy', () => {
+  const { auth } = client(() => ({ body: {} }));
+  const markup = renderToStaticMarkup(
+    <I18nextProvider i18n={createGameI18n()}>
+      <AuthDialog client={auth} google={false} sso entry onClose={() => {}} onSignedIn={() => {}} />
+    </I18nextProvider>,
+  );
+  expect(markup).toContain('name="password"');
+  expect(markup).toContain('name="email"');
+  expect(markup).toContain('Quên mật khẩu?');
+  expect(markup).not.toContain('Một tài khoản dùng chung');
+});

@@ -1,0 +1,204 @@
+/* Colors and shapes follow packages/ui/src/theme.css so Keycloak pages read as part of the game. */
+:root {
+  --farm-paper: #fff7e5;
+  --farm-paper-deep: #f0dfb9;
+  --farm-ink: #59452f;
+  --farm-muted: #6f604c;
+  --farm-border: #ad8b58;
+  --farm-green: #5e7e45;
+  --farm-green-dark: #506e38;
+  --farm-gold: #ffe3a1;
+  --farm-danger: #b35c40;
+
+  --pf-v5-global--FontFamily--text: "Trebuchet MS", system-ui, sans-serif;
+  --pf-v5-global--FontFamily--heading: "Trebuchet MS", system-ui, sans-serif;
+  --pf-v5-global--Color--100: var(--farm-ink);
+  --pf-v5-global--Color--200: var(--farm-muted);
+  --pf-v5-global--BackgroundColor--100: var(--farm-paper);
+  --pf-v5-global--BorderColor--100: var(--farm-border);
+  --pf-v5-global--BorderColor--200: var(--farm-green-dark);
+  --pf-v5-global--primary-color--100: var(--farm-green-dark);
+  --pf-v5-global--primary-color--200: #446631;
+  --pf-v5-global--link--Color: var(--farm-green-dark);
+  --pf-v5-global--link--Color--hover: #3e5a2b;
+  --pf-v5-global--danger-color--100: var(--farm-danger);
+  --pf-v5-global--BorderRadius--sm: 10px;
+  --keycloak-card-top-color: transparent;
+}
+
+.login-pf body {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 20% 10%, #fffbea 0, transparent 40%),
+    linear-gradient(180deg, #cfe6b0 0%, #a9cf86 55%, #8fbf6c 100%);
+  color: var(--farm-ink);
+}
+
+.pf-v5-c-login__container {
+  grid-template-columns: minmax(0, 30rem);
+  padding-inline: 16px;
+}
+
+#kc-header-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--farm-ink) !important;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  text-shadow: 0 2px #fffbea;
+}
+
+#kc-header-wrapper::before {
+  content: "";
+  width: 40px;
+  height: 40px;
+  background: url("../img/brand.svg") center / contain no-repeat;
+  image-rendering: pixelated;
+}
+
+.pf-v5-c-login__main {
+  background: var(--farm-paper);
+  border: 2px solid var(--farm-border);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px #fffdf5,
+    0 4px #8a6b4550,
+    0 8px 24px #263a3025;
+  overflow: hidden;
+}
+
+.pf-v5-c-login__main-header {
+  border-top: 0;
+}
+
+.pf-v5-c-title,
+#kc-page-title {
+  color: var(--farm-ink);
+  font-weight: 800;
+}
+
+.pf-v5-c-form__label-text,
+.pf-v5-c-check__label {
+  color: var(--farm-ink);
+  font-weight: 700;
+}
+
+.pf-v5-c-form-control {
+  --pf-v5-c-form-control--BackgroundColor: #fffdf5;
+  --pf-v5-c-form-control--before--BorderColor: var(--farm-border);
+  --pf-v5-c-form-control--after--BorderColor: var(--farm-border);
+  --pf-v5-c-form-control--hover--after--BorderColor: var(--farm-green-dark);
+  --pf-v5-c-form-control--focus--after--BorderColor: var(--farm-green-dark);
+  border-radius: 10px;
+  min-height: 44px;
+}
+
+.pf-v5-c-button {
+  min-height: 44px;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+.pf-v5-c-button.pf-m-primary {
+  background: linear-gradient(#56783f, #446631);
+  color: #fffbea;
+  border: 2px solid var(--farm-green-dark);
+  box-shadow:
+    inset 0 1px #b9ce9690,
+    0 3px #4d6b3655;
+}
+
+.pf-v5-c-button.pf-m-primary:hover,
+.pf-v5-c-button.pf-m-primary:focus {
+  background: linear-gradient(#5e8446, #4a6e36);
+  color: #fffbea;
+}
+
+.pf-v5-c-button.pf-m-secondary,
+.pf-v5-c-button.pf-m-tertiary {
+  background: var(--farm-paper);
+  color: var(--farm-ink);
+  border: 2px solid var(--farm-border);
+  box-shadow: 0 3px #8a6b4540;
+}
+
+.pf-v5-c-button.pf-m-secondary::after,
+.pf-v5-c-button.pf-m-tertiary::after {
+  border: 0;
+}
+
+.pf-v5-c-button.pf-m-secondary:hover,
+.pf-v5-c-button.pf-m-tertiary:hover {
+  background: var(--farm-gold);
+  color: var(--farm-ink);
+}
+
+.pf-v5-c-login__main-footer-band {
+  background: var(--farm-paper-deep);
+  border-top: 1px solid var(--farm-border);
+  color: var(--farm-muted);
+}
+
+.pf-v5-c-alert {
+  border-radius: 12px;
+}
+
+.kc-login-divider {
+  color: var(--farm-muted);
+}
+
+.kc-login-divider::before,
+.kc-login-divider::after {
+  background: var(--farm-border);
+}
+
+@media (max-width: 480px) {
+  .pf-v5-c-login__container {
+    padding-inline: 8px;
+  }
+
+  #kc-header-wrapper {
+    font-size: 22px;
+  }
+}
+
+/* PatternFly draws an underline-style field; give fields and the language select the game's framed look. */
+.pf-v5-c-form-control {
+  background: #fffdf5;
+}
+
+.pf-v5-c-form-control::before {
+  border: 2px solid var(--farm-border) !important;
+  border-radius: 10px;
+}
+
+.pf-v5-c-form-control::after {
+  border: 0 !important;
+}
+
+.pf-v5-c-form-control:focus-within::before {
+  border-color: var(--farm-green-dark) !important;
+}
+
+.pf-v5-c-input-group {
+  gap: 6px;
+}
+
+/* The frame color already marks focus; drop the browser ring that doubled it. */
+.pf-v5-c-form-control > :is(input, select):focus {
+  outline: none;
+}
+
+.pf-v5-c-button.pf-m-control {
+  background: #fffdf5;
+  border: 2px solid var(--farm-border);
+  border-radius: 10px;
+}
+
+.pf-v5-c-button.pf-m-control::after {
+  border: 0;
+}

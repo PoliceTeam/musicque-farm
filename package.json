@@ -18,7 +18,11 @@
     "format": "biome format --write . && node tools/format/function-spacing.mjs --write && biome format --write .",
     "check": "pnpm format:check && pnpm format:test && turbo run lint typecheck test && pnpm tooling:test",
     "format:test": "node --test tools/format/function-spacing.test.mjs",
-    "tooling:test": "node --test tools/tooling/*.test.mjs"
+    "tooling:test": "node --test tools/tooling/*.test.mjs",
+    "sso:up": "pnpm --filter @chibi-town/sso sso:up",
+    "sso:configure": "pnpm --filter @chibi-town/sso sso:configure",
+    "sso:sync": "pnpm --filter @chibi-town/sso sso:sync",
+    "sso:down": "pnpm --filter @chibi-town/sso sso:down"
   },
   "devDependencies": {
     "turbo": "2.11.7",

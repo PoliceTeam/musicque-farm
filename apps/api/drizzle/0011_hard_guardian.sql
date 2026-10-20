@@ -1,0 +1,1 @@
+ALTER TABLE "sessions" ADD COLUMN "sso_refresh" text;

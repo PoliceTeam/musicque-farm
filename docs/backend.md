@@ -218,6 +218,7 @@ pnpm --filter @chibi-town/api serve     # http://127.0.0.1:3001/api
 Không có Docker thì đặt `DATABASE_URL=pglite:.data/dev`: Postgres chạy ngay trong process, lưu vào thư mục đó. Chỉ dùng cho phát triển, một process.
 
 Chạy game với server: đặt `NEXT_PUBLIC_API_URL=http://127.0.0.1:3001/api` trong `apps/game/.env.local` và `WEB_ORIGIN` của API trùng origin của game, rồi khởi động lại `pnpm dev`.
+Build image web production cần `--build-arg NEXT_PUBLIC_SITE_URL=<origin công khai + base path>` để ảnh chia sẻ (Open Graph/Twitter) có URL tuyệt đối; icon và ảnh xuất từ `tools/branding/export-icons.py`.
 
 Server tự chạy migration khi khởi động. Sau khi đổi `src/infrastructure/database/schema.ts`, chạy `pnpm --filter @chibi-town/api db:generate` và commit thư mục `drizzle/`. `pnpm dev` ở gốc không khởi động API.
 
@@ -311,3 +312,9 @@ pnpm dev
 Compose production chạy Redis AOF, HTTP API và worker từ cùng image backend. Thay `PET_RACE_RESET_*` cần restart cả API và worker với cùng giá trị; worker cập nhật cron khi startup. `BACKGROUND_JOBS_MODE=embedded` dùng cho test/dev PGlite một process, giữ maintenance trong API; không chạy worker cùng thư mục PGlite.
 
 Để chuyển dữ liệu dev PGlite sang Postgres, dừng API cũ, build backend rồi chạy từ `apps/api`: `SOURCE_DATABASE_URL=pglite:.data/dev TARGET_DATABASE_URL=postgres://... node scripts/copy-local-database.mjs`. Script chỉ chép vào DB đích trống trong một transaction, giữ id/session/document/inventory/odds và các cược pending; từ chối đích có dữ liệu. Thư mục PGlite gốc được giữ lại. Sau khi đối chiếu số dòng, đổi DATABASE_URL và khởi động API/worker.
+
+## SSO
+
+Xem `docs/sso.md`. Khi đặt `SSO_*`, Keycloak (`apps/sso`) giữ đăng nhập, đăng ký, mật khẩu và Google; `/auth/register`,
+`/auth/login`, `/auth/google*` trả 404. API chỉ cấp cookie session nội bộ, liên kết danh tính qua `(issuer, subject)`
+và không tự gộp username/email. Tài khoản cũ được đưa sang bằng `apps/sso/import-legacy-users.mjs`.

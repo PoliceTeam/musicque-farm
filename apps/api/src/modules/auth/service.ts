@@ -13,6 +13,7 @@ import { hashPassword, verifyPassword } from '@/_utils/password';
 import type { PlayerAccount } from '@/_utils/session-auth';
 import type { Database } from '@/infrastructure/database/database';
 import { identities, playerDocuments, players, sessions } from '@/infrastructure/database/schema';
+import type { SsoProfile } from '@/modules/auth/sso-oidc';
 import { saveStarterOutfit } from '@/modules/character';
 
 export type ExternalProfile = {
@@ -310,4 +311,46 @@ export async function completeCharacterSetup(db: Database, player: PlayerAccount
     await saveStarterOutfit(tx, player.id, body.outfit, now);
   });
   return player;
+}
+
+/** Identity is (issuer, subject); never merge by username/email. A guest signing in is upgraded in place. */
+export async function signInWithSso(
+  db: Database,
+  profile: SsoProfile,
+  current: PlayerAccount | undefined,
+  now: number,
+) {
+  const provider = `sso:${profile.issuer}`;
+  return db.transaction(async (tx) => {
+    if (current) await tx.select({ id: players.id }).from(players).where(eq(players.id, current.id)).for('update');
+    const [identity] = await tx
+      .select()
+      .from(identities)
+      .where(and(eq(identities.provider, provider), eq(identities.subject, profile.subject)));
+    if (identity) {
+      const [player] = await tx.select(account).from(players).where(eq(players.id, identity.playerId));
+      return player;
+    }
+    const name = profile.name.trim().slice(0, 20);
+    const values: NewAccount = {
+      name: name.length < 2 ? 'Chibi' : name,
+      email: null,
+      passwordHash: null,
+      usernameRequired: true,
+    };
+    let player: PlayerAccount;
+    if (current?.guest) player = await upgradeGuest(tx, current.id, values, now);
+    else {
+      // New accounts reuse the SSO username when it fits the game rule and is free; guests keep the
+      // username step because it grants their current outfit.
+      const username = profile.username?.toLowerCase();
+      if (username && /^[a-z0-9][a-z0-9_.]{2,19}$/.test(username)) {
+        const [taken] = await tx.select({ id: players.id }).from(players).where(eq(players.username, username));
+        if (!taken) Object.assign(values, { username, usernameRequired: false });
+      }
+      player = await insertPlayer(tx, values, now);
+    }
+    await tx.insert(identities).values({ provider, subject: profile.subject, playerId: player.id });
+    return player;
+  });
 }

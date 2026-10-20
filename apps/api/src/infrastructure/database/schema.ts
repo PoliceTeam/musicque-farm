@@ -68,6 +68,7 @@ export const identities = pgTable(
 );
 
 export const sessions = pgTable('sessions', {
+  ssoRefresh: text('sso_refresh'),
   tokenHash: text('token_hash').primaryKey(),
   playerId: uuid('player_id')
     .notNull()

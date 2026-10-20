@@ -25,6 +25,8 @@ import {
   setUsername,
   signInWithProvider,
 } from '@/modules/auth/service';
+import { createSsoController } from '@/modules/auth/sso-controller';
+import { createSsoFormsController } from '@/modules/auth/sso-forms-controller';
 
 const OAUTH_COOKIE = 'chibi_oauth';
 
@@ -38,15 +40,16 @@ export function createAuthController(deps: {
 }) {
   const { db, config, clock } = deps;
   const cookie = { path: '/', httpOnly: true, sameSite: 'lax', secure: config.secureCookies } as const;
-  const google: GoogleClient | undefined = config.google && {
-    ...config.google,
-    redirectUri: `${config.publicApiUrl}/auth/google/callback`,
-  };
+  // With SSO, Keycloak owns registration, passwords and Google; local credential routes stay for SSO-less setups.
+  const google: GoogleClient | undefined =
+    config.google && !config.sso
+      ? { ...config.google, redirectUri: `${config.publicApiUrl}/auth/google/callback` }
+      : undefined;
 
-  async function signIn(reply: FastifyReply, player: PlayerAccount) {
+  async function signIn(reply: FastifyReply, player: PlayerAccount, ssoRefresh?: string) {
     reply.setCookie(
       SESSION_COOKIE,
-      await createSession(db, player.id, clock(), player.guest ? GUEST_SESSION_SECONDS : SESSION_SECONDS),
+      await createSession(db, player.id, clock(), player.guest ? GUEST_SESSION_SECONDS : SESSION_SECONDS, ssoRefresh),
       {
         ...cookie,
         maxAge: player.guest ? GUEST_SESSION_SECONDS : SESSION_SECONDS,
@@ -73,11 +76,16 @@ export function createAuthController(deps: {
     const current = await readSession(db, request.cookies[SESSION_COOKIE], clock());
     const player = await deps.shared.exclusive(`registration-create:${request.ip}`, async () => {
       if (await registrations.blocked(request.ip, clock())) throw new HttpError(429, 'TOO_MANY_ATTEMPTS');
+      if (config.sso) {
+        await registrations.fail(request.ip, clock());
+        return undefined;
+      }
       const registered = await registerPlayer(db, request.body, current, clock());
       await registrations.fail(request.ip, clock());
       return registered;
     });
-    return current?.guest ? { player: await accountWithSetup(db, player) } : signIn(reply, player);
+    if (config.sso) return forms.passwordRegister(request, reply);
+    return current?.guest ? { player: await accountWithSetup(db, player!) } : signIn(reply, player!);
   };
 
   /** Ten wrong passwords for one email, or thirty from one address, pause sign-in for ten minutes. */
@@ -85,7 +93,8 @@ export function createAuthController(deps: {
   const byAddress = createAttemptLimiter(30, 10 * 60_000, deps.shared, 'login-address');
 
   const login = async (request: FastifyRequest, reply: FastifyReply) => {
-    const email = String((request.body as { email?: unknown } | null)?.email ?? '')
+    const credentials = request.body as { email?: unknown; username?: unknown } | null;
+    const email = String(credentials?.username || credentials?.email || '')
       .trim()
       .toLowerCase()
       .slice(0, 254);
@@ -94,6 +103,11 @@ export function createAuthController(deps: {
         if ((await byEmail.blocked(email, clock())) || (await byAddress.blocked(request.ip, clock())))
           throw new HttpError(429, 'TOO_MANY_ATTEMPTS');
         try {
+          if (config.sso) {
+            const result = await forms.passwordLogin(request, reply);
+            await byEmail.clear(email);
+            return result;
+          }
           const player = await loginPlayer(db, request.body);
           await byEmail.clear(email);
           return await signIn(reply, player);
@@ -132,15 +146,30 @@ export function createAuthController(deps: {
     if (token) await deps.revokeSession(hashSessionToken(token));
   }
 
+  const forms = createSsoFormsController({ ...deps, signIn, revokeCookie });
+  const { ssoLogoutUrl, ssoAccountUrl, ...ssoRoutes } = createSsoController({ ...deps, signIn, revokeCookie });
+
   const logout = async (request: FastifyRequest, reply: FastifyReply) => {
+    // A cross-origin page must not be able to sign the player out.
+    if (request.headers.origin && request.headers.origin !== new URL(config.webOrigin).origin)
+      throw new HttpError(403, 'INVALID_INPUT');
     await revokeCookie(request);
     reply.clearCookie(SESSION_COOKIE, cookie);
-    return { ok: true };
+    const logoutUrl = config.sso ? undefined : await ssoLogoutUrl?.().catch(() => undefined);
+    return { ok: true, ...(logoutUrl ? { logoutUrl } : {}) };
   };
 
   const session = async (request: FastifyRequest) => {
     const player = await readSession(db, request.cookies[SESSION_COOKIE], clock());
-    return { player: player ? await accountWithSetup(db, player) : null, providers: { google: !!google } };
+    return {
+      player: player ? await accountWithSetup(db, player) : null,
+      providers: {
+        google: !!google,
+        ...(ssoAccountUrl
+          ? { sso: true, accountUrl: ssoAccountUrl, handoffTargets: Object.keys(config.sso?.targets || {}) }
+          : {}),
+      },
+    };
   };
 
   const googleSignIn = async (_request: FastifyRequest, reply: FastifyReply) => {
@@ -176,6 +205,8 @@ export function createAuthController(deps: {
   };
 
   return {
+    ...ssoRoutes,
+    ...forms,
     createGuest,
     register,
     login,

@@ -1,8 +1,8 @@
-import { LOCATION_WALK_SPEED } from '@chibi-town/game-content/movement-config';
 import { createRealtimeClient } from '@chibi-town/api-sdk';
 import { Action } from '@chibi-town/character-core/animation-logic';
 import { defaultOutfit } from '@chibi-town/character-core/outfit-logic';
 import { decodeRealtimeCommand, decodeRealtimeEvent, type MapPlayer } from '@chibi-town/contracts/realtime';
+import { LOCATION_WALK_SPEED } from '@chibi-town/game-content/movement-config';
 import { describe, expect, it } from 'vitest';
 import { createRemotePlayers } from '@/features/location/_utils/remote-players-logic';
 

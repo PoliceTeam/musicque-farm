@@ -1,0 +1,13 @@
+# Add inside the HTTPS server block for sso.your-domain.com.
+# Configure certificates on the host and keep SSO_PORT bound to loopback.
+location / {
+    proxy_pass http://127.0.0.1:8180;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Port $server_port;
+}
+# Do not proxy the management/health port 9000 to the Internet.

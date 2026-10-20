@@ -1,6 +1,13 @@
 import { createContext } from 'react';
 import type { AuthPlayer } from '@/application/auth-client';
-export const AuthContext = createContext<{ player?: AuthPlayer; openAuth: () => void }>({ openAuth() {} });
+export const AuthContext = createContext<{
+  player?: AuthPlayer;
+  accountUrl?: string;
+  handoffTargets?: string[];
+  openAuth: () => void;
+}>({
+  openAuth() {},
+});
 
 /** Mark before opening; inaccessible storage still allows play and the dialog. */
 export function shouldShowGuestPrompt(

@@ -19,6 +19,15 @@ export type ApiConfig = {
   secureCookies: boolean;
   /** Behind a reverse proxy: take the client address from X-Forwarded-For (sign-in limits are per address). */
   trustProxy: boolean;
+  sso?: {
+    issuer: string;
+    clientId: string;
+    clientSecret: string;
+    tokenKey?: string;
+    targets?: Record<string, string>;
+    /** Partner web origins whose pages may post a handoff to us (our own origin is always allowed). */
+    handoffOrigins?: string[];
+  };
   google?: { clientId: string; clientSecret: string };
 };
 
@@ -47,6 +56,21 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     throw new Error('PET_RACE_RESET_TIMEZONE is invalid');
   }
 
+  const ssoValues = [env.SSO_ISSUER, env.SSO_CLIENT_ID, env.SSO_CLIENT_SECRET];
+  if (ssoValues.some(Boolean) && !ssoValues.every(Boolean))
+    throw new Error('SSO requires issuer, client id and secret');
+  if (env.SSO_ISSUER) {
+    const issuer = new URL(env.SSO_ISSUER);
+    const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(issuer.hostname);
+    if (
+      issuer.username ||
+      issuer.password ||
+      issuer.search ||
+      issuer.hash ||
+      (issuer.protocol !== 'https:' && !(env.NODE_ENV !== 'production' && loopback && issuer.protocol === 'http:'))
+    )
+      throw new Error('SSO_ISSUER requires HTTPS (HTTP loopback allowed only in development)');
+  }
   return {
     databaseUrl: env.DATABASE_URL,
     backgroundJobs,
@@ -60,6 +84,43 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     publicApiUrl: (env.PUBLIC_API_URL ?? `http://${host}:${port}/api`).replace(/\/$/, ''),
     secureCookies: env.NODE_ENV === 'production',
     trustProxy: env.TRUST_PROXY === 'true',
+    sso: env.SSO_ISSUER
+      ? {
+          issuer: env.SSO_ISSUER.replace(/\/$/, ''),
+          clientId: env.SSO_CLIENT_ID!,
+          clientSecret: env.SSO_CLIENT_SECRET!,
+          tokenKey: env.SSO_TOKEN_KEY,
+          handoffOrigins: (env.SSO_HANDOFF_ORIGINS || '')
+            .split(',')
+            .filter(Boolean)
+            .map((value) => new URL(value.trim()).origin),
+          targets: Object.fromEntries(
+            (env.SSO_HANDOFF_TARGETS || '')
+              .split(',')
+              .filter(Boolean)
+              .map((entry) => {
+                const at = entry.indexOf('=');
+                const id = entry.slice(0, at);
+                const url = new URL(entry.slice(at + 1));
+                if (
+                  at < 1 ||
+                  url.username ||
+                  url.password ||
+                  url.search ||
+                  url.hash ||
+                  (url.protocol !== 'https:' &&
+                    !(
+                      env.NODE_ENV !== 'production' &&
+                      ['localhost', '127.0.0.1'].includes(url.hostname) &&
+                      url.protocol === 'http:'
+                    ))
+                )
+                  throw new Error('Invalid SSO handoff target');
+                return [id, url.href];
+              }),
+          ),
+        }
+      : undefined,
     google:
       env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
         ? { clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET }

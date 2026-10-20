@@ -10,6 +10,7 @@ Quyết định đã chốt ngày 2026-10-11. Migration nền tảng đã triể
 - pnpm workspace, Turborepo, Biome: tiếp tục toolchain hiện có.
 - Vitest: gameplay, SDK, store và lifecycle. Kiểm tra trình duyệt: các luồng UI và chuyển map; chưa có suite E2E tự động.
 - Adapter local giả lập API bất đồng bộ và lưu tiến trình trong trình duyệt. Server thật nằm ở `apps/api` (Fastify + PostgreSQL), có tài khoản, lưu tiến trình, socket và bàn Tiến lên người với người; xem [backend.md](backend.md).
+- `apps/sso` là stack Keycloak tự host (Docker Compose, realm và script sinh secret), không có code TypeScript; xem [sso.md](sso.md).
 
 Không đưa Redis, microservices hoặc realtime server vào migration ban đầu. Next.js không thay thế các ranh giới gameplay/UI/data.
 

@@ -1,0 +1,4 @@
+[
+  { "clientId": "musicque-farm", "theme": "chibi-farm", "envPrefix": "SSO_FARM", "partners": ["musicque"] },
+  { "clientId": "musicque", "theme": "musicque", "envPrefix": "SSO_MUSICQUE", "partners": ["musicque-farm"] }
+]

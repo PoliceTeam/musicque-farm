@@ -1,0 +1,16 @@
+{
+  "name": "@chibi-town/sso",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "sso:up": "node init.mjs && docker compose --env-file .env -f compose.yaml up -d --build --wait && node sync-realm.mjs",
+    "sso:down": "docker compose --env-file .env -f compose.yaml down",
+    "sso:configure": "node configure.mjs",
+    "sso:sync": "node sync-realm.mjs"
+  },
+  "dependencies": {
+    "mongodb": "^6.21.0",
+    "pg": "^8.23.1"
+  }
+}

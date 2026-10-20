@@ -10,7 +10,10 @@ export type AuthPlayer = {
   characterSetupRequired?: boolean;
   characterSetupOutfit?: Outfit;
 };
-export type AuthState = { player: AuthPlayer | null; providers: { google: boolean } };
+export type AuthState = {
+  player: AuthPlayer | null;
+  providers: { google: boolean; sso?: boolean; accountUrl?: string; handoffTargets?: string[] };
+};
 export type AuthErrorCode =
   | 'INVALID_CREDENTIALS'
   | 'INVALID_INPUT'
@@ -61,7 +64,15 @@ export function createAuthClient(options: { baseUrl: string; fetch?: typeof fetc
 
   async function request(path: string, body?: unknown) {
     let response: Response;
-    let data: { code?: unknown; player?: unknown; providers?: { google?: unknown }; nextAllowedAt?: unknown };
+    let data: {
+      logoutUrl?: unknown;
+      url?: string;
+      token?: string;
+      code?: unknown;
+      player?: unknown;
+      providers?: { google?: unknown; sso?: unknown; accountUrl?: unknown; handoffTargets?: unknown };
+      nextAllowedAt?: unknown;
+    };
     try {
       response = await (options.fetch ?? fetch)(`${baseUrl}${path}`, {
         method: body ? 'POST' : 'GET',
@@ -102,7 +113,43 @@ export function createAuthClient(options: { baseUrl: string; fetch?: typeof fetc
 
     async session(): Promise<AuthState> {
       const data = await request('/auth/session');
-      return { player: readPlayer(data.player ?? null), providers: { google: data.providers?.google === true } };
+      return {
+        player: readPlayer(data.player ?? null),
+        providers: {
+          google: data.providers?.google === true,
+          ...(data.providers?.sso === true ? { sso: true } : {}),
+          ...(Array.isArray(data.providers?.handoffTargets)
+            ? {
+                handoffTargets: data.providers.handoffTargets.filter(
+                  (value): value is string => typeof value === 'string',
+                ),
+              }
+            : {}),
+          ...(typeof data.providers?.accountUrl === 'string' ? { accountUrl: data.providers.accountUrl } : {}),
+        },
+      };
+    },
+
+    forgotPassword: (identifier: string) => request('/auth/forgot-password', { identifier }),
+
+    changePassword: (currentPassword: string, newPassword: string) =>
+      request('/auth/change-password', { currentPassword, newPassword }),
+
+    async handoff(target: string) {
+      const result = await request('/auth/handoff', { target });
+      if (!result.url || !result.token) throw new AuthError('NETWORK_ERROR');
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = result.url;
+      form.hidden = true;
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'token';
+      input.value = result.token;
+      form.append(input);
+      document.body.append(form);
+      form.submit();
+      form.remove();
     },
 
     guest: () => signedIn('/auth/guest', {}),
@@ -128,8 +175,10 @@ export function createAuthClient(options: { baseUrl: string; fetch?: typeof fetc
       return starting;
     },
 
+    /** Revoke the app session; browser redirect integrations may provide an optional logout destination. */
     async logout() {
-      await request('/auth/logout', {});
+      const data = await request('/auth/logout', {});
+      return typeof data.logoutUrl === 'string' ? data.logoutUrl : undefined;
     },
   };
   return api;
