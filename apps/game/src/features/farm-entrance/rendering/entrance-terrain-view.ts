@@ -126,5 +126,14 @@ export function createEntranceTerrain(asset: (name: string) => HTMLCanvasElement
   horizon.addColorStop(1, '#a8c25700');
   g.fillStyle = horizon;
   g.fillRect(0, 366, 1280, 54);
+  // Reuse the entertainment street asphalt and curb at the square's lower edge.
+  g.fillStyle = '#393b3c';
+  g.fillRect(0, 658, ENTRANCE_SIZE.width, 62);
+  for (let x = 0; x < ENTRANCE_SIZE.width; x += 120) {
+    g.drawImage(asset('road'), x, 658, 120, 110);
+    g.drawImage(asset('curb'), x, 647, 120, 26);
+  }
+  g.fillStyle = '#e6e5dc';
+  for (const x of [140, 550, 960]) g.fillRect(x, 695, 170, 11);
   return ground;
 }

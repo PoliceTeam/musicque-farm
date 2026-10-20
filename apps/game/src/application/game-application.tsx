@@ -16,6 +16,8 @@ import { gameRoute } from '@/application/screen-router';
 import { registeredImageAssets } from '@/assets/generated-assets';
 import { authCss, themeCss } from '@/assets/generated-styles';
 import { AuthDialog } from '@/features/auth/auth-dialog';
+import { PublicChat } from '@/features/chat/_components/public-chat';
+import { chatAreaForScreen } from '@/features/chat/_utils/chat-area';
 
 type Audio = ReturnType<typeof createGameAudio>;
 type ScreenModule = {
@@ -254,6 +256,7 @@ function GameApplicationContent() {
     if (screen) audio?.setMusic(locationMusic(resolveRoute(screen.path.split('?')[0]) ?? '/map', screen.definition));
   }, [audio, screen]);
   const Screen = screen?.module.Screen;
+  const chatArea = screen ? chatAreaForScreen(screen.path, screen.definition) : undefined;
   const authClient = getAuthClient();
   const entry = pathname === '/' && !!authClient && auth.status !== 'signed-in';
   return (
@@ -329,6 +332,17 @@ function GameApplicationContent() {
         ) : (
           <p role="status">{auth.status === 'checking' ? t('checking', { ns: 'auth' }) : t('loadingLocation')}</p>
         )}
+        {chatArea &&
+          Screen &&
+          audio &&
+          !error &&
+          !entry &&
+          !authOpen &&
+          auth.status === 'signed-in' &&
+          !auth.player?.characterSetupRequired &&
+          (!auth.player || auth.player.guest || auth.player.username !== null) && (
+            <PublicChat key={`${chatArea.regionId}/${chatArea.mapId}`} area={chatArea} playerId={auth.player?.id} />
+          )}
       </div>
     </AuthContext.Provider>
   );

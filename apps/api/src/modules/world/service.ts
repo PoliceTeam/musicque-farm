@@ -1,4 +1,6 @@
 import { ApiSdkError, type MapChannelInput } from '@chibi-town/contracts';
+import type { ChatArea, ChatScope } from '@chibi-town/contracts/public-chat';
+import { publicChatArea } from '@chibi-town/game-content/public-chat';
 import { createPlayerService as createPlayerRules } from '@chibi-town/game-service/player/player-service';
 import { createWorldService as createWorldRules } from '@chibi-town/game-service/world/world-service';
 import type { PlayerAccount } from '@/_utils/session-auth';
@@ -21,6 +23,25 @@ export function createWorldService(deps: { db: Database; clock: () => number; pr
   }
 
   return {
+    async getChatScope(player: PlayerAccount, input: ChatArea): Promise<ChatScope | undefined> {
+      const area = publicChatArea(input.regionId, input.mapId);
+      if (!area) return undefined;
+      return withPlayerDocument(
+        db,
+        player.id,
+        (document) => {
+          const saved = document.channelSelections?.[area.mapId] ?? 0;
+          return {
+            regionId: area.regionId,
+            mapId: area.mapId,
+            channelId: saved >= 0 && saved < area.channels ? saved : 0,
+          };
+        },
+        undefined,
+        clock,
+      );
+    },
+
     async getWorld(player: PlayerAccount, trace?: TransactionTrace) {
       const rules = await rulesFor(player);
       return withPlayerDocument(db, player.id, rules.getWorld(), trace, clock);

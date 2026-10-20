@@ -3,6 +3,7 @@ export default {
   entranceShop: 'Cửa hàng',
   entranceShopPreview: 'Cửa hàng nông trại sẽ được mở ở bản cập nhật sau.',
   entrancePanHint: 'Vuốt ngang để xem quảng trường · Xoay ngang để xem toàn cảnh',
+  entranceExit: 'Về bản đồ',
   entranceTitle: 'Cổng nông trại',
   ownFarm: 'Vào nông trại của tôi',
   farmFriendsMenu: 'Nông trại bạn bè',

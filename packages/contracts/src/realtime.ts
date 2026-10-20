@@ -1,7 +1,9 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import { sanitizeOutfit } from '@chibi-town/character-core/outfit-logic';
 import { ARCADE_GAMES, type ArcadeGameId } from '@chibi-town/game-content/arcade-catalog';
+import { CHAT_HISTORY_LIMIT } from '@chibi-town/game-content/public-chat';
 import type { RacePhase } from './pet-racing.js';
+import { type ChatCommand, type ChatEvent, validChatMessage, validChatScope, validChatText } from './public-chat.js';
 
 /** Another player standing in the same map channel. */
 export type MapPlayer = {
@@ -18,6 +20,7 @@ export type MapPlayer = {
  * hidden information (other hands) never travels on a shared message.
  */
 export type RealtimeEvent =
+  | ChatEvent
   | { type: 'social.changed' }
   | { type: 'pet-race.changed'; roundId: string; phase: RacePhase }
   | { type: 'lobby'; gameId: ArcadeGameId }
@@ -27,6 +30,7 @@ export type RealtimeEvent =
   | { type: 'map.moves'; moves: { id: string; x: number; y: number }[] }
   | { type: 'map.leave'; id: string };
 export type RealtimeCommand =
+  | ChatCommand
   | { type: 'social.watch' }
   | { type: 'pet-race.watch' }
   | { type: 'pet-race.unwatch' }
@@ -36,7 +40,7 @@ export type RealtimeCommand =
   | { type: 'map.move'; x: number; y: number }
   | { type: 'map.leave' };
 /** Local lifecycle notification; never decoded from a server message. Reload snapshots after reconnect. */
-export type RealtimeNotification = RealtimeEvent | { type: 'reconnected' };
+export type RealtimeNotification = RealtimeEvent | { type: 'reconnected' } | { type: 'disconnected' };
 export interface GameRealtime {
   /** Commands sent while disconnected are dropped; `map.enter`, `lobby.watch` and `pet-race.watch` are replayed on reconnect. */
   send(command: RealtimeCommand): void;
@@ -71,6 +75,16 @@ export function decodeRealtimeCommand(value: unknown): RealtimeCommand | undefin
   const command = value as RealtimeCommand;
   if (!command || typeof command !== 'object') return undefined;
   switch (command.type) {
+    case 'chat.watch':
+      return id(command.regionId) && id(command.mapId)
+        ? { type: command.type, regionId: command.regionId, mapId: command.mapId }
+        : undefined;
+    case 'chat.send':
+      return id(command.requestId) && validChatText(command.text)
+        ? { type: command.type, requestId: command.requestId, text: command.text }
+        : undefined;
+    case 'chat.leave':
+      return { type: command.type };
     case 'lobby.watch':
       return gameId(command.gameId) ? { type: command.type, gameId: command.gameId } : undefined;
     case 'social.watch':
@@ -94,6 +108,24 @@ export function decodeRealtimeEvent(value: unknown): RealtimeEvent | undefined {
   const event = value as RealtimeEvent;
   if (!event || typeof event !== 'object') return undefined;
   switch (event.type) {
+    case 'chat.state':
+      return validChatScope(event.scope) &&
+        Array.isArray(event.messages) &&
+        event.messages.length <= CHAT_HISTORY_LIMIT &&
+        event.messages.every(validChatMessage)
+        ? { type: event.type, scope: event.scope, messages: event.messages }
+        : undefined;
+    case 'chat.message':
+      return validChatScope(event.scope) && validChatMessage(event.message)
+        ? { type: event.type, scope: event.scope, message: event.message }
+        : undefined;
+    case 'chat.result':
+      return id(event.requestId) &&
+        (event.error === null
+          ? typeof event.messageId === 'string' && /^[-a-zA-Z0-9_:]{1,200}$/.test(event.messageId)
+          : event.messageId === null && ['NOT_READY', 'TOO_FAST', 'CONFLICT'].includes(event.error))
+        ? { type: event.type, requestId: event.requestId, messageId: event.messageId, error: event.error }
+        : undefined;
     case 'social.changed':
       return { type: 'social.changed' };
     case 'pet-race.changed':

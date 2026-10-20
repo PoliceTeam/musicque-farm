@@ -44,6 +44,8 @@ const SCENERY = [
   'farmstead-logs',
   'country-dirt',
   'meadow-grass',
+  'road',
+  'curb',
 ];
 export const ENTRANCE_ASSETS = [
   ...SCENERY.map((key) => `scenery:${key}`),
@@ -149,23 +151,6 @@ export function createFarmEntranceView(assets: Map<string, HTMLCanvasElement>, n
   ].entries())
     put(`garden-${index}`, asset(index % 3 ? 'farmstead-daisies' : 'farmstead-flower-rocks'), x, y, width);
 
-  // Low, irregular planting replaces the continuous stone wall in the foreground.
-  for (let i = 0; i < 25; i++) {
-    const x = i * 55 - 15;
-    put(
-      `verge-${i}`,
-      asset(i % 3 ? 'farmstead-grass-tuft' : 'farmstead-hedge-wide'),
-      x,
-      691 + (i % 3) * 4,
-      65 + (i % 4) * 7,
-    );
-    if (i % 3 === 1)
-      put(`verge-flower-${i}`, asset(i % 2 ? 'farmstead-flower-bush' : 'farmstead-flowers-yellow'), x + 15, 696, 38);
-  }
-  for (const [index, x] of [190, 378, 830, 1115].entries())
-    put(`verge-rock-${index}`, asset('farmstead-rock'), x, 708, 35 + (index % 2) * 7);
-  put('front-left-bush', asset('farmstead-daisies'), 15, 746, 180);
-  put('front-right-bush', asset('farmstead-flower-rocks'), 1260, 756, 210);
   props.sort((a, b) => a.depth - b.depth);
   return (view: CharacterRenderer, hero: AvatarState, now: number, position: { x: number; y: number }) => {
     view.beginFrame();

@@ -207,7 +207,7 @@ describe('realtime client', () => {
     timers[0].task();
     open(1);
     expect(sockets[1].sent.map((raw) => JSON.parse(raw))).toEqual([{ type: 'social.watch' }]);
-    expect(seen).toEqual(['social.changed', 'reconnected']);
+    expect(seen).toEqual(['social.changed', 'disconnected', 'reconnected']);
     expect(decodeRealtimeCommand({ type: 'social.watch', playerId: 'another-user' })).toEqual({ type: 'social.watch' });
     client.close();
   });
@@ -270,12 +270,12 @@ describe('realtime client', () => {
     expect(timers[0].ms).toBe(75);
     timers[0].task();
     open(1);
-    expect(seen).toEqual(['reconnected']);
+    expect(seen).toEqual(['disconnected', 'reconnected']);
     sockets[0].onmessage?.({ data: '{"type":"match","gameId":"chess"}' });
-    expect(seen).toEqual(['reconnected']);
+    expect(seen).toEqual(['disconnected', 'reconnected']);
     client.close();
     sockets[1].onopen?.();
-    expect(seen).toEqual(['reconnected']);
+    expect(seen).toEqual(['disconnected', 'reconnected']);
   });
 
   it('delivers a validated move batch as one notification', () => {

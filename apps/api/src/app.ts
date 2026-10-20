@@ -30,6 +30,7 @@ import {
   createChannelPresence,
   createJewelerAccess,
   createWorldService,
+  registerPublicChat,
   registerWorldRealtime,
   worldModule,
 } from '@/modules/world';
@@ -161,6 +162,7 @@ export async function createApp(deps: AppDependencies) {
   const arcade = createArcadeService({ db, clock, tables, petRaceReset: config.petRaceReset });
   if (config.backgroundJobs !== 'worker') await arcade.initializePetRaces();
   registerWorldRealtime(realtime, world, clock);
+  registerPublicChat(realtime, { clock, coordination: adapters.coordination, resolveScope: world.getChatScope });
   registerSocialRealtime(realtime);
   registerArcadeRealtime(realtime, watchedLobby);
   const sweepMs = deps.sweepMs ?? 5000;

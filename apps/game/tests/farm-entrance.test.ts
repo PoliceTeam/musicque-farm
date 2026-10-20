@@ -44,7 +44,7 @@ describe('farm entrance reference interactions', () => {
   });
 });
 
-it('leaves unobstructed friends, gate and shop approaches and a continuous foreground verge', () => {
+it('leaves unobstructed friends, gate and shop approaches and an unobstructed exit to the map', () => {
   for (const action of ['friends', 'home', 'shop']) {
     const target = ENTRANCE_TARGETS.find((target) => target.action === action)!;
     const x = target.arrow![0];
@@ -56,9 +56,6 @@ it('leaves unobstructed friends, gate and shop approaches and a continuous foreg
       ),
     ).toBe(false);
   }
-  expect(
-    ENTRANCE_LAWNS.some(
-      ([x, y, width, height]) => x <= 0 && x + width >= 1280 && y > ENTRANCE_WALK_BOUNDS.bottom && y + height >= 720,
-    ),
-  ).toBe(true);
+  expect(entranceActionAt(640, 635)).toBe('exit');
+  expect(ENTRANCE_LAWNS.every(([, y, , height]) => y + height < 647)).toBe(true);
 });

@@ -30,7 +30,8 @@ export function Screen({ audio }: { audio: ReturnType<typeof createGameAudio> })
 
     const action = (next: EntranceAction) => {
       audio.play('select');
-      if (next === 'home') navigation.push('/farm/home');
+      if (next === 'exit') navigation.push('/map');
+      else if (next === 'home') navigation.push('/farm/home');
       else setDialog(next);
     };
 
@@ -92,13 +93,15 @@ export function Screen({ audio }: { audio: ReturnType<typeof createGameAudio> })
           <nav ref={portals} className="farm-entrance-portals" aria-label={t('entranceTitle')}>
             {ENTRANCE_TARGETS.map((target) => {
               const label = t(
-                target.action === 'home'
-                  ? 'ownFarm'
-                  : target.action === 'friends'
-                    ? 'visitFriends'
-                    : target.action === 'shop'
-                      ? 'entranceShop'
-                      : 'theftHistory',
+                target.action === 'exit'
+                  ? 'entranceExit'
+                  : target.action === 'home'
+                    ? 'ownFarm'
+                    : target.action === 'friends'
+                      ? 'visitFriends'
+                      : target.action === 'shop'
+                        ? 'entranceShop'
+                        : 'theftHistory',
               );
               return (
                 <button
@@ -114,7 +117,8 @@ export function Screen({ audio }: { audio: ReturnType<typeof createGameAudio> })
                   }}
                   onClick={() => {
                     audio.play('select');
-                    if (target.action === 'home') navigation.push('/farm/home');
+                    if (target.action === 'exit') navigation.push('/map');
+                    else if (target.action === 'home') navigation.push('/farm/home');
                     else setDialog(target.action);
                   }}
                 />

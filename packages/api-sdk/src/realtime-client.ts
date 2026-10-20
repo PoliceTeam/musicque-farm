@@ -36,6 +36,7 @@ export function createRealtimeClient(options: {
   let lobby: RealtimeCommand | undefined;
   let race: RealtimeCommand | undefined;
   let social: RealtimeCommand | undefined;
+  let chat: RealtimeCommand | undefined;
 
   function connect() {
     if (closed) return;
@@ -44,7 +45,7 @@ export function createRealtimeClient(options: {
     next.onopen = () => {
       if (closed || socket !== next) return;
       attempts = 0;
-      for (const command of [room, lobby, race, social]) if (command) next.send(JSON.stringify(command));
+      for (const command of [room, lobby, race, social, chat]) if (command) next.send(JSON.stringify(command));
       if (openedBefore) for (const listener of [...listeners]) listener({ type: 'reconnected' });
       openedBefore = true;
     };
@@ -59,6 +60,7 @@ export function createRealtimeClient(options: {
     next.onclose = () => {
       if (socket !== next || closed) return;
       socket = undefined;
+      for (const listener of [...listeners]) listener({ type: 'disconnected' });
       const base = Math.min(30_000, (options.retryMs ?? 1000) * 2 ** Math.min(attempts++, 20));
       schedule(connect, Math.min(30_000, base * (0.5 + (options.random ?? Math.random)())));
     };
@@ -67,7 +69,9 @@ export function createRealtimeClient(options: {
   connect();
   return {
     send(command) {
-      if (command.type === 'social.watch') social = command;
+      if (command.type === 'chat.watch') chat = command;
+      else if (command.type === 'chat.leave') chat = undefined;
+      else if (command.type === 'social.watch') social = command;
       else if (command.type === 'pet-race.watch') race = command;
       else if (command.type === 'pet-race.unwatch') race = undefined;
       else if (command.type === 'map.enter') room = command;

@@ -1,0 +1,18 @@
+export default {
+  title: 'Chat khu',
+  area: '{{name}} · Khu {{channel}}',
+  messages: 'Tin nhắn công cộng',
+  input: 'Nội dung chat',
+  placeholder: 'Nhập tin nhắn…',
+  send: 'Gửi',
+  sending: 'Đang gửi…',
+  retry: 'Thử lại',
+  shortcut: 'Enter gửi · Esc đóng',
+  empty: 'Chưa có tin nhắn trong khu này.',
+  connecting: 'Đang kết nối chat…',
+  offline: 'Chat công cộng cần kết nối máy chủ.',
+  tooFast: 'Bạn gửi hơi nhanh. Đợi một giây rồi gửi lại nhé.',
+  notReady: 'Chưa vào được kênh chat. Vui lòng thử lại.',
+  conflict: 'Không thể gửi lại tin nhắn này.',
+  timeout: 'Chưa xác nhận được tin nhắn. Bấm Thử lại để kiểm tra và gửi cùng mã.',
+} as const;

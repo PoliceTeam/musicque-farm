@@ -295,7 +295,6 @@ export function JewelerDialog({ onClose, onChanged }: { onClose(): void; onChang
       ) : mode === 'market' ? (
         <>
           <p className="jeweler-intro">{t('marketHint')}</p>
-          {data && <strong className="jeweler-balance">{t('balance', { amount: format(data.availableCoins) })}</strong>}
           <div className="jeweler-grid">
             {JEWELER_MATERIALS.map((m) => (
               <button

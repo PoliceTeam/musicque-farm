@@ -1,4 +1,4 @@
-export type EntranceAction = 'friends' | 'home' | 'history' | 'shop';
+export type EntranceAction = 'friends' | 'home' | 'history' | 'shop' | 'exit';
 export const ENTRANCE_SIZE = { width: 1280, height: 720 };
 /** Rail gaps and lawns share the two approaches into the square. */
 export const ENTRANCE_FENCE_Y = 447;
@@ -13,9 +13,9 @@ export const ENTRANCE_LAWNS = [
   [200, 398, 50, 146],
   [400, 398, 202, 146],
   [798, 398, 512, 146],
-  [-30, 658, 1340, 92],
 ] as const;
 export const ENTRANCE_TARGETS = [
+  { action: 'exit', x: 602, y: 602, width: 76, height: 58, arrow: [640, 635] },
   { action: 'friends', x: 130, y: 405, width: 70, height: 100, arrow: [165, 457] },
   { action: 'home', x: 260, y: 350, width: 130, height: 150, arrow: [325, 457] },
   { action: 'shop', x: 605, y: 332, width: 190, height: 170, arrow: [700, 468] },
