@@ -95,6 +95,9 @@ function GameApplicationContent() {
   const [auth, setAuth] = useState<{
     status: 'checking' | 'signed-in' | 'signed-out';
     google: boolean;
+    sso?: boolean;
+    accountUrl?: string;
+    handoffTargets?: string[];
     player?: AuthPlayer;
   }>(() => ({
     status: getAuthClient() ? 'checking' : 'signed-in',
@@ -112,11 +115,12 @@ function GameApplicationContent() {
           const current = player;
           if (disposed) return;
           if (!current) {
-            setAuth({ status: 'signed-out', google: providers.google });
+            setAuth({ status: 'signed-out', ...providers });
             return;
           }
 
-          setAuth({ status: 'signed-in', google: providers.google, player: current });
+          setAuth({ status: 'signed-in', ...providers, player: current });
+          if (new URLSearchParams(entryRequest.search).get('auth') === 'handoff-failed') setAuthOpen(true);
           if (
             !current.guest &&
             (current.username === null ||
@@ -126,7 +130,8 @@ function GameApplicationContent() {
             setAuthOpen(true);
           if (current.guest) {
             const show = shouldShowGuestPrompt(() => window.sessionStorage);
-            setAuthOpen(show || new URLSearchParams(entryRequest.search).get('auth') === 'failed');
+            const result = new URLSearchParams(entryRequest.search).get('auth') ?? '';
+            setAuthOpen(show || result === 'failed' || result === 'sso-failed' || result === 'handoff-failed');
           }
         },
         () => {
@@ -263,6 +268,8 @@ function GameApplicationContent() {
     <AuthContext.Provider
       value={{
         player: auth.player,
+        accountUrl: auth.accountUrl,
+        handoffTargets: auth.handoffTargets,
 
         openAuth: () => setAuthOpen(true),
       }}
@@ -289,16 +296,18 @@ function GameApplicationContent() {
                       const player = auth.player ?? (await authClient.guest());
                       shouldShowGuestPrompt(() => window.sessionStorage);
                       setAuthOpen(false);
-                      setAuth({ status: 'signed-in', player, google: auth.google });
+                      setAuth({ ...auth, status: 'signed-in', player });
                       navigation.replace('/');
                     }
                   : undefined
               }
               google={auth.google}
+              sso={auth.sso}
               confirmationPlayer={auth.player}
               usernameRequired={!!auth.player && !auth.player.guest && auth.player.username === null}
               registrationBonus={new URLSearchParams(search).get('auth') === 'registered'}
               googleFailed={new URLSearchParams(search).get('auth') === 'failed'}
+              ssoFailed={['sso-failed', 'handoff-failed'].includes(new URLSearchParams(search).get('auth') || '')}
               onClose={() => setAuthOpen(false)}
               onSignedIn={() => {
                 if (entry) {

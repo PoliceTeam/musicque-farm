@@ -60,12 +60,19 @@ export async function createApp(deps: AppDependencies) {
     trustProxy: config.trustProxy,
   });
   await app.register(cookie);
+  app.addContentTypeParser(
+    'application/x-www-form-urlencoded',
+    { parseAs: 'string', bodyLimit: 17000 },
+    (_request, body, done) => {
+      done(null, Object.fromEntries(new URLSearchParams(String(body))));
+    },
+  );
 
   /** Only the game origin may call with cookies; everything else gets no CORS headers. */
   app.addHook('onRequest', async (request, reply) => {
     reply.header('X-Request-Id', request.id);
-    if (request.headers.origin !== config.webOrigin) return;
-    reply.header('Access-Control-Allow-Origin', config.webOrigin);
+    if (request.headers.origin !== new URL(config.webOrigin).origin) return;
+    reply.header('Access-Control-Allow-Origin', new URL(config.webOrigin).origin);
     reply.header('Access-Control-Allow-Credentials', 'true');
     reply.header('Access-Control-Expose-Headers', 'X-Request-Id');
     reply.header('Vary', 'Origin');
@@ -114,7 +121,7 @@ export async function createApp(deps: AppDependencies) {
     path: '/api/ws',
 
     async authenticate(request) {
-      if (request.headers.origin !== config.webOrigin) throw new HttpError(401, 'UNAUTHENTICATED');
+      if (request.headers.origin !== new URL(config.webOrigin).origin) throw new HttpError(401, 'UNAUTHENTICATED');
       const token = request.cookies[SESSION_COOKIE];
       const session = await readSessionState(db, token, clock());
       if (!session) throw new HttpError(401, 'UNAUTHENTICATED');

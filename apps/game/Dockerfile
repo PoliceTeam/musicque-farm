@@ -9,7 +9,9 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 # Baked into the browser bundle. Relative, so one image serves any domain that proxies /api to the API.
 ARG NEXT_PUBLIC_API_URL=/api
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL NEXT_OUTPUT=standalone NEXT_TELEMETRY_DISABLED=1
+# Public origin for absolute share-image URLs (Open Graph/Twitter); empty keeps relative metadata.
+ARG NEXT_PUBLIC_SITE_URL=
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL NEXT_OUTPUT=standalone NEXT_TELEMETRY_DISABLED=1
 RUN pnpm exec turbo run build --filter=@chibi-town/game
 
 FROM node:22-alpine AS production

@@ -1,5 +1,5 @@
-import { PLAYER_WALK_SPEED } from '@chibi-town/game-content/movement-config';
 import type { MapDefinition } from '@chibi-town/game-content';
+import { PLAYER_WALK_SPEED } from '@chibi-town/game-content/movement-config';
 import { describe, expect, it } from 'vitest';
 import {
   createLocationInputState,

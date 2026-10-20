@@ -3,7 +3,6 @@ import { Button, Dialog, FormField, Tabs } from '@chibi-town/ui/react';
 import { type FormEvent, type InputHTMLAttributes, lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type AuthClient, AuthError, type AuthErrorCode, type AuthPlayer } from '@/application/auth-client';
-
 import { type AuthField, type FieldErrors, validateAuthField } from './_utils/validate-auth';
 
 const RegistrationCharacter = lazy(() =>
@@ -48,7 +47,9 @@ export function AuthDialog({
   entry = false,
   onContinueGuest,
   google,
+  sso = false,
   googleFailed = false,
+  ssoFailed = false,
   usernameRequired = false,
   registrationBonus = false,
   confirmationPlayer,
@@ -60,14 +61,16 @@ export function AuthDialog({
   onContinueGuest?: () => Promise<void>;
   client: AuthClient;
   google: boolean;
+  sso?: boolean;
   googleFailed?: boolean;
+  ssoFailed?: boolean;
   usernameRequired?: boolean;
   registrationBonus?: boolean;
   confirmationPlayer?: AuthPlayer;
   onSignedIn: (player: AuthPlayer) => void;
 }) {
   const { t } = useTranslation('auth');
-  const [mode, setMode] = useState<Mode>(entry ? 'login' : 'register');
+  const [mode, setMode] = useState<Mode>(entry || ssoFailed ? 'login' : 'register');
   const [outfit, setOutfit] = useState({ ...(confirmationPlayer?.characterSetupOutfit ?? defaultOutfit) });
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState<AuthPlayer | undefined>(
@@ -75,10 +78,12 @@ export function AuthDialog({
       ? confirmationPlayer
       : undefined,
   );
-  const [error, setError] = useState<AuthErrorCode | 'GOOGLE_FAILED' | undefined>(
-    googleFailed ? 'GOOGLE_FAILED' : undefined,
+  const [error, setError] = useState<AuthErrorCode | 'GOOGLE_FAILED' | 'SSO_FAILED' | undefined>(
+    ssoFailed ? 'SSO_FAILED' : googleFailed ? 'GOOGLE_FAILED' : undefined,
   );
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [forgot, setForgot] = useState(false);
+  const [sent, setSent] = useState(false);
 
   function validateField(field: AuthField, value: string) {
     const key = validateAuthField(field, value, mode, usernameRequired);
@@ -231,6 +236,33 @@ export function AuthDialog({
             )}
             {error && <p role="alert">{t(`errors.${error}`)}</p>}
           </div>
+        ) : forgot ? (
+          <form
+            className="ui-stack"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              const identifier = String(new FormData(event.currentTarget).get('identifier') || '');
+              setBusy(true);
+              try {
+                await client.forgotPassword(identifier);
+                setSent(true);
+              } catch {
+                setError('NETWORK_ERROR');
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <FormField label={t('identifier')} required>
+              <input name="identifier" required maxLength={254} autoComplete="username" />
+            </FormField>
+            {sent && <p role="status">{t('forgotSent')}</p>}
+            {error && <p role="alert">{t(`errors.${error}`)}</p>}
+            <Button type="submit" variant="primary" busy={busy} busyLabel={t('busy')}>
+              {t('resetPassword')}
+            </Button>
+            <Button onClick={() => setForgot(false)}>{t('login')}</Button>
+          </form>
         ) : (
           <>
             {registrationBonus && <p role="status">{t('registrationBonus')}</p>}
@@ -289,6 +321,18 @@ export function AuthDialog({
                       autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                     />
                   </FormField>
+                  {sso && mode === 'login' && (
+                    <button
+                      type="button"
+                      className="auth-forgot-link"
+                      onClick={() => {
+                        setForgot(true);
+                        setError(undefined);
+                      }}
+                    >
+                      {t('forgotPassword')}
+                    </button>
+                  )}
                 </>
               )}
               {error && <p role="alert">{t(`errors.${error}`)}</p>}

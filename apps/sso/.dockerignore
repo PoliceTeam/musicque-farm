@@ -1,0 +1,5 @@
+.env*
+!.env.example
+!.env.prod.example
+node_modules
+providers/*/target

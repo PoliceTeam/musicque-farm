@@ -95,6 +95,7 @@ export default {
   },
   gameTitle: 'Chibi Town',
   gameDescription: 'Thế giới nông trại Chibi Town',
+  gameShareAlt: 'Nhân vật Chibi Town đội mũ rơm, ôm mèo trước nông trại pixel',
   loadingGame: 'Đang tải game…',
   avatarName: 'LV {{level}} {{name}}',
   mapChangeTime: 'Đổi thời gian',

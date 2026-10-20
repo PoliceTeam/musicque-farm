@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { getAuthClient } from '@/application/auth-client';
 import { AuthContext } from '@/application/auth-context';
 import { socialCss } from '@/assets/generated-styles';
+import { ChangePasswordDialog } from '@/features/auth/change-password-dialog';
 import { RenameDialog } from '@/features/auth/rename-dialog';
 import { AudioSettings } from '@/features/settings/_components/audio-settings';
 import { InboxButton } from '@/features/social/_components/inbox-button';
@@ -64,6 +65,8 @@ export function LocationLayout({
   const { t } = useTranslation('common');
   const authClient = getAuthClient();
   const auth = useContext(AuthContext);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [handoffError, setHandoffError] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [characterOpen, setCharacterOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
@@ -128,8 +131,41 @@ export function LocationLayout({
                 {t('saveProgress', { ns: 'auth' })}
               </button>
             )}
+            {auth.accountUrl && authClient && (
+              <>
+                {auth.player && !auth.player.guest && (
+                  <button type="button" onClick={() => setPasswordOpen(true)}>
+                    {t('changePassword', { ns: 'auth' })}
+                  </button>
+                )}
+                {auth.handoffTargets?.map((target) => (
+                  <button
+                    key={target}
+                    type="button"
+                    onClick={() => {
+                      if (!auth.player || auth.player.guest) {
+                        auth.openAuth();
+                        return;
+                      }
+                      void authClient.handoff(target).catch(() => setHandoffError(true));
+                    }}
+                  >
+                    {target === 'musicque' ? t('musicque', { ns: 'auth' }) : target}
+                  </button>
+                ))}
+                {handoffError && <p role="alert">{t('errors.SSO_FAILED', { ns: 'auth' })}</p>}
+              </>
+            )}
             {authClient && !auth.player?.guest && (
-              <button type="button" onClick={() => void authClient.logout().finally(() => window.location.assign('/'))}>
+              <button
+                type="button"
+                onClick={() =>
+                  void authClient
+                    .logout()
+                    .catch(() => undefined)
+                    .then((url) => window.location.assign(url ?? '/'))
+                }
+              >
                 {t('logout', { ns: 'auth' })}
               </button>
             )}
@@ -153,6 +189,9 @@ export function LocationLayout({
         )}
         {counters}
       </GameHeader>
+      {passwordOpen && authClient && (
+        <ChangePasswordDialog client={authClient} onClose={() => setPasswordOpen(false)} />
+      )}
       {renameOpen && authClient && auth.player && (
         <RenameDialog
           client={authClient}

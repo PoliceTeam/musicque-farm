@@ -12,12 +12,18 @@ export const GUEST_SESSION_SECONDS = 365 * 24 * 60 * 60;
 /** Only the hash is stored, so a database leak does not expose usable cookies. */
 export const hashSessionToken = (token: string) => createHash('sha256').update(token).digest('hex');
 
-export async function createSession(db: Database, playerId: string, now: number, seconds = SESSION_SECONDS) {
+export async function createSession(
+  db: Database,
+  playerId: string,
+  now: number,
+  seconds = SESSION_SECONDS,
+  ssoRefresh?: string,
+) {
   const token = randomBytes(32).toString('base64url');
   await db.delete(sessions).where(lt(sessions.expiresAt, new Date(now)));
   await db
     .insert(sessions)
-    .values({ tokenHash: hashSessionToken(token), playerId, expiresAt: new Date(now + seconds * 1000) });
+    .values({ ssoRefresh, tokenHash: hashSessionToken(token), playerId, expiresAt: new Date(now + seconds * 1000) });
   return token;
 }
 

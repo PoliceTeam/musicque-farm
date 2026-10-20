@@ -1,0 +1,10 @@
+# Supply apps/sso/.env.prod with public HTTPS URLs and production-only secrets.
+# Run from the repository root; a separate reverse proxy terminates TLS.
+services:
+  sso:
+    command: ['start', '--import-realm']
+    environment:
+      KC_HOSTNAME: ${SSO_URL:?Set the public HTTPS SSO URL}
+      KC_HOSTNAME_STRICT: 'true'
+      KC_HTTP_ENABLED: 'true'
+      KC_PROXY_HEADERS: xforwarded

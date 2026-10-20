@@ -1,4 +1,5 @@
 import { PLAYER_WALK_SPEED } from '@chibi-town/game-content/movement-config';
+
 export { LOCATION_WALK_SPEED } from '@chibi-town/game-content/movement-config';
 
 /** Native units and the existing J2ME animation timing. */

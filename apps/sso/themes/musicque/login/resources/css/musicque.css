@@ -1,0 +1,224 @@
+/* Tokens follow musicque/client/src/styles/spotify.css (light default, Spotify-style dark when the OS asks). */
+@font-face {
+  font-family: "BeVietnamPro";
+  src: url("../fonts/BeVietnamPro-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "BeVietnamPro";
+  src: url("../fonts/BeVietnamPro-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "BeVietnamPro";
+  src: url("../fonts/BeVietnamPro-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "BeVietnamPro";
+  src: url("../fonts/BeVietnamPro-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-display: swap;
+}
+
+:root {
+  --sp-bg: #f5f5f5;
+  --sp-surface: #ffffff;
+  --sp-surface-2: #f8f8f8;
+  --sp-surface-hover: #f0f0f0;
+  --sp-border: #e4e4e4;
+  --sp-border-strong: #d4d4d4;
+  --sp-text: #121212;
+  --sp-text-muted: #6a6a6a;
+  --sp-green: #1db954;
+  --sp-green-hover: #1ed760;
+  --sp-green-press: #199f47;
+  --sp-red: #e22134;
+  --sp-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+
+  --pf-v5-global--FontFamily--text: "BeVietnamPro", system-ui, sans-serif;
+  --pf-v5-global--FontFamily--heading: "BeVietnamPro", system-ui, sans-serif;
+  --keycloak-card-top-color: transparent;
+}
+
+:root.pf-v5-theme-dark {
+  --sp-bg: #000000;
+  --sp-surface: #121212;
+  --sp-surface-2: #181818;
+  --sp-surface-hover: #1f1f1f;
+  --sp-border: #2a2a2a;
+  --sp-border-strong: #3e3e3e;
+  --sp-text: #ffffff;
+  --sp-text-muted: #b3b3b3;
+  --sp-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+:root,
+:root.pf-v5-theme-dark {
+  --pf-v5-global--Color--100: var(--sp-text);
+  --pf-v5-global--Color--200: var(--sp-text-muted);
+  --pf-v5-global--BackgroundColor--100: var(--sp-surface);
+  --pf-v5-global--BorderColor--100: var(--sp-border-strong);
+  --pf-v5-global--BorderColor--200: var(--sp-text);
+  --pf-v5-global--primary-color--100: var(--sp-green-press);
+  --pf-v5-global--link--Color: var(--sp-text);
+  --pf-v5-global--link--Color--hover: var(--sp-green-press);
+  --pf-v5-global--danger-color--100: var(--sp-red);
+}
+
+.login-pf body {
+  min-height: 100dvh;
+  background: linear-gradient(180deg, var(--sp-surface-2) 0%, var(--sp-bg) 55%);
+  color: var(--sp-text);
+}
+
+.pf-v5-c-login__container {
+  grid-template-columns: minmax(0, 28rem);
+  padding-inline: 16px;
+}
+
+#kc-header-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--sp-text) !important;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: none;
+}
+
+#kc-header-wrapper::before {
+  content: "";
+  width: 34px;
+  height: 34px;
+  background: url("../img/brand.svg") center / contain no-repeat;
+}
+
+.pf-v5-c-login__main {
+  background: var(--sp-surface);
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  box-shadow: var(--sp-shadow-lg);
+  overflow: hidden;
+}
+
+.pf-v5-c-login__main-header {
+  border-top: 0;
+}
+
+#kc-page-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.pf-v5-c-form-control {
+  --pf-v5-c-form-control--BackgroundColor: var(--sp-surface);
+  --pf-v5-c-form-control--before--BorderColor: var(--sp-border-strong);
+  --pf-v5-c-form-control--after--BorderColor: var(--sp-border-strong);
+  --pf-v5-c-form-control--hover--after--BorderColor: var(--sp-text);
+  --pf-v5-c-form-control--focus--after--BorderColor: var(--sp-green);
+  border-radius: 8px;
+  min-height: 44px;
+}
+
+.pf-v5-c-button {
+  min-height: 44px;
+  border-radius: 500px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.pf-v5-c-button.pf-m-primary {
+  background: var(--sp-green);
+  color: #000000;
+}
+
+.pf-v5-c-button.pf-m-primary:hover,
+.pf-v5-c-button.pf-m-primary:focus {
+  background: var(--sp-green-hover);
+  color: #000000;
+}
+
+.pf-v5-c-button.pf-m-primary:active {
+  background: var(--sp-green-press);
+}
+
+.pf-v5-c-button.pf-m-secondary,
+.pf-v5-c-button.pf-m-tertiary {
+  background: transparent;
+  color: var(--sp-text);
+  border: 1px solid var(--sp-border-strong);
+}
+
+.pf-v5-c-button.pf-m-secondary::after,
+.pf-v5-c-button.pf-m-tertiary::after {
+  border: 0;
+}
+
+.pf-v5-c-button.pf-m-secondary:hover,
+.pf-v5-c-button.pf-m-tertiary:hover {
+  border-color: var(--sp-text);
+  background: var(--sp-surface-hover);
+}
+
+.pf-v5-c-login__main-footer-band {
+  background: var(--sp-surface-2);
+  border-top: 1px solid var(--sp-border);
+  color: var(--sp-text-muted);
+}
+
+.pf-v5-c-alert {
+  border-radius: 8px;
+}
+
+@media (max-width: 480px) {
+  .pf-v5-c-login__container {
+    padding-inline: 8px;
+  }
+}
+
+/* Framed fields like the app's antd inputs instead of PatternFly's underline. */
+.pf-v5-c-form-control {
+  background: var(--sp-surface);
+}
+
+.pf-v5-c-form-control::before {
+  border: 1px solid var(--sp-border-strong) !important;
+  border-radius: 8px;
+}
+
+.pf-v5-c-form-control::after {
+  border: 0 !important;
+}
+
+.pf-v5-c-form-control:focus-within::before {
+  border-color: var(--sp-green) !important;
+}
+
+.pf-v5-c-input-group {
+  gap: 6px;
+}
+
+/* The frame color already marks focus; drop the browser ring that doubled it. */
+.pf-v5-c-form-control > :is(input, select):focus {
+  outline: none;
+}
+
+.pf-v5-c-button.pf-m-control {
+  background: var(--sp-surface);
+  border: 1px solid var(--sp-border-strong);
+  border-radius: 8px;
+}
+
+.pf-v5-c-button.pf-m-control::after {
+  border: 0;
+}

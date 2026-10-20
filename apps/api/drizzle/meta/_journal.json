@@ -78,6 +78,13 @@
       "when": 1792209577145,
       "tag": "0010_mute_kabuki",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792510142487,
+      "tag": "0011_hard_guardian",
+      "breakpoints": true
     }
   ]
 }

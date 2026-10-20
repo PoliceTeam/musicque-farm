@@ -1,6 +1,6 @@
-import { PLAYER_WALK_SPEED } from '@chibi-town/game-content/movement-config';
 import { Action } from '@chibi-town/character-core/animation-logic';
 import { defaultOutfit } from '@chibi-town/character-core/outfit-logic';
+import { PLAYER_WALK_SPEED } from '@chibi-town/game-content/movement-config';
 import { describe, expect, it } from 'vitest';
 import { FARM_FEATURES, FARM_PLOTS } from '@/features/farm/_utils/farm-layout';
 import { farmWalkable } from '@/features/farm/_utils/farm-path-logic';
