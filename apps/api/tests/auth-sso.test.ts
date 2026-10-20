@@ -51,6 +51,7 @@ const transport: typeof fetch = async (input, init) => {
     });
   if (url.endsWith('/protocol/openid-connect/certs')) return Response.json({ keys: [jwk] });
   if (url.includes('/admin/realms/')) {
+    expect(url.startsWith('http://sso:8080/sso/admin/realms/sso/')).toBe(true);
     if (init?.method === 'POST' || init?.method === 'PUT') return new Response(null, { status: 204 });
     return Response.json(
       url.includes('/users?')
@@ -83,6 +84,7 @@ describe('Farm SSO', () => {
       config: {
         sso: {
           issuer,
+          adminUrl: 'http://sso:8080/sso',
           clientId: 'musicque-farm',
           clientSecret: 'test-secret',
           tokenKey: 'ab'.repeat(32),
@@ -426,4 +428,65 @@ it('rejects partial config and insecure production issuers', () => {
       SSO_CLIENT_SECRET: 'secret',
     }),
   ).toThrow('HTTPS');
+});
+
+it('scopes Farm session, SSO and Google attempt cookies to public prefixed paths', async () => {
+  const t = await createTestApp({
+    config: {
+      webOrigin: 'https://musicque.politetech.com/farm',
+      publicApiUrl: 'https://musicque.politetech.com/farm/api',
+      secureCookies: true,
+      sso: { issuer, clientId: 'musicque-farm', clientSecret: 'test-secret' },
+    },
+
+    fetch: async (input, init) => {
+      const body = new URLSearchParams(String(init?.body));
+      if (body.get('grant_type') === 'authorization_code')
+        expect(body.get('redirect_uri')).toBe('https://musicque.politetech.com/farm/api/auth/sso/callback');
+      return transport(input, init);
+    },
+  });
+  try {
+    const guest = await t.app.inject({ method: 'POST', url: '/api/auth/guest' });
+    expect(guest.cookies.find((cookie) => cookie.name === 'chibi_session')).toMatchObject({
+      path: '/farm',
+      secure: true,
+    });
+    expect(guest.cookies.some((cookie) => cookie.name === 'musicque_session')).toBe(false);
+    const start = await t.app.inject({ url: '/api/auth/sso' });
+    expect(start.cookies.find((cookie) => cookie.name === 'farm_sso_attempt')).toMatchObject({
+      path: '/farm/api/auth/sso',
+      secure: true,
+    });
+    const target = new URL(start.headers.location!);
+    nonce = target.searchParams.get('nonce')!;
+    override = {};
+    badSignature = false;
+    const callback = await t.app.inject({
+      url: `/api/auth/sso/callback?code=test-code&state=${target.searchParams.get('state')}`,
+      headers: { cookie: t.cookieOf(start.headers) },
+    });
+    expect(callback.headers.location).toBe('https://musicque.politetech.com/farm/?auth=sso');
+    const logout = await t.app.inject({
+      method: 'POST',
+      url: '/api/auth/logout',
+      headers: { origin: 'https://musicque.politetech.com' },
+    });
+    expect(logout.cookies.find((cookie) => cookie.name === 'chibi_session')?.path).toBe('/farm');
+  } finally {
+    await t.close();
+  }
+  const google = await createTestApp({
+    config: {
+      webOrigin: 'https://musicque.politetech.com/farm',
+      publicApiUrl: 'https://musicque.politetech.com/farm/api',
+      google: { clientId: 'google-client', clientSecret: 'google-secret' },
+    },
+  });
+  try {
+    const start = await google.app.inject({ url: '/api/auth/google' });
+    expect(start.cookies.find((cookie) => cookie.name === 'chibi_oauth')?.path).toBe('/farm/api/auth/google');
+  } finally {
+    await google.close();
+  }
 });

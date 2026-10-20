@@ -251,17 +251,38 @@ Test bổ sung: `apps/api/tests/table-updates.test.ts` kiểm tra metadata cả 
 
 ## Deploy
 
-Giống coupon-linkh: build image `linux/amd64` ở máy local, nén, `scp` lên server rồi `docker compose up`. Server mặc định là `couponlinkh`, thư mục `/root/apps/chibi-town`.
+Build image `linux/amd64` local → save/gzip → scp → load → Compose. Mặc định mới:
+`ptdevs@167.86.125.164`, key `~/.ssh/police`, thư mục `/home/ptdevs/internal/chibi-town`.
+Checklist đầy đủ (backup, SSO → import Musicque → bật Musicque → Farm, nginx, rollback):
+[deploy-police.md](deploy-police.md). Không có Node trên host production.
 
 ```bash
-cp deploy/.env.prod.example deploy/.env.prod   # điền PUBLIC_URL, DATABASE_PASSWORD, ...
-./scripts/deploy.prod.sh                       # hoặc --web-only / --api-only / --build-only
+cp deploy/.env.prod.example deploy/.env.prod
+# Editor: DATABASE_PASSWORD mới, ghép SSO backend riêng từ configure --prod.
+./scripts/deploy.prod.sh
+# --web-only / --api-only (API + worker) / --build-only
 ```
 
-- Stack (`deploy/docker-compose.prod.yml`): `postgres`, `api` (cổng `127.0.0.1:3201`), `web` (cổng `127.0.0.1:3200`); chỉ nginx của server truy cập được hai cổng này.
-- Image web gọi API qua đường dẫn tương đối `/api`, nên một image dùng được cho mọi domain. nginx của domain game chuyển `/api` (kể cả WebSocket `/api/ws`) sang API; mẫu ở `deploy/nginx.conf.example`.
-- Lần đầu trên server: tạo file nginx theo mẫu, `certbot --nginx -d <domain>`. Phải có HTTPS vì cookie phiên là `Secure` trong production.
-- RAM khi chạy thử: web ~85 MB, API ~60 MB, Postgres ~80 MB; compose giới hạn web 320 MB, API 256 MB.
+- Override `SERVER`, `SSH_KEY`, `REMOTE_DIR`, `ENV_FILE`, `PROJECT_NAME` (hoặc `--server`).
+  `SSH_KEY=''` dùng ssh-agent/config; server cũ chỉ đổi biến và giữ `NEXT_PUBLIC_BASE_PATH=`/API `/api`.
+- `PUBLIC_URL=https://musicque.politetech.com/farm` là WEB_ORIGIN backend;
+  `PUBLIC_API_URL=https://musicque.politetech.com/farm/api` (mặc định `${PUBLIC_URL}/api`).
+- Build args `NEXT_PUBLIC_BASE_PATH=/farm`, `NEXT_PUBLIC_API_URL=/farm/api`,
+  `NEXT_PUBLIC_SITE_URL=https://musicque.politetech.com` chỉ chứa dữ liệu public. Đổi prefix cần rebuild.
+  Dev không đặt basePath, API 3010, game 5173 giữ nguyên.
+- `deploy/docker-compose.prod.yml`: Postgres, Redis AOF (không publish), API `127.0.0.1:3201`,
+  web `127.0.0.1:3200`, worker cùng image API với `BACKGROUND_JOBS_MODE=worker`.
+  Biến `PET_RACE_RESET_*` phải giống API/worker. Thay API luôn recreate cả worker.
+- Có `SSO_NETWORK` thì script thêm overlay `deploy/docker-compose.sso.yml`, nối riêng API vào network
+  Keycloak/Musicque (`musicque_music-order-network` đã có); stack không SSO có thể bỏ biến này.
+  `SSO_ADMIN_URL=http://sso:8080/sso` dành Admin REST nội bộ, issuer vẫn public HTTPS.
+  Đủ `SSO_ISSUER`, `SSO_CLIENT_ID`, `SSO_CLIENT_SECRET`, `SSO_TOKEN_KEY`, `SSO_HANDOFF_TARGETS`,
+  `SSO_HANDOFF_ORIGINS`; key mỗi app riêng, không đặt trong biến public.
+- Mẫu nginx chèn vào domain Musicque hiện có: `deploy/nginx.musicque.politetech.com.example`.
+  `/farm/api/` (cả WebSocket) bỏ `/farm`, web giữ `/farm`; không thay `/api/` Musicque.
+  Domain riêng/prefix rỗng vẫn có mẫu `deploy/nginx.conf.example`.
+- Deploy upload env riêng 0600, giữ backup env và tag image `rollback-<UTC>`, không tự prune.
+  Backup DB trước migrations; rollback schema phải đi cùng backup tương thích. Không `down -v`.
 
 ## Còn lại
 

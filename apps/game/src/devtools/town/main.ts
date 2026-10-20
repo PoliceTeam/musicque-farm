@@ -1,4 +1,5 @@
 import type { createGameAudio } from '@chibi-town/game-audio';
+import { publicPath } from '@/application/_utils/public-path';
 import { getApiSdk } from '@/application/api-sdk';
 import { createGameUi } from '@/application/game-ui-handler';
 import { baseCss as screenCss } from '@/assets/generated-styles';
@@ -14,7 +15,7 @@ export function mount(root: HTMLElement, audio: ReturnType<typeof createGameAudi
   <main class="town-stage" aria-label="Map Chibi Town">
     <div id="game"></div>
     <nav class="map-tools" aria-label="Công cụ">
-      <a href="/character">Lab nhân vật</a>
+      <a href="${publicPath('/character')}">Lab nhân vật</a>
     </nav>
     <p class="map-hint">WASD / phím mũi tên · Click hoặc chạm để đi</p>
   </main>`;

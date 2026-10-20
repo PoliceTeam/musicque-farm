@@ -1,7 +1,8 @@
 import { createGameAudio } from '@chibi-town/game-audio';
 import { createUiFeedback, installGameUi } from '@chibi-town/ui';
+import { publicPath } from '@/application/_utils/public-path';
 
-const musicUrl = '/chibi-assets/map/audio/chibi-town-loop.mp3';
+const musicUrl = publicPath('/chibi-assets/map/audio/chibi-town-loop.mp3');
 
 /** Screen feedback and input; the app may provide a persistent audio service. */
 export function createGameUi(root: HTMLElement, sharedAudio?: ReturnType<typeof createGameAudio>) {

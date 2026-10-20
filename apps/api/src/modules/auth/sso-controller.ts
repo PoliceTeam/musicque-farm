@@ -95,7 +95,10 @@ export function createSsoController(deps: {
         if ((token ? hashSessionToken(token) : null) !== attempt.sessionHash) throw new Error('SSO session changed');
         const current = await readSession(db, token, clock());
         if (current?.id !== attempt.playerId) throw new Error('SSO account changed');
-        const profile = await client.finish(new URL(request.url, config.publicApiUrl), state, attempt);
+        // nginx strips /farm; authorizationCodeGrant must send the original public redirect_uri.
+        const callbackUrl = new URL(callbackUri);
+        callbackUrl.search = new URL(request.url, config.publicApiUrl).search;
+        const profile = await client.finish(callbackUrl, state, attempt);
         const player = await signInWithSso(db, profile, current, clock());
         await deps.revokeCookie(request);
         await deps.signIn(reply, player, profile.refresh);
@@ -108,7 +111,7 @@ export function createSsoController(deps: {
     },
 
     /** Keycloak ends its own session, then returns to the game; the app session is revoked before this. */
-    ssoLogoutUrl: client ? () => client.logoutUrl(`${new URL(config.webOrigin).origin}/`) : undefined,
+    ssoLogoutUrl: client ? () => client.logoutUrl(`${config.webOrigin}/`) : undefined,
 
     ssoAccountUrl: config.sso ? `${config.sso.issuer}/account` : undefined,
   };

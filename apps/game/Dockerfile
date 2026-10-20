@@ -7,11 +7,12 @@ WORKDIR /repo
 FROM base AS build
 COPY . .
 RUN pnpm install --frozen-lockfile
-# Baked into the browser bundle. Relative, so one image serves any domain that proxies /api to the API.
+# Public paths are baked into the browser bundle; rebuild when changing the deployment prefix.
+ARG NEXT_PUBLIC_BASE_PATH=
 ARG NEXT_PUBLIC_API_URL=/api
 # Public origin for absolute share-image URLs (Open Graph/Twitter); empty keeps relative metadata.
 ARG NEXT_PUBLIC_SITE_URL=
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL NEXT_OUTPUT=standalone NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL NEXT_OUTPUT=standalone NEXT_TELEMETRY_DISABLED=1
 RUN pnpm exec turbo run build --filter=@chibi-town/game
 
 FROM node:22-alpine AS production

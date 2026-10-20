@@ -39,7 +39,8 @@
     "@chibi-town/game#build": {
       "dependsOn": ["^build", "prepare-assets"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tools/runtime/run-game-task.mjs"]
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tools/runtime/run-game-task.mjs"],
+      "env": ["NEXT_PUBLIC_*", "NEXT_OUTPUT"]
     },
     "@chibi-town/game#typecheck": {
       "dependsOn": ["^build", "prepare-assets"],

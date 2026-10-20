@@ -109,3 +109,13 @@ Chi tiết theo [Keycloak Standard Token Exchange](https://www.keycloak.org/secu
 Test login/register/forgot/change qua app, legacy hash, bàn giao cả hai chiều, đúng identity sau reload;
 reject sai aud/azp/iss/exp/iat/signature/replay, origin sai, session thiếu. Không cần cùng origin;
 đích nhận Set-Cookie khi top-level POST rồi redirect về web của chính nó. BasePath/proxy là cấu hình triển khai riêng.
+
+## Reverse proxy có prefix
+
+Trên domain Musicque chung: issuer `https://musicque.politetech.com/sso/realms/sso`, Farm web `/farm`,
+callback `/farm/api/auth/sso/callback`, handoff accept `/farm/api/auth/handoff/accept`.
+Allowlist Origin luôn là `https://musicque.politetech.com` (không có `/farm`), redirect/reset/logout vẫn giữ `/farm`.
+Nếu nginx chặn `/sso/admin/` từ Internet, backend cần `SSO_ADMIN_URL=http://sso:8080/sso` qua network nội bộ
+cho register/forgot/change. Đây là root Keycloak gồm relative path, không phải issuer hay URL `/admin`.
+Issuer dùng verify token/JWKS/discovery vẫn public. Musicque cần áp companion patch đã nêu trong
+[checklist production](deploy-police.md). Script sync/import có cùng biến để đi qua SSH tunnel, không đổi issuer.

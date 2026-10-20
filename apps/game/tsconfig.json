@@ -27,5 +27,5 @@
     "esModuleInterop": true
   },
   "include": ["src", "tests", "vitest.config.ts", "next-env.d.ts", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".next/dev/types/validator.ts"]
 }

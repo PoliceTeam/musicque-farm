@@ -8,7 +8,7 @@ const sharp = createRequire(new URL('package.json', app))('sharp');
 
 test('packed map sprites keep dimensions, alpha and visible pixels from source artwork', async () => {
   const manifest = await readFile(new URL('src/assets/generated-map-assets.ts', app), 'utf8');
-  const atlas = JSON.parse(manifest.split('export const mapSpriteAtlas = ')[1].replace(/;\s*$/, ''));
+  const atlas = JSON.parse(manifest.split('const rawMapSpriteAtlas = ')[1].split(';\n')[0]);
   const image = new URL(`public${atlas.url.split('?')[0]}`, app);
   assert.ok(Object.keys(atlas.data.frames).length > 20);
   for (const [name, { frame }] of Object.entries(atlas.data.frames)) {

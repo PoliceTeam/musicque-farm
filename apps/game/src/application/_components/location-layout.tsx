@@ -1,4 +1,5 @@
 'use client';
+
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import type { GameSdk } from '@chibi-town/contracts';
 import type { createGameAudio } from '@chibi-town/game-audio';
@@ -6,6 +7,7 @@ import { CurrencyCounter, CurrencyIcon, GameHeader, ProfileMenu } from '@chibi-t
 import Link from 'next/link';
 import { lazy, type ReactNode, type RefObject, Suspense, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { publicPath } from '@/application/_utils/public-path';
 import { getAuthClient } from '@/application/auth-client';
 import { AuthContext } from '@/application/auth-context';
 import { socialCss } from '@/assets/generated-styles';
@@ -163,7 +165,7 @@ export function LocationLayout({
                   void authClient
                     .logout()
                     .catch(() => undefined)
-                    .then((url) => window.location.assign(url ?? '/'))
+                    .then((url) => window.location.assign(url ?? publicPath('/')))
                 }
               >
                 {t('logout', { ns: 'auth' })}

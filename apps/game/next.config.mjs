@@ -6,6 +6,7 @@ const nextConfig = {
   ...(standalone
     ? { output: 'standalone', outputFileTracingRoot: fileURLToPath(new URL('../..', import.meta.url)) }
     : {}),
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? '',
   reactStrictMode: false,
   devIndicators: false,
   transpilePackages: ['@chibi-town/ui'],

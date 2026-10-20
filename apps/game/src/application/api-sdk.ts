@@ -8,8 +8,8 @@ import {
 } from '@chibi-town/api-sdk';
 import type { GameRealtime } from '@chibi-town/contracts/realtime';
 import type { FarmProgress } from '@chibi-town/gameplay';
-
 import { createDevLocalSdk, devNumber } from '@/application/_utils/dev-local-sdk';
+import { realtimeUrl } from '@/application/_utils/public-path';
 import { AUTH_REQUIRED_EVENT } from '@/application/auth-client';
 
 export function getDevelopmentTimeScale() {
@@ -24,9 +24,7 @@ let realtime: GameRealtime | undefined;
 export function getRealtime(): GameRealtime | undefined {
   if (!process.env.NEXT_PUBLIC_API_URL || typeof WebSocket === 'undefined') return undefined;
   // The API URL may be relative ("/api" behind the same domain); the socket needs an absolute ws(s) URL.
-  const url = new URL(`${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')}/ws`, window.location.href);
-  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-  realtime ??= createRealtimeClient({ url: url.toString() });
+  realtime ??= createRealtimeClient({ url: realtimeUrl(process.env.NEXT_PUBLIC_API_URL, window.location.href) });
   return realtime;
 }
 

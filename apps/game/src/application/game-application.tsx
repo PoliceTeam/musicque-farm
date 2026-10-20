@@ -1,4 +1,5 @@
 'use client';
+
 import { createGameAudio } from '@chibi-town/game-audio';
 import { type MapDefinition, validateWorld } from '@chibi-town/game-content';
 import { ImageProvider } from '@chibi-town/ui/react';
@@ -7,6 +8,7 @@ import { type ComponentType, useEffect, useRef, useState } from 'react';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { AppImage } from '@/application/_components/app-image';
 import { locationMusic } from '@/application/_utils/location-music';
+import { publicPath, routePath } from '@/application/_utils/public-path';
 import { getApiSdk } from '@/application/api-sdk';
 import type { AuthPlayer } from '@/application/auth-client';
 import { AUTH_REQUIRED_EVENT, getAuthClient } from '@/application/auth-client';
@@ -159,7 +161,7 @@ function GameApplicationContent() {
     document.head.append(style, sharedStyle);
     screenStyle.current = style;
     const service = createGameAudio({
-      musicUrl: '/chibi-assets/map/audio/chibi-town-loop.mp3',
+      musicUrl: publicPath('/chibi-assets/map/audio/chibi-town-loop.mp3'),
       loopSeconds: 76.8,
       musicEnabled: false,
 
@@ -182,10 +184,11 @@ function GameApplicationContent() {
       const anchor = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href]') : null;
       if (!anchor || anchor.target || anchor.hasAttribute('download')) return;
       const url = new URL(anchor.href);
-      const route = url.origin === location.origin ? resolveRoute(url.pathname) : undefined;
+      const pathname = routePath(url.pathname);
+      const route = url.origin === location.origin && pathname !== undefined ? resolveRoute(pathname) : undefined;
       if (!route) return;
       event.preventDefault();
-      navigation.push(`${url.pathname.endsWith('.html') ? route : url.pathname}${url.search}${url.hash}`);
+      navigation.push(`${pathname!.endsWith('.html') ? route : pathname}${url.search}${url.hash}`);
     };
 
     document.addEventListener('pointerdown', unlock, true);
@@ -311,7 +314,7 @@ function GameApplicationContent() {
               onClose={() => setAuthOpen(false)}
               onSignedIn={() => {
                 if (entry) {
-                  window.location.assign('/');
+                  window.location.assign(publicPath('/'));
                   return;
                 }
                 const url = new URL(window.location.href);

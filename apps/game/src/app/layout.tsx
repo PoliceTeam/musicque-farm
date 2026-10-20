@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { type ReactNode, Suspense } from 'react';
+import { publicPath } from '@/application/_utils/public-path';
 import { GameApplication } from '@/application/game-application';
 import vi from '@/application/i18n/locales/vi/common';
 
@@ -7,21 +8,21 @@ import vi from '@/application/i18n/locales/vi/common';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 // Files in public/ are exported by tools/branding/export-icons.py (PNG/ICO: browsers, iOS and crawlers need them).
-const share = { url: '/icons/share.png', width: 1200, height: 630, alt: vi.gameShareAlt };
+const share = { url: publicPath('/icons/share.png'), width: 1200, height: 630, alt: vi.gameShareAlt };
 
 export const metadata: Metadata = {
   ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
   title: vi.gameTitle,
   description: vi.gameDescription,
   applicationName: vi.gameTitle,
-  manifest: '/manifest.webmanifest',
+  manifest: publicPath('/manifest.webmanifest'),
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icons/icon-32.png', type: 'image/png', sizes: '32x32' },
-      { url: '/icons/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: publicPath('/favicon.ico'), sizes: 'any' },
+      { url: publicPath('/icons/icon-32.png'), type: 'image/png', sizes: '32x32' },
+      { url: publicPath('/icons/icon-192.png'), type: 'image/png', sizes: '192x192' },
     ],
-    apple: { url: '/icons/apple-touch-icon.png', sizes: '180x180' },
+    apple: { url: publicPath('/icons/apple-touch-icon.png'), sizes: '180x180' },
   },
   appleWebApp: { title: vi.gameTitle, capable: true, statusBarStyle: 'default' },
   openGraph: {

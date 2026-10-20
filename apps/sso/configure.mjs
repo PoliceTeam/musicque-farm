@@ -1,8 +1,9 @@
 import { randomBytes } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 
+const production = process.argv.includes('--prod');
 const env = Object.fromEntries(
-  (await readFile(new URL('.env', import.meta.url), 'utf8'))
+  (await readFile(new URL(production ? '.env.prod' : '.env', import.meta.url), 'utf8'))
     .split('\n')
     .filter((line) => line && !line.startsWith('#'))
     .map((line) => {
@@ -27,14 +28,18 @@ for (const { clientId, envPrefix, partners } of clients) {
     .join(',');
   const content =
     `SSO_ISSUER=${env.SSO_URL}/realms/sso\nSSO_CLIENT_ID=${clientId}\nSSO_CLIENT_SECRET=${env[`${envPrefix}_CLIENT_SECRET`]}\nSSO_TOKEN_KEY=${env[`${envPrefix}_TOKEN_KEY`] || randomBytes(32).toString('hex')}\nSSO_HANDOFF_TARGETS=${targets}\nSSO_HANDOFF_ORIGINS=${origins}\n` +
+    (production ? `SSO_ADMIN_URL=http://sso:8080/sso\n` : '') +
     (app === 'farm'
       ? ''
-      : `SSO_REDIRECT_URI=${env[`${envPrefix}_REDIRECT_URI`]}\nSSO_WEB_ORIGIN=${env[`${envPrefix}_WEB_ORIGIN`]}\n`);
+      : `SSO_REDIRECT_URI=${env[`${envPrefix}_REDIRECT_URI`]}\nSSO_WEB_ORIGIN=${env[`${envPrefix}_WEB_URL`] || env[`${envPrefix}_WEB_ORIGIN`]}\n`);
   try {
-    await writeFile(new URL(`.env.${app}`, import.meta.url), content, { mode: 0o600, flag: 'wx' });
-    console.log(`Đã tạo apps/sso/.env.${app}; ghép vào môi trường backend tương ứng.`);
+    await writeFile(new URL(`.env.${app}${production ? '.prod' : ''}`, import.meta.url), content, {
+      mode: 0o600,
+      flag: 'wx',
+    });
+    console.log(`Đã tạo apps/sso/.env.${app}${production ? '.prod' : ''}; ghép vào môi trường backend tương ứng.`);
   } catch (error) {
     if (error.code !== 'EEXIST') throw error;
-    console.log(`Giữ nguyên apps/sso/.env.${app} đã tồn tại.`);
+    console.log(`Giữ nguyên apps/sso/.env.${app}${production ? '.prod' : ''} đã tồn tại.`);
   }
 }

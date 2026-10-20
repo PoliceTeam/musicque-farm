@@ -12,7 +12,7 @@ const env = Object.fromEntries(
     .filter((line) => line && !line.startsWith('#') && line.includes('='))
     .map((line) => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]),
 );
-const base = env.SSO_URL.replace(/\/$/, '');
+const base = (process.env.SSO_ADMIN_URL || env.SSO_ADMIN_URL || env.SSO_URL).replace(/\/$/, '');
 const realm = `${base}/admin/realms/sso`;
 
 const token = await fetch(`${base}/realms/master/protocol/openid-connect/token`, {
@@ -111,6 +111,7 @@ for (const definition of definitions) {
   const { clientId, theme, envPrefix, partners } = definition;
   const redirect = env[`${envPrefix}_REDIRECT_URI`];
   const origin = env[`${envPrefix}_WEB_ORIGIN`];
+  const webUrl = env[`${envPrefix}_WEB_URL`] || origin;
   let [client] = await api(`/clients?clientId=${encodeURIComponent(clientId)}`);
   if (!client) {
     if (!env[`${envPrefix}_CLIENT_SECRET`]) throw new Error(`Missing client secret for ${clientId}`);
@@ -129,7 +130,7 @@ for (const definition of definitions) {
       standardFlowEnabled: true,
       directAccessGrantsEnabled: true,
       serviceAccountsEnabled: true,
-      redirectUris: [redirect, `${origin.replace(/\/$/, '')}/`],
+      redirectUris: [redirect, `${webUrl.replace(/\/$/, '')}/`],
       webOrigins: [new URL(origin).origin],
       attributes: {
         ...client.attributes,

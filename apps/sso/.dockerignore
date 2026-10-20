@@ -1,5 +1,5 @@
 .env*
-!.env.example
-!.env.prod.example
 node_modules
+*.tar.gz
+*report*.json
 providers/*/target

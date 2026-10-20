@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocationLayout, type LocationPlayer } from '@/application/_components/location-layout';
+import { routePath } from '@/application/_utils/public-path';
 import { getApiSdk, getRealtime } from '@/application/api-sdk';
 import { AuthContext } from '@/application/auth-context';
 import { createGameUi } from '@/application/game-ui-handler';
@@ -46,7 +47,11 @@ export function Screen({
         request: () => setAccountRequired(true),
       },
 
-      navigate: (url: string) => navigation.push(url),
+      navigate: (url: string) => {
+        const path = routePath(url);
+        if (path !== undefined) navigation.push(path);
+        else window.location.assign(url);
+      },
     }),
     [navigation, auth.player?.guest],
   );

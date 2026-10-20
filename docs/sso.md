@@ -82,3 +82,40 @@ Migration Farm chỉ sinh bằng `pnpm --filter @chibi-town/api db:generate`; AP
 Sau thay đổi backend, build bằng `pnpm turbo run build --filter=@chibi-town/api`, restart API serve và worker.
 `pnpm format` rồi `pnpm check`; tests/auth-sso.test.ts dùng provider giả và PGlite, không cần server thật.
 Xem [tích hợp nền tảng mới](sso-integration.md). BasePath/nginx cho `/farm` thuộc cấu hình deploy riêng.
+
+## Production cùng domain Musicque
+
+Thực hiện đúng thứ tự: **SSO → import chỉ Musicque (dry-run, review, apply) → bật SSO Musicque → Farm**.
+Lệnh chi tiết và rollback trong [deploy-police.md](deploy-police.md).
+
+```sh
+node apps/sso/init.mjs --prod
+# Editor: SMTP/Google trong apps/sso/.env.prod (0600, git-ignored, secret khác dev).
+node apps/sso/configure.mjs --prod
+apps/sso/deploy.prod.sh --sync
+```
+
+Script deploy riêng build Keycloak và tools local `linux/amd64`, nén/scp/load rồi Compose production,
+không build trên host. Dùng biến `SERVER`, `SSH_KEY`, `REMOTE_DIR`, `ENV_FILE`, `PROJECT_NAME`;
+mặc định ptdevs@167.86.125.164, ~/.ssh/police, /home/ptdevs/internal/chibi-sso.
+`--build-only` chỉ local; `--sync-only`/`--sync` mở tunnel local 18180 → server 8180 rồi sync, tự đóng tunnel.
+`SSO_ADMIN_URL` tách đường gọi Admin API khỏi `SSO_URL` public; sync/import ưu tiên env process rồi env file.
+Issuer lưu trong identity luôn lấy từ SSO_URL, không được dùng URL tunnel làm issuer.
+SMTP (`SSO_SMTP_*`, cả `SSO_SMTP_SECURE`) lấy từ env prod, không tự chép secret dev.
+
+Keycloak production `start --import-realm`, `KC_HTTP_RELATIVE_PATH=/sso`, hostname public
+`https://musicque.politetech.com/sso`, proxy headers xforwarded. Healthcheck management 9000 có `/sso`.
+DB riêng không publish; HTTP chỉ loopback 8180. nginx chặn admin Internet, giữ realms/resources công khai.
+Admin của backend qua Docker network nội bộ: Farm hỗ trợ `SSO_ADMIN_URL`; Musicque cần companion patch
+`deploy/musicque-sso-admin-url.patch` trước bật register/forgot/change, xem checklist. Không mở admin Internet để né patch.
+
+Import dùng cờ boolean `--musicque`/`--farm` (một hoặc cả hai), URI chỉ từ `MUSICQUE_MONGODB_URI`/
+`FARM_DATABASE_URL` trong môi trường hoặc Docker `--env-file` riêng; không truyền URI trên argv.
+Image `musicque-sso-tools:latest` có Node/dependencies, chạy trong `musicque_music-order-network` để tới Mongo hiện có
+và `SSO_ADMIN_URL=http://sso:8080/sso`; server không cần Node/pnpm hoặc tải dependency lúc import.
+`--env` chọn file cấu hình SSO, `--report` ghi report 0600, mặc định dry-run, `--apply` mới ghi.
+Collision với Keycloak được báo subject rõ ràng, exit 2. Có collision thì apply không ghi kế hoạch nào.
+Lần import Farm sau dùng `--resolutions` chọn `merge-keycloak:<subject>` (giữ mật khẩu/profile hiện có)
+hoặc `rename-farm:<name>`, tuyệt đối không tự merge. Gộp hai nguồn mới cùng lúc vẫn hỗ trợ
+`merge:farm`/`merge:musicque`. Lỗi runtime có thể ghi một phần; backup, dry-run và rerun để đối chiếu.
+Tests logic giả chạy bằng `pnpm --filter @chibi-town/sso test`, đã nằm trong `pnpm check`.

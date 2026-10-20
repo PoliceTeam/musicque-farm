@@ -1,0 +1,48 @@
+# Add this map once in nginx's http {} context (outside server {}).
+map $http_upgrade $farm_connection {
+    default upgrade;
+    '' close;
+}
+# Insert locations below in the EXISTING HTTPS musicque.politetech.com server {}.
+# Specific/exact locations first; ^~ prevents existing regex locations from taking over.
+# Keep existing Musicque /api/, /socket.io and / -> 127.0.0.1:3800 unchanged.
+# Prefix selection uses longest match, not text order. Never add a generic /api for Farm.
+location = /sso { return 308 /sso/; }
+location = /sso/admin { return 404; }
+location ^~ /sso/admin/ { return 404; }
+location ^~ /sso/ {
+    proxy_pass http://127.0.0.1:8180;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Port $server_port;
+}
+# /sso/realms/ and /sso/resources/ stay public. Never expose management port 9000.
+location = /farm/api { return 308 /farm/api/; }
+location ^~ /farm/api/ {
+    # URI replacement strips ONLY /farm: /farm/api/ws -> /api/ws.
+    proxy_pass http://127.0.0.1:3201/api/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $farm_connection;
+    proxy_read_timeout 1h;
+}
+location = /farm {
+    proxy_pass http://127.0.0.1:3200;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+location ^~ /farm/ {
+    # Next expects /farm, including /farm/_next and /farm/chibi-assets: preserve URI.
+    proxy_pass http://127.0.0.1:3200;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}

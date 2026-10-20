@@ -72,7 +72,10 @@ export function createPasswordProvider(
 
   async function admin(path: string, method = 'GET', body?: unknown) {
     const tokens = await grant('client_credentials', {});
-    const response = await transport(`${settings.issuer.replace('/realms/', '/admin/realms/')}${path}`, {
+    const adminRealm = settings.adminUrl
+      ? `${settings.adminUrl}/admin/realms/${encodeURIComponent(new URL(settings.issuer).pathname.split('/').at(-1)!)}`
+      : settings.issuer.replace('/realms/', '/admin/realms/');
+    const response = await transport(`${adminRealm}${path}`, {
       method,
       headers: { Authorization: `Bearer ${tokens.access_token}`, 'Content-Type': 'application/json' },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),

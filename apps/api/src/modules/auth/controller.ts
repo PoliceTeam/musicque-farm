@@ -39,7 +39,12 @@ export function createAuthController(deps: {
   revokeSession: (sessionId: string) => Promise<void>;
 }) {
   const { db, config, clock } = deps;
-  const cookie = { path: '/', httpOnly: true, sameSite: 'lax', secure: config.secureCookies } as const;
+  const cookie = {
+    path: new URL(config.webOrigin).pathname || '/',
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: config.secureCookies,
+  } as const;
   // With SSO, Keycloak owns registration, passwords and Google; local credential routes stay for SSO-less setups.
   const google: GoogleClient | undefined =
     config.google && !config.sso
@@ -175,7 +180,11 @@ export function createAuthController(deps: {
   const googleSignIn = async (_request: FastifyRequest, reply: FastifyReply) => {
     if (!google) throw new HttpError(404, 'PROVIDER_UNAVAILABLE');
     const { url, state, verifier } = startGoogleSignIn(google);
-    reply.setCookie(OAUTH_COOKIE, `${state}.${verifier}`, { ...cookie, path: '/api/auth/google', maxAge: 600 });
+    reply.setCookie(OAUTH_COOKIE, `${state}.${verifier}`, {
+      ...cookie,
+      path: `${new URL(config.publicApiUrl).pathname}/auth/google`,
+      maxAge: 600,
+    });
     return reply.redirect(url);
   };
 
@@ -183,7 +192,7 @@ export function createAuthController(deps: {
     if (!google) throw new HttpError(404, 'PROVIDER_UNAVAILABLE');
     const query = request.query as { state?: unknown; code?: unknown };
     const [state, verifier] = (request.cookies[OAUTH_COOKIE] ?? '').split('.');
-    reply.clearCookie(OAUTH_COOKIE, { ...cookie, path: '/api/auth/google' });
+    reply.clearCookie(OAUTH_COOKIE, { ...cookie, path: `${new URL(config.publicApiUrl).pathname}/auth/google` });
     try {
       if (!state || !verifier || query.state !== state || typeof query.code !== 'string')
         throw new HttpError(401, 'INVALID_CREDENTIALS');

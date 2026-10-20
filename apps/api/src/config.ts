@@ -21,6 +21,8 @@ export type ApiConfig = {
   trustProxy: boolean;
   sso?: {
     issuer: string;
+    /** Private Keycloak root URL, including /sso; issuer remains public. */
+    adminUrl?: string;
     clientId: string;
     clientSecret: string;
     tokenKey?: string;
@@ -87,6 +89,7 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     sso: env.SSO_ISSUER
       ? {
           issuer: env.SSO_ISSUER.replace(/\/$/, ''),
+          adminUrl: env.SSO_ADMIN_URL?.replace(/\/$/, ''),
           clientId: env.SSO_CLIENT_ID!,
           clientSecret: env.SSO_CLIENT_SECRET!,
           tokenKey: env.SSO_TOKEN_KEY,

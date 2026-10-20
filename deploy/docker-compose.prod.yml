@@ -1,5 +1,5 @@
 # Production stack for one server. nginx on the host proxies the domain:
-#   /api (including the /api/ws WebSocket) -> 127.0.0.1:${API_PORT}, everything else -> 127.0.0.1:${WEB_PORT}
+#   /farm/api/ -> API (strip /farm), /farm -> web (preserve /farm). Root deployments remain supported.
 services:
   postgres:
     image: postgres:17-alpine
@@ -41,13 +41,14 @@ services:
     environment:
       DATABASE_URL: postgres://${DATABASE_USERNAME:-chibi}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME:-chibi_town}
       WEB_ORIGIN: ${PUBLIC_URL:?PUBLIC_URL is required}
-      PUBLIC_API_URL: ${PUBLIC_URL}/api
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-${PUBLIC_URL}/api}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       BACKGROUND_JOBS_MODE: worker
       TRUST_PROXY: 'true'
       PET_RACE_RESET_ENABLED: ${PET_RACE_RESET_ENABLED:-true}
       PET_RACE_RESET_TIME: ${PET_RACE_RESET_TIME:-00:00}
       PET_RACE_RESET_TIMEZONE: ${PET_RACE_RESET_TIMEZONE:-Asia/Ho_Chi_Minh}
+      SSO_ADMIN_URL: ${SSO_ADMIN_URL:-}
       SSO_ISSUER: ${SSO_ISSUER:-}
       SSO_CLIENT_ID: ${SSO_CLIENT_ID:-}
       SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET:-}

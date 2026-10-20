@@ -1,0 +1,10 @@
+# Optional overlay for private Keycloak Admin REST access. Keep PostgreSQL/Redis private.
+services:
+  api:
+    networks:
+      - internal
+      - sso-backend
+networks:
+  sso-backend:
+    name: ${SSO_NETWORK:-musicque_music-order-network}
+    external: true
