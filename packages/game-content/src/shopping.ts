@@ -1,3 +1,4 @@
+import { createServiceNpc } from './service-npc.js';
 import type { MapDefinition, MapLayer } from './world.js';
 
 const width = 2080;
@@ -57,10 +58,15 @@ for (const [id, x, w, sourceW, sourceH] of [
   if (id === 'salon') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'salon' };
   if (id === 'gifts') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'held-shop' };
   if (id === 'pets') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'pet-shop' };
-  if (id === 'jewelry') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'jewelry-shop' };
-  if (id === 'fashion') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'fashion-shop' };
+  if (id === 'jewelry') layers[layers.length - 1].entrance = undefined;
+  if (id === 'fashion') {
+    layers[layers.length - 1].destination = { regionId: 'center', mapId: 'fashion-shop' };
+    layers[layers.length - 1].hideEntranceHint = true;
+  }
   if (id === 'premium') layers[layers.length - 1].destination = { regionId: 'center', mapId: 'premium-shop' };
 }
+// The jeweler serves players on the street; the storefront is scenery.
+layers.push(createServiceNpc({ id: 'jeweler', role: 'jewelry', service: 'jewelry', feet: [1670, 560] }));
 prop('atm', 'scenery:atm', 610, 391.5, 160, 153.5, 545);
 layers[layers.length - 1].entrance = [690, 545];
 for (let x = 0; x < width; x += 80) prop(`shop-border-${x}`, 'scenery:flower-patch', x - 8, 515, 76, 40, 549);

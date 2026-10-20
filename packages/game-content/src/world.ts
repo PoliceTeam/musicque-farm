@@ -23,6 +23,8 @@ export type MapLayer = {
   destination?: { regionId: string; mapId: string };
   shop?: 'salon' | 'premium' | 'pets' | 'accessories' | 'fashion' | 'jewelry';
   npc?: ShopNpcRole;
+  npcNameplate?: boolean;
+  hideEntranceHint?: boolean;
   pet?: string;
   shopInteraction?: readonly [number, number];
   entrance?: readonly [number, number];

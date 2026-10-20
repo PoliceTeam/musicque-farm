@@ -6,13 +6,8 @@ import {
 import { COSMETIC_INDEX } from '@chibi-town/character-core/cosmetic-index';
 import { defaultOutfit, outfitFields } from '@chibi-town/character-core/outfit-logic';
 import { ApiSdkError } from '@chibi-town/contracts';
-import type { CosmeticUpgradeOffer } from '@chibi-town/contracts/character-inventory';
-import { PREMIUM_COSMETIC_GROUPS } from '@chibi-town/game-content/cosmetic-shop';
-import {
-  COSMETIC_UPGRADE_COSTS,
-  PET_UPGRADE_MULTIPLIER,
-  PREMIUM_UPGRADE_MULTIPLIER,
-} from '@chibi-town/game-content/cosmetic-upgrades';
+import type { CosmeticUpgradeOffer, CosmeticUpgradeResult } from '@chibi-town/contracts/character-inventory';
+import { cosmeticUpgradeRecipe } from '@chibi-town/game-content/cosmetic-upgrades';
 import { LUCKY_EXCLUSIVE_ITEMS } from '@chibi-town/game-content/lucky-draw';
 import { initialColor } from '../character/outfit-bindings.js';
 import { type PlayerDocument, reservedArcadeCoins } from '../player-document.js';
@@ -23,6 +18,7 @@ import { bagSlot, type CharacterInventoryState, definition, own } from './invent
 export function cosmeticUpgradeOffer(
   state: CharacterInventoryState,
   entry: Readonly<CosmeticDefinition>,
+  document: PlayerDocument,
 ): CosmeticUpgradeOffer | undefined {
   if ((entry.kind !== 'item' && entry.kind !== 'pet') || !entry.family || !entry.level) return undefined;
   const levels = COSMETIC_INDEX.select({ groupId: entry.groupId })
@@ -30,18 +26,26 @@ export function cosmeticUpgradeOffer(
     .sort((a, b) => ('level' in a ? a.level! : 0) - ('level' in b ? b.level! : 0));
   if (levels.length < 2) return undefined;
   const target = levels.find((candidate) => 'level' in candidate && candidate.level! > entry.level!);
-  const cost = target && 'level' in target ? COSMETIC_UPGRADE_COSTS[target.level!] : undefined;
+  const recipe = cosmeticUpgradeRecipe(entry.groupId, target && 'level' in target ? target.level! : entry.level);
+  if (!recipe) return undefined;
   // Reward-only targets cannot become purchasable through an upgrade route.
-  if (target && (!cost || LUCKY_EXCLUSIVE_ITEMS.some((id) => id === target.id))) return undefined;
-  const multiplier =
-    entry.kind === 'pet'
-      ? PET_UPGRADE_MULTIPLIER
-      : PREMIUM_COSMETIC_GROUPS.some((group) => group === entry.groupId)
-        ? PREMIUM_UPGRADE_MULTIPLIER
-        : 1;
+  if (
+    target &&
+    (('level' in target && target.level !== entry.level + 1) || LUCKY_EXCLUSIVE_ITEMS.some((id) => id === target.id))
+  )
+    return undefined;
   return {
     target: target ?? null,
-    price: { currency: 'coins', amount: (cost ?? 0) * multiplier },
+    price: { currency: 'coins', amount: target ? recipe.coins : 0 },
+    recipeVersion: recipe.version,
+    materials: target
+      ? recipe.materials.map((m) => ({ ...m, owned: document.jeweler?.materials[m.materialId] ?? 0 }))
+      : [],
+    gemPrice: recipe.gems === null ? null : target ? recipe.gems : 0,
+    chance: recipe.chance,
+    failures:
+      document.upgradeFailures?.[`${entry.groupId}/${target && 'level' in target ? target.level : entry.level}`] ?? 0,
+    guaranteeAt: recipe.guaranteeAt,
     owned: !!target && own(state, target.id),
     maxLevel: Math.max(...levels.map((candidate) => ('level' in candidate ? candidate.level! : 1))),
   };
@@ -53,16 +57,50 @@ export function upgradeCharacterItem(
   targetId: string,
   requestId: string,
   now: number,
-) {
+  currency: 'coins' | 'gems',
+  recipeVersion: number,
+  random?: () => number,
+): CosmeticUpgradeResult {
   const state = ensureCharacterInventory(document, now);
   const source = Object.hasOwn(state.instances, instanceId) ? state.instances[instanceId] : undefined;
   if (!source || !own(state, source.cosmeticId)) throw new ApiSdkError('NOT_ALLOWED', undefined, 'INSTANCE_NOT_OWNED');
   const entry = definition(source.cosmeticId);
-  const offer = cosmeticUpgradeOffer(state, entry);
+  const offer = cosmeticUpgradeOffer(state, entry, document);
   if (!offer?.target || offer.target.id !== targetId || offer.owned)
     throw new ApiSdkError('NOT_ALLOWED', undefined, 'UPGRADE_UNAVAILABLE');
-  if (document.farm.coins - reservedArcadeCoins(document) < offer.price.amount)
-    throw new ApiSdkError('INSUFFICIENT_COINS');
+  if (offer.recipeVersion !== recipeVersion) throw new ApiSdkError('NOT_ALLOWED', undefined, 'RECIPE_CHANGED');
+  const amount = currency === 'coins' ? offer.price.amount : offer.gemPrice;
+  if (amount === null) throw new ApiSdkError('NOT_ALLOWED', undefined, 'CURRENCY_UNAVAILABLE');
+  const balance = currency === 'coins' ? document.farm.coins - reservedArcadeCoins(document) : document.farm.gems;
+  if (balance < amount) throw new ApiSdkError(currency === 'coins' ? 'INSUFFICIENT_COINS' : 'INSUFFICIENT_GEMS');
+  if (offer.materials.some((m) => m.owned < m.count)) throw new ApiSdkError('NOT_ENOUGH_MATERIALS');
+  const guaranteed = offer.guaranteeAt !== null && offer.failures + 1 >= offer.guaranteeAt;
+  const chance = guaranteed ? 100 : offer.chance + (currency === 'gems' ? 10 : 0);
+  const roll = guaranteed ? 0 : (random?.() ?? globalThis.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296);
+  if (!Number.isFinite(roll) || roll < 0 || roll >= 1) throw new ApiSdkError('INVALID_COMMAND');
+  const success = guaranteed || roll * 100 < chance;
+  const result: CosmeticUpgradeResult = {
+    recipeVersion,
+    from: entry.id,
+    to: offer.target.id,
+    success,
+    guaranteed,
+    chance,
+    failuresBefore: offer.failures,
+    failuresAfter: success ? 0 : Math.min(Number.MAX_SAFE_INTEGER, offer.failures + 1),
+    guaranteeAt: offer.guaranteeAt,
+    paid: { currency, amount },
+    materials: offer.materials.map(({ materialId, count }) => ({ materialId, count })),
+  };
+  const holdings = { ...document.jeweler?.materials };
+  for (const material of offer.materials) holdings[material.materialId] = material.owned - material.count;
+  document.jeweler = { materials: holdings, receipts: document.jeweler?.receipts ?? {} };
+  document.farm[currency] -= amount;
+  document.upgradeFailures ??= {};
+  const progressKey = `${entry.groupId}/${'level' in offer.target ? offer.target.level : 1}`;
+  if (success) delete document.upgradeFailures[progressKey];
+  else document.upgradeFailures[progressKey] = result.failuresAfter;
+  if (!success) return result;
   const target = offer.target;
   const paletteIds: CosmeticId[] = [];
   if (entry.kind === 'item' && target.kind === 'item') {
@@ -87,7 +125,7 @@ export function upgradeCharacterItem(
     state,
     grantId,
     ids,
-    { kind: 'upgrade', from: entry.id, to: target.id, paid: { currency: 'coins', amount: offer.price.amount } },
+    { kind: 'upgrade', from: entry.id, to: target.id, paid: result.paid, recipeVersion, materials: result.materials },
     now,
   );
   const upgraded = state.instances[`${grantId}:${target.id}`];
@@ -124,5 +162,5 @@ export function upgradeCharacterItem(
     }
     document.outfit = outfit;
   }
-  document.farm.coins -= offer.price.amount;
+  return result;
 }

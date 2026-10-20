@@ -1,0 +1,302 @@
+.game-ui dialog.jeweler-dialog {
+  width: min(700px, calc(100vw - 24px));
+}
+.jeweler-menu {
+  display: grid;
+  gap: 14px;
+  padding: 12px 0 22px;
+}
+.jeweler-menu > p {
+  color: #806744;
+}
+.jeweler-menu > .ui-button {
+  min-height: 60px;
+  text-align: left;
+}
+.jeweler-intro {
+  color: #8a785b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.jeweler-balance {
+  display: block;
+  margin: 14px 0;
+  font-size: 13px;
+  color: #785e36;
+}
+.jeweler-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin: 12px 0;
+}
+.game-ui .jeweler-grid > button {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 10px 4px;
+  border: 1px solid #d8c6a1;
+  border-radius: 12px;
+  background: #fff8e9;
+  color: #735432;
+  cursor: pointer;
+  font: inherit;
+}
+.game-ui .jeweler-grid > button[aria-pressed="true"] {
+  background: #eef0d5;
+  border-color: #94aa77;
+  box-shadow: inset 0 0 0 2px #b1c28f;
+}
+.jeweler-grid strong {
+  font-size: 12px;
+}
+.jeweler-grid span:not(.jeweler-stone),
+.jeweler-grid small {
+  font-size: 11px;
+}
+.jeweler-stone {
+  display: block;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+.jeweler-quantity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: #785e36;
+}
+.jeweler-quantity input {
+  width: 90px;
+  min-height: 38px;
+  padding: 6px 10px;
+  border: 1px solid #bcaa85;
+  border-radius: 8px;
+  background: #fffdf5;
+  font: inherit;
+}
+.jeweler-recipe {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #ecefd8;
+  font-size: 12px;
+  color: #5d754b;
+}
+.jeweler-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+.jeweler-notice {
+  background: #edf0d8;
+  color: #5e7c43;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.jeweler-empty {
+  padding: 35px 12px;
+  text-align: center;
+  color: #8a785b;
+}
+.jeweler-dialog .character-upgrade-heading {
+  margin-top: 18px;
+  padding-top: 0;
+  padding-right: 0;
+}
+.jeweler-pages {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+@media (max-width: 560px) {
+  .jeweler-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .jeweler-actions > .ui-button {
+    width: 100%;
+  }
+}
+
+.game-ui .jeweler-dialog.is-tabbed .ui-dialog-surface {
+  position: relative;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+.game-ui .jeweler-dialog.is-tabbed .ui-dialog-header {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 0;
+  margin: 0;
+}
+.jeweler-dialog.is-tabbed .jeweler-intro {
+  margin-top: 8px;
+  padding-right: 48px;
+  min-height: 36px;
+}
+.game-ui .jeweler-dialog > .ui-folder-tabs {
+  flex-wrap: nowrap;
+}
+.jeweler-dialog .character-upgrades.is-sidebar {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 10px 18px;
+  align-items: start;
+  padding-top: 36px;
+}
+.jeweler-dialog .is-sidebar > .character-upgrade-heading,
+.jeweler-dialog .is-sidebar > .character-upgrade-intro,
+.jeweler-dialog .is-sidebar > .character-upgrade-empty {
+  grid-column: 1 / -1;
+}
+.jeweler-dialog .is-sidebar > .character-upgrade-heading {
+  margin-top: 0;
+}
+.jeweler-dialog .is-sidebar > .character-upgrade-intro {
+  margin: 0 0 8px;
+}
+.jeweler-dialog .is-sidebar > .character-upgrade-picker {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  max-height: 350px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2px 6px 2px 2px;
+  align-content: start;
+}
+.game-ui .jeweler-dialog .is-sidebar .character-upgrade-picker > button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  min-height: 56px;
+  padding: 6px;
+  text-align: left;
+}
+.jeweler-dialog .is-sidebar .character-upgrade-picker .cosmetic-thumbnail {
+  width: 48px;
+  height: 44px;
+  flex: 0 0 48px;
+  margin: 0;
+}
+.jeweler-dialog .is-sidebar .character-upgrade-picker span {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.jeweler-dialog .is-sidebar > .character-upgrade-levels {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  gap: 4px;
+  grid-template-columns: minmax(0, 1fr);
+}
+.jeweler-dialog .is-sidebar > .character-upgrade-summary {
+  grid-column: 2;
+  grid-row: 2;
+}
+.jeweler-dialog .is-sidebar .character-preview-frame {
+  width: min(115px, 100%);
+  height: auto;
+  aspect-ratio: 1;
+}
+@media (max-width: 560px) {
+  .jeweler-dialog .character-upgrades.is-sidebar {
+    grid-template-columns: 90px minmax(0, 1fr);
+    gap: 10px;
+  }
+  .game-ui .jeweler-dialog .is-sidebar .character-upgrade-picker > button {
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    text-align: center;
+  }
+  .jeweler-dialog .is-sidebar > .character-upgrade-levels {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .jeweler-dialog .is-sidebar .character-upgrade-arrow {
+    transform: rotate(90deg);
+    line-height: 24px;
+  }
+  .jeweler-dialog .is-sidebar .character-preview-frame {
+    width: 90px;
+  }
+  .jeweler-dialog .is-sidebar .character-upgrade-picker {
+    max-height: 440px;
+  }
+  .jeweler-dialog .is-sidebar .character-upgrade-summary {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+}
+
+.character-upgrade-materials {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+}
+.character-upgrade-materials > div {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  gap: 7px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid #b9c394;
+  border-radius: 9px;
+  background: #f0f2dc;
+  text-align: left;
+}
+.character-upgrade-materials .is-missing {
+  color: #a34a33;
+  border-color: #d7ad8c;
+  background: #fff0df;
+}
+.character-upgrade-materials img {
+  object-fit: contain;
+}
+@media (max-width: 560px) {
+  .character-upgrade-materials > div {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+  .character-upgrade-materials strong {
+    grid-column: 2;
+  }
+}
+
+.character-upgrade-levels {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.character-upgrade-levels > .ui-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.game-ui .character-upgrade-levels > .ui-tabs .ui-button {
+  min-width: 0;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+.character-upgrade-levels .character-upgrade-comparison {
+  margin: 4px 0 0;
+}
+@media (max-width: 560px) {
+  .character-upgrade-levels .character-upgrade-comparison {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .game-ui .character-upgrade-levels > .ui-tabs .ui-button {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+}

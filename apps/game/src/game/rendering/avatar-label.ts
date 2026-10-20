@@ -32,3 +32,12 @@ export function drawAvatarLabel(
     MAP_LABEL_STYLE.fontSize,
   );
 }
+
+/** Raster NPC service names sit above the head, with a separate red service indicator. */
+export function drawNpcLabel(renderer: CharacterRenderer, text: string, x: number, top: number) {
+  const labelY = Math.round(top) - MAP_LABEL_STYLE.headClearance;
+  renderer.label(text, Math.round(x), labelY, MAP_LABEL_STYLE.playerColor, undefined, MAP_LABEL_STYLE.fontSize, {
+    text: '*',
+    color: '#ff4444',
+  });
+}

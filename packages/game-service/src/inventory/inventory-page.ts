@@ -57,7 +57,7 @@ export function characterInventoryPage(
       if (
         !own(state, entry.id) ||
         (entry.kind !== 'item' && entry.kind !== 'pet') ||
-        !cosmeticUpgradeOffer(state, entry)
+        !cosmeticUpgradeOffer(state, entry, document)
       )
         continue;
       const previous = highest.get(entry.groupId);
@@ -70,7 +70,7 @@ export function characterInventoryPage(
     const item = instanceByCosmetic.get(entry.id as CharacterCosmeticInstance['cosmeticId']);
     if (
       query.view === 'owned' || query.view === 'unequipped' || query.view === 'upgrades'
-        ? !own(state, entry.id) || (query.view === 'unequipped' && worn.has(entry.id))
+        ? !own(state, entry.id) || (query.view === 'unequipped' && (!item || worn.has(entry.id)))
         : query.view !== 'shop' && item?.location.container !== query.view
     )
       return false;
@@ -83,7 +83,7 @@ export function characterInventoryPage(
     const item = instanceByCosmetic.get(entry.id as CharacterCosmeticInstance['cosmeticId']);
     return {
       definition: entry,
-      ...(item && own(state, entry.id) ? { upgrade: cosmeticUpgradeOffer(state, entry) } : {}),
+      ...(item && own(state, entry.id) ? { upgrade: cosmeticUpgradeOffer(state, entry, document) } : {}),
       owned: own(state, entry.id),
       canUnequip:
         item?.location.container === 'equipped' &&

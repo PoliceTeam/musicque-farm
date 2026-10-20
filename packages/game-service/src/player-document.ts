@@ -29,6 +29,11 @@ import type { CharacterInventoryState } from './character-inventory.js';
 import { pruneReceipts } from './receipt-order.js';
 export type PlayerDocument = {
   version: 1;
+  upgradeFailures?: Record<string, number>;
+  jeweler?: {
+    materials: Partial<Record<import('@chibi-town/game-content/jeweler').JewelerMaterialId, number>>;
+    receipts: Record<string, string>;
+  };
   luckyDraw?: {
     tickets: number;
     receipts: Record<
@@ -93,7 +98,17 @@ export type PlayerDocument = {
   characterInventory?: CharacterInventoryState;
   characterSetupPending?: boolean;
   instances?: Record<string, Snapshot['farm']>;
-  requests: Record<string, { fingerprint: string; result: { completed: number; eligible: number } }>;
+  requests: Record<
+    string,
+    {
+      fingerprint: string;
+      result: {
+        completed: number;
+        eligible: number;
+        upgrade?: import('@chibi-town/contracts/character-inventory').CosmeticUpgradeResult;
+      };
+    }
+  >;
 };
 
 /** Coins promised to matches still being played; farm commands and new wagers may not spend them. */
@@ -137,6 +152,17 @@ function upgradeTienResult(value: unknown) {
 
 /** Repairs or drops fields from older or damaged saves; every repository runs it on read. */
 export function normalizePlayerDocument(document: PlayerDocument) {
+  if (document.upgradeFailures) {
+    document.upgradeFailures = Object.fromEntries(
+      Object.entries(
+        typeof document.upgradeFailures === 'object' && !Array.isArray(document.upgradeFailures)
+          ? document.upgradeFailures
+          : {},
+      ).filter(
+        ([key, count]) => /^(item|pet)\/[-a-z.]+\/[2-6]$/.test(key) && Number.isSafeInteger(count) && count >= 0,
+      ),
+    );
+  }
   if (document.tableStakes) {
     if (typeof document.tableStakes !== 'object' || Array.isArray(document.tableStakes)) delete document.tableStakes;
     else

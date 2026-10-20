@@ -13,6 +13,7 @@ import {
 import { createEntranceTerrain } from '@/features/farm-entrance/rendering/entrance-terrain-view';
 import { drawAvatarLabel } from '@/game/rendering/avatar-label';
 import { createEntranceHint, drawEntranceHint } from '@/game/rendering/entrance-hint';
+import { npcPlacement } from '@/game/rendering/npc-placement';
 
 const feature = (key: string) => `farm-entrance/${key}.webp`;
 
@@ -119,8 +120,14 @@ export function createFarmEntranceView(assets: Map<string, HTMLCanvasElement>, n
   put('lantern', asset('farmstead-lantern'), 1095, 493, 57);
   put('market-flowers', asset('farmstead-pink-pot'), 1060, 497, 35);
   put('market-crate', asset('farmstead-crate'), 840, 489, 37);
-  put('farmer', assets.get(feature('farmer'))!, 223, 518, 49);
-  put('gardener', assets.get(feature('gardener'))!, 1110, 535, 54);
+  for (const [key, x, feet] of [
+    ['farmer', 223, 518],
+    ['gardener', 1110, 535],
+  ] as const) {
+    const source = assets.get(feature(key))!;
+    const position = npcPlacement(source, x, feet);
+    props.push({ key, source, ...position, depth: feet });
+  }
 
   // Plant in loose groups near buildings, leaving the gate and shop approaches readable.
   for (const [index, [x, y, width]] of [

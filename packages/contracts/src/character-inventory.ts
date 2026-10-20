@@ -8,6 +8,7 @@ import { COSMETIC_INDEX } from '@chibi-town/character-core/cosmetic-index';
 import { defaultOutfit } from '@chibi-town/character-core/outfit-logic';
 import type { CharacterCosmeticInstance, CosmeticShopOffer } from '@chibi-town/game-content/cosmetic-economy';
 import { COSMETIC_SHOP_IDS, type CosmeticShopId } from '@chibi-town/game-content/cosmetic-shop';
+import { JEWELER_MATERIALS, type JewelerMaterialId } from '@chibi-town/game-content/jeweler';
 import { ApiSdkError } from './index.js';
 
 export type CharacterInventoryQuery = {
@@ -22,9 +23,57 @@ export type CharacterInventoryQuery = {
 export type CosmeticUpgradeOffer = {
   target: Readonly<CosmeticDefinition> | null;
   price: { currency: 'coins'; amount: number };
+  recipeVersion: number;
+  materials: { materialId: JewelerMaterialId; count: number; owned: number }[];
+  gemPrice: number | null;
+  chance: number;
+  failures: number;
+  guaranteeAt: number | null;
   owned: boolean;
   maxLevel: number;
 };
+export type CosmeticUpgradeResult = {
+  recipeVersion: number;
+  from: string;
+  to: string;
+  success: boolean;
+  guaranteed: boolean;
+  chance: number;
+  failuresBefore: number;
+  failuresAfter: number;
+  guaranteeAt: number | null;
+  paid: { currency: 'coins' | 'gems'; amount: number };
+  materials: { materialId: JewelerMaterialId; count: number }[];
+};
+
+export function validUpgradeResult(value: CosmeticUpgradeResult) {
+  return (
+    !!value &&
+    Number.isSafeInteger(value.recipeVersion) &&
+    value.recipeVersion > 0 &&
+    Object.hasOwn(COSMETIC_CATALOG, value.from) &&
+    Object.hasOwn(COSMETIC_CATALOG, value.to) &&
+    typeof value.success === 'boolean' &&
+    typeof value.guaranteed === 'boolean' &&
+    Number.isFinite(value.chance) &&
+    value.chance >= 0 &&
+    value.chance <= 100 &&
+    [value.failuresBefore, value.failuresAfter].every((n) => Number.isSafeInteger(n) && n >= 0) &&
+    (value.guaranteeAt === null || (Number.isSafeInteger(value.guaranteeAt) && value.guaranteeAt > 0)) &&
+    !!value.paid &&
+    ['coins', 'gems'].includes(value.paid.currency) &&
+    Number.isSafeInteger(value.paid.amount) &&
+    value.paid.amount > 0 &&
+    Array.isArray(value.materials) &&
+    value.materials.length > 0 &&
+    value.materials.length <= 8 &&
+    value.materials.every(
+      (m) =>
+        !!m && JEWELER_MATERIALS.some((s) => s.id === m.materialId) && Number.isSafeInteger(m.count) && m.count > 0,
+    )
+  );
+}
+
 export type CharacterInventoryRow = {
   upgrade?: CosmeticUpgradeOffer;
   definition: Readonly<CosmeticDefinition>;
@@ -50,7 +99,13 @@ export type CharacterInventoryPage = {
 };
 export type CharacterInventoryCommand =
   | { type: 'buy-cosmetic'; offerId: string }
-  | { type: 'upgrade-character-item'; instanceId: string; targetId: string }
+  | {
+      type: 'upgrade-character-item';
+      instanceId: string;
+      targetId: string;
+      currency: 'coins' | 'gems';
+      recipeVersion: number;
+    }
   | { type: 'move-character-item'; instanceId: string; to: 'bag' | 'warehouse' }
   | { type: 'equip-character-item'; instanceId: string }
   | { type: 'unequip-character-item'; instanceId: string }
@@ -108,6 +163,23 @@ export function decodeCharacterInventoryPage(value: unknown): CharacterInventory
             row.upgrade.price.currency !== 'coins' ||
             !safe(row.upgrade.price.amount) ||
             !safe(row.upgrade.maxLevel) ||
+            !safe(row.upgrade.recipeVersion) ||
+            row.upgrade.recipeVersion < 1 ||
+            !Array.isArray(row.upgrade.materials) ||
+            row.upgrade.materials.length > 8 ||
+            row.upgrade.materials.some(
+              (m) =>
+                !m ||
+                !JEWELER_MATERIALS.some((s) => s.id === m.materialId) ||
+                !safe(m.count) ||
+                m.count < 1 ||
+                !safe(m.owned),
+            ) ||
+            (row.upgrade.gemPrice !== null && !safe(row.upgrade.gemPrice)) ||
+            !safe(row.upgrade.chance) ||
+            row.upgrade.chance > 100 ||
+            !safe(row.upgrade.failures) ||
+            (row.upgrade.guaranteeAt !== null && (!safe(row.upgrade.guaranteeAt) || row.upgrade.guaranteeAt < 1)) ||
             typeof row.upgrade.owned !== 'boolean' ||
             (row.upgrade.target !== null &&
               (!row.upgrade.target ||

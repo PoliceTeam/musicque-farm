@@ -11,7 +11,9 @@ import type {
   CharacterInventoryCommand,
   CharacterInventoryPage,
   CharacterInventoryQuery,
+  CosmeticUpgradeResult,
 } from './character-inventory.js';
+import { validUpgradeResult } from './character-inventory.js';
 import type { MiniCommand, MiniLobby, MiniStart } from './mini-games.js';
 import type { RaceBet, RaceLobby } from './pet-racing.js';
 import type { PhomCommand, PhomLobby } from './phom.js';
@@ -62,7 +64,7 @@ export type Command = { requestId: string; mapInstanceId: string } & (
   | { type: 'feed-all' | 'collect-all' }
   | { type: 'equip-outfit'; outfit: Outfit }
 );
-export type CommandResult = Snapshot & { completed: number; eligible: number };
+export type CommandResult = Snapshot & { completed: number; eligible: number; upgrade?: CosmeticUpgradeResult };
 export type SdkErrorCode =
   | 'INVALID_COMMAND'
   | 'NOT_ALLOWED'
@@ -82,6 +84,9 @@ export type SdkErrorCode =
   | 'CANNOT_PASS'
   | 'MATCH_FINISHED'
   | 'MATCH_IN_PROGRESS'
+  | 'NOT_NEAR_JEWELER'
+  | 'INSUFFICIENT_GEMS'
+  | 'NOT_ENOUGH_MATERIALS'
   | 'INSUFFICIENT_COINS'
   | 'UNAUTHENTICATED';
 export class ApiSdkError extends Error {
@@ -142,6 +147,8 @@ export function decodeChannelDirectory(value: unknown): ChannelDirectory {
 }
 
 export interface GameSdk {
+  getJeweler(): Promise<import('./jeweler.js').JewelerSnapshot>;
+  executeJeweler(input: import('./jeweler.js').JewelerCommand): Promise<import('./jeweler.js').JewelerSnapshot>;
   getLuckyDraw(): Promise<import('./lucky-draw.js').LuckyDrawSnapshot>;
   executeLuckyDraw(
     input: import('./lucky-draw.js').LuckyDrawCommand,
@@ -263,6 +270,12 @@ export function validateCommand(command: Command) {
         throw new ApiSdkError('INVALID_COMMAND');
       break;
     case 'upgrade-character-item':
+      if (
+        !['coins', 'gems'].includes(command.currency) ||
+        !Number.isSafeInteger(command.recipeVersion) ||
+        command.recipeVersion < 1
+      )
+        throw new ApiSdkError('INVALID_COMMAND');
       if (typeof command.targetId !== 'string' || !command.targetId || command.targetId.length > 256)
         throw new ApiSdkError('INVALID_COMMAND');
       if (typeof command.instanceId !== 'string' || !command.instanceId || command.instanceId.length > 512)
@@ -323,10 +336,16 @@ export function decodeCommandResult(value: unknown): CommandResult {
     !Number.isSafeInteger(result.completed) ||
     result.completed < 0 ||
     !Number.isSafeInteger(result.eligible) ||
-    result.eligible < 0
+    result.eligible < 0 ||
+    (result.upgrade !== undefined && !validUpgradeResult(result.upgrade))
   )
     throw new ApiSdkError('NETWORK_ERROR', 'Invalid command response');
-  return { ...snapshot, completed: result.completed, eligible: result.eligible };
+  return {
+    ...snapshot,
+    completed: result.completed,
+    eligible: result.eligible,
+    ...(result.upgrade ? { upgrade: result.upgrade } : {}),
+  };
 }
 
 export function decodePlayer(value: unknown): Awaited<ReturnType<GameSdk['getPlayer']>> {

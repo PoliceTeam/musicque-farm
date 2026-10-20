@@ -107,6 +107,7 @@ export class CharacterView {
     color: string,
     border?: string,
     fontSize: number = MAP_LABEL_STYLE.fontSize,
+    prefix?: { text: string; color: string },
   ) {
     let label = this.labels[this.labelCount];
     if (!label) {
@@ -150,6 +151,13 @@ export class CharacterView {
       .setDepth(this.order++)
       .setVisible(true);
     this.labelCount++;
+    if (prefix) {
+      this.label(prefix.text, x, y, prefix.color, border, fontSize);
+      const indicator = this.labels[this.labelCount - 1];
+      const gap = 3;
+      label.setX(x + ((indicator.width + gap) * this.labelScale!) / 2);
+      indicator.setX(x - ((label.width + gap) * this.labelScale!) / 2);
+    }
   }
 
   particles(key: string, effect: ParticleEffect) {

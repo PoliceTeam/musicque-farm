@@ -5,12 +5,18 @@ import { describe, expect, it } from 'vitest';
 function fixture(coins = 2_000_000) {
   const document = createLocalDocument();
   document.farm.coins = coins;
+  document.jeweler = {
+    materials: { blue: 100, green: 100, purple: 100, pink: 100, gold: 100, mystic: 100, stellar: 100, celestial: 100 },
+    receipts: {},
+  };
   const repository = createMemoryRepository(document);
   const sdk = createGameSdk({
     adapter: 'local',
     repository,
 
     clock: () => 1000,
+
+    random: () => 0,
   });
   return { sdk, repository };
 }
@@ -27,7 +33,15 @@ async function buy(t: ReturnType<typeof fixture>, id: string) {
 }
 
 function upgrade(instanceId: string, targetId: string, requestId: string) {
-  return { type: 'upgrade-character-item' as const, instanceId, targetId, requestId, mapInstanceId: 'home' };
+  return {
+    type: 'upgrade-character-item' as const,
+    instanceId,
+    targetId,
+    requestId,
+    mapInstanceId: 'home',
+    currency: 'coins' as const,
+    recipeVersion: 1,
+  };
 }
 
 describe('cosmetic level unlocks', () => {

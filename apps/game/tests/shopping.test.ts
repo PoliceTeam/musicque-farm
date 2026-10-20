@@ -28,7 +28,10 @@ it('opens the shared shopping street from Center with all six supplied shops reg
     } else if (layer.id === 'premium') {
       expect(layer.destination).toEqual({ regionId: 'center', mapId: 'premium-shop' });
       expect(locationInputAt(map, layer.x + layer.width / 2, 565).kind).toBe('destination');
-    } else if (layer.id === 'jewelry' || layer.id === 'fashion') {
+    } else if (layer.id === 'jewelry') {
+      expect(layer.destination).toBeUndefined();
+      expect(layer.entrance).toBeUndefined();
+    } else if (layer.id === 'fashion') {
       expect(layer.destination).toEqual({ regionId: 'center', mapId: `${layer.id}-shop` });
       expect(locationInputAt(map, layer.x + layer.width / 2, 565).kind).toBe('destination');
     } else {
@@ -49,4 +52,21 @@ it('keeps the plaza and exit reachable while blocking roads, storefronts and bus
   expect(exit.target).toBe('world');
   expect(locationInputAt(map, ...exit.entrance!)).toEqual({ kind: 'exit' });
   expect(moveInLocation(map, exit.entrance!, [0, -20])).toEqual([1040, 803]);
+});
+
+it('opens the jeweler from the street NPC instead of entering a separate map', () => {
+  const npc = map.layers!.find((layer) => layer.id === 'jeweler')!;
+  expect(npc).toMatchObject({ npc: 'jewelry', asset: 'npc:jewelry', shop: 'jewelry', npcNameplate: true });
+  const fashion = map.layers!.find((layer) => layer.id === 'fashion')!;
+  expect(fashion.hideEntranceHint).toBe(true);
+  expect(locationInputAt(map, 1700, 485)).toEqual({ kind: 'shop', shop: 'jewelry' });
+  expect(locationInputAt(map, npc.x + npc.width / 2, npc.y + npc.height / 2)).toEqual({
+    kind: 'shop',
+    shop: 'jewelry',
+  });
+  const storefront = map.layers!.find((layer) => layer.id === 'jewelry')!;
+  expect(locationInputAt(map, storefront.x + 10, storefront.y + 10)).toEqual({ kind: 'move' });
+  expect(npc.x + npc.width / 2).toBeGreaterThanOrEqual(storefront.x + storefront.width);
+  expect(npc.y + npc.height).toBeGreaterThan(545);
+  expect(npc.y + npc.height).toBeLessThanOrEqual(565);
 });

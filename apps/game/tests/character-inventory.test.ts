@@ -212,18 +212,16 @@ it('rejects malformed successful HTTP inventory responses before passing them to
   expect(() => decodeCharacterInventoryPage(crossCharacter)).toThrowError('Invalid character inventory response');
 });
 
-it('basket excludes worn equipment and active colors before pagination and updates after equip and unequip', async () => {
+it('basket contains physical items once, while palettes stay owned and usable after equip and unequip', async () => {
   const t = fixture();
   expect((await t.sdk.getCharacterInventory({ view: 'unequipped' })).total).toBe(0);
   await buy(t, 'pet/cat');
   await buy(t, 'item-color/shirt.tank/red');
   const first = await t.sdk.getCharacterInventory({ view: 'unequipped', limit: 1 });
-  expect(first.total).toBe(2);
-  const second = await t.sdk.getCharacterInventory({ view: 'unequipped', limit: 1, cursor: first.nextCursor! });
-  expect(second.nextCursor).toBeNull();
-  const rows = [...first.rows, ...second.rows];
-  expect(rows.map((row) => row.definition.id).sort()).toEqual(['item-color/shirt.tank/red', 'pet/cat']);
-  const cat = rows.find((row) => row.definition.id === 'pet/cat')!;
+  expect(first.total).toBe(1);
+  expect(first.nextCursor).toBeNull();
+  expect(first.rows.map((row) => row.definition.id)).toEqual(['pet/cat']);
+  const cat = first.rows[0];
   await t.execute({ type: 'equip-character-item', instanceId: cat.instance!.instanceId });
   expect(
     (await t.sdk.getCharacterInventory({ view: 'unequipped' })).rows.some((row) => row.definition.id === 'pet/cat'),
@@ -236,7 +234,10 @@ it('basket excludes worn equipment and active colors before pagination and updat
   const basket = await t.sdk.getCharacterInventory({ view: 'unequipped' });
   expect(basket.rows.some((row) => row.definition.id === 'pet/cat')).toBe(true);
   expect(basket.rows.some((row) => row.definition.id === 'item-color/shirt.tank/red')).toBe(false);
-  expect(basket.rows.some((row) => row.definition.id === 'item-color/shirt.tank/dark-purple')).toBe(true);
+  expect(basket.rows.every((row) => !!row.instance)).toBe(true);
+  const owned = await t.sdk.getCharacterInventory({ view: 'owned', groupId: 'item/shirt.tank' });
+  expect(owned.rows.some((row) => row.definition.id === 'item-color/shirt.tank/dark-purple')).toBe(true);
+  expect(owned.rows.some((row) => row.definition.id === 'item-color/shirt.tank/red')).toBe(true);
 });
 
 it('owned inventory includes equipped, bag, warehouse and permanent colors, but never shop-only items', async () => {
@@ -259,4 +260,21 @@ it('owned inventory includes equipped, bag, warehouse and permanent colors, but 
   expect(rows.find((row) => row.definition.id === 'pet/cat')?.instance?.location.container).toBe('warehouse');
   expect(rows.some((row) => row.definition.id === 'item-color/shirt.tank/red')).toBe(true);
   expect(rows.some((row) => row.definition.id === 'pet/corgi')).toBe(false);
+});
+
+it('shows a five-piece Goku set as five physical basket items rather than ten item/palette tiles', async () => {
+  const t = fixture(2_000_000);
+  const ids = ['item/hair.goku.1', 'item/shirt.goku', 'item/pants.goku', 'item/shoes.goku', 'item/wrist.goku'];
+  for (const id of ids) await buy(t, id);
+  const basket = await t.sdk.getCharacterInventory({ view: 'unequipped', limit: 50 });
+  const goku = basket.rows.filter((row) => row.definition.id.includes('goku'));
+  expect(goku.map((row) => row.definition.id).sort()).toEqual([...ids].sort());
+  expect(goku.every((row) => !!row.instance && row.definition.kind === 'item')).toBe(true);
+  for (const id of ids) {
+    const owned = await t.sdk.getCharacterInventory({
+      view: 'owned',
+      groupId: id === 'item/hair.goku.1' ? 'item/hair.goku' : id,
+    });
+    expect(owned.rows.some((row) => row.definition.kind === 'item-color' && row.definition.requires === id)).toBe(true);
+  }
 });

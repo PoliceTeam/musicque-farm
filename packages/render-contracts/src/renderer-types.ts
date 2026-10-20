@@ -31,7 +31,15 @@ export type CharacterRenderer = {
     height: number,
     rotation?: number,
   ): void;
-  label(text: string, x: number, y: number, color: string, border?: string, fontSize?: number): void;
+  label(
+    text: string,
+    x: number,
+    y: number,
+    color: string,
+    border?: string,
+    fontSize?: number,
+    prefix?: { text: string; color: string },
+  ): void;
   particles(key: string, effect: ParticleEffect): void;
   aura(key: string, x: number, y: number, rx: number, ry: number, rank: number, part: 'back' | 'front'): void;
   marker(key: string, x: number, y: number): void;

@@ -72,10 +72,12 @@ export function createCommandService(options: GameServiceOptions): Pick<GameServ
         advanceFarmAnimals(state, now);
         let completed = 0,
           eligible = 1;
+        let upgrade: import('@chibi-town/contracts/character-inventory').CosmeticUpgradeResult | undefined;
         if (isInventoryCommand(command)) {
           if (command.type === 'equip-outfit') equipOwnedOutfit(document, command.outfit, now);
-          else executeCharacterInventory(document, command, command.requestId, now);
+          else upgrade = executeCharacterInventory(document, command, command.requestId, now, options.random);
           state.coins = document.farm.coins;
+          state.gems = document.farm.gems;
           completed = 1;
         } else ({ completed, eligible } = executeFarmCommand(state, command, now));
         if (!completed) throw new ApiSdkError('NOT_ALLOWED');
@@ -87,9 +89,14 @@ export function createCommandService(options: GameServiceOptions): Pick<GameServ
         document.farm.chests = state.chests;
         document.farm.homeInventory = state.homeInventory;
         document.revision++;
-        const result = { ...snapshot(document, now, state, command.mapInstanceId), completed, eligible };
+        const result = {
+          ...snapshot(document, now, state, command.mapInstanceId),
+          completed,
+          eligible,
+          ...(upgrade ? { upgrade } : {}),
+        };
         Object.defineProperty(document.requests, command.requestId, {
-          value: { fingerprint, result: { completed, eligible } },
+          value: { fingerprint, result: { completed, eligible, ...(upgrade ? { upgrade } : {}) } },
           enumerable: true,
           configurable: true,
           writable: true,

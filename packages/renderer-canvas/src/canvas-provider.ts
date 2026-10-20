@@ -73,7 +73,7 @@ export const createCanvasProvider: RendererProvider = (options) => {
       context.restore();
     },
 
-    label(text, x, y, color, border, fontSize = MAP_LABEL_STYLE.fontSize) {
+    label(text, x, y, color, border, fontSize = MAP_LABEL_STYLE.fontSize, prefix) {
       if (destroyed) return;
       context.save();
       context.font = `${MAP_LABEL_STYLE.fontStyle} ${fontSize / 2}px ${MAP_LABEL_STYLE.fontFamily}`;
@@ -86,10 +86,19 @@ export const createCanvasProvider: RendererProvider = (options) => {
         context.shadowColor = border;
         context.shadowBlur = 1.5;
       }
-      context.strokeText(text, x, y);
+      const nameWidth = prefix ? context.measureText(text).width : 0;
+      const prefixWidth = prefix ? context.measureText(prefix.text).width : 0;
+      const nameX = prefix ? x + (prefixWidth + 1.5) / 2 : x;
+      context.strokeText(text, nameX, y);
       context.shadowBlur = 0;
       context.fillStyle = color;
-      context.fillText(text, x, y);
+      context.fillText(text, nameX, y);
+      if (prefix) {
+        const prefixX = x - (nameWidth + 1.5) / 2;
+        context.strokeText(prefix.text, prefixX, y);
+        context.fillStyle = prefix.color;
+        context.fillText(prefix.text, prefixX, y);
+      }
       context.restore();
     },
 

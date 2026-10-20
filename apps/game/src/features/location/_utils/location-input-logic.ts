@@ -1,6 +1,7 @@
 import type { MapDefinition } from '@chibi-town/game-content';
 import { moveInLocation } from '@/features/location/_utils/location-logic';
 import type { Pet } from '@/game/movement/pet-follow-logic';
+import { serviceNpcAt } from '@/game/npc/service-npc-logic';
 import { LOCATION_WALK_SPEED } from '@/game/runtime/game-config';
 
 const attractionIds = ['atm', 'arcade', 'hall', 'auction', 'prizes', 'racing'] as const;
@@ -69,6 +70,8 @@ export function locationInputAt(map: MapDefinition, x: number, y: number) {
       y <= portal.entrance[1] + 12
     )
       return portal.target === 'world' ? ({ kind: 'exit' } as const) : ({ kind: 'portal', portal } as const);
+  const npc = serviceNpcAt(map.layers ?? [], x, y);
+  if (npc) return { kind: 'shop', shop: npc.shop! } as const;
   for (const layer of map.layers ?? []) {
     if (!layer.shop && !layer.destination) continue;
     if (map.regionId === 'fun' && !layer.shop && attractionIds.includes(layer.id as Attraction)) continue;

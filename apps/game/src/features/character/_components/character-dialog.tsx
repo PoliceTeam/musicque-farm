@@ -1,23 +1,16 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import { ApiSdkError, type GameSdk } from '@chibi-town/contracts';
-import type {
-  CharacterInventoryCommand,
-  CharacterInventoryPage,
-  CharacterInventoryRow,
-} from '@chibi-town/contracts/character-inventory';
+import type { CharacterInventoryCommand, CharacterInventoryPage } from '@chibi-town/contracts/character-inventory';
 import { Button, Dialog, Tabs } from '@chibi-town/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getApiSdk } from '@/application/api-sdk';
 import { characterPanelCss } from '@/assets/generated-styles';
 import { CharacterProfile } from '@/features/character/_components/character-profile';
-import {
-  CharacterUpgradeAction,
-  CharacterUpgradePanel,
-} from '@/features/character/_components/character-upgrade-panel';
 import { CosmeticThumbnail } from '@/features/character/_components/cosmetic-thumbnail';
+import { OwnedItemColors, OwnedSkinColors } from '@/features/character/_components/owned-item-colors';
 
-type Tab = 'information' | 'equipped' | 'basket' | 'upgrades';
+type Tab = 'information' | 'equipped' | 'basket';
 const SLOT_IDS = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6'];
 
 export function CharacterDialog({
@@ -39,14 +32,9 @@ export function CharacterDialog({
   const [refresh, setRefresh] = useState(0);
   const [pending, setPending] = useState(true);
   const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
-  const upgradeGroup = useRef<string | undefined>(undefined);
-  const retryUpgrade = useRef<
-    { command: Extract<CharacterInventoryCommand, { type: 'upgrade-character-item' }>; requestId: string } | undefined
-  >(undefined);
   const busy = useRef(false);
   const generation = useRef(0);
-  const view = tab === 'upgrades' ? 'upgrades' : tab === 'basket' ? 'unequipped' : 'equipped';
+  const view = tab === 'basket' ? 'unequipped' : 'equipped';
   const cursor = cursors[index];
   // biome-ignore lint/correctness/useExhaustiveDependencies: refresh reloads the same query after an inventory command or retry.
   useEffect(() => {
@@ -59,10 +47,7 @@ export function CharacterDialog({
         setPlayer(account);
         setPage(inventory);
         setSelected((id) =>
-          inventory.rows.some((row) => row.definition.id === id)
-            ? id
-            : (inventory.rows.find((row) => row.definition.groupId === upgradeGroup.current)?.definition.id ??
-              inventory.rows[0]?.definition.id),
+          inventory.rows.some((row) => row.definition.id === id) ? id : inventory.rows[0]?.definition.id,
         );
       })
       .catch(() => {
@@ -85,14 +70,8 @@ export function CharacterDialog({
     try {
       const result = await getApiSdk().execute({ ...command, requestId, mapInstanceId: 'home' });
       if (current !== generation.current) return;
-      retryUpgrade.current = undefined;
       onOutfit?.(result.outfit);
       onBalances?.({ coins: result.farm.coins, gems: result.farm.gems });
-      if (command.type === 'upgrade-character-item') {
-        const target = page?.rows.find((row) => row.instance?.instanceId === command.instanceId)?.upgrade?.target;
-        setNotice(t('character.upgrade.success', { name: target?.label ?? '' }));
-        setSelected(command.targetId);
-      }
       setPlayer((value) => value && { ...value, outfit: result.outfit });
       setPage((value) => value && { ...value, outfit: result.outfit });
       setCursors([undefined]);
@@ -100,25 +79,8 @@ export function CharacterDialog({
       setRefresh((value) => value + 1);
     } catch (reason) {
       if (current === generation.current) {
-        if (
-          command.type === 'upgrade-character-item' &&
-          reason instanceof ApiSdkError &&
-          ['NETWORK_ERROR', 'STORAGE_UNAVAILABLE'].includes(reason.code)
-        ) {
-          retryUpgrade.current = { command, requestId };
-          setError(t('character.upgrade.retry'));
-          setPending(false);
-          return;
-        }
-        retryUpgrade.current = undefined;
         setError(
-          t(
-            reason instanceof ApiSdkError && reason.code === 'INVENTORY_FULL'
-              ? 'character.full'
-              : reason instanceof ApiSdkError && reason.code === 'INSUFFICIENT_COINS'
-                ? 'character.upgrade.insufficient'
-                : 'character.failed',
-          ),
+          t(reason instanceof ApiSdkError && reason.code === 'INVENTORY_FULL' ? 'character.full' : 'character.failed'),
         );
         setPending(false);
       }
@@ -128,8 +90,7 @@ export function CharacterDialog({
   }
 
   function changeTab(value: string) {
-    if (busy.current || retryUpgrade.current) return;
-    setNotice('');
+    if (busy.current) return;
     setTab(value as Tab);
     setPage(undefined);
     setSelected(undefined);
@@ -156,70 +117,41 @@ export function CharacterDialog({
           label={t('character.title')}
           value={tab}
           onChange={changeTab}
-          items={(['information', 'equipped', 'basket', 'upgrades'] as const).map((id) => ({
+          items={(['information', 'equipped', 'basket'] as const).map((id) => ({
             id,
             label: t(`character.${id}`),
           }))}
         />
       }
       footer={
-        <>
-          {tab === 'upgrades' && page && (
-            <CharacterUpgradeAction
-              page={page}
-              selected={selected}
-              pending={pending || !!retryUpgrade.current}
-              onUpgrade={(row: CharacterInventoryRow) => {
-                if (row.instance && row.upgrade?.target) {
-                  upgradeGroup.current = row.definition.groupId;
-                  void execute({
-                    type: 'upgrade-character-item',
-                    instanceId: row.instance.instanceId,
-                    targetId: row.upgrade.target.id,
-                  });
-                }
+        tab !== 'information' &&
+        !!page &&
+        page.total > 12 && (
+          <div className="character-page-controls">
+            <Button disabled={pending || index === 0} onClick={() => setIndex((value) => value - 1)}>
+              {t('character.previous')}
+            </Button>
+            <span>{t('character.pageNumber', { page: index + 1, pages: Math.ceil(page.total / 12) })}</span>
+            <Button
+              disabled={pending || !page.nextCursor}
+              onClick={() => {
+                setCursors((list) => [...list.slice(0, index + 1), page.nextCursor!]);
+                setIndex((value) => value + 1);
               }}
-            />
-          )}
-          {tab !== 'information' && !!page && page.total > 12 && (
-            <div className="character-page-controls">
-              <Button disabled={pending || index === 0} onClick={() => setIndex((value) => value - 1)}>
-                {t('character.previous')}
-              </Button>
-              <span>{t('character.pageNumber', { page: index + 1, pages: Math.ceil(page.total / 12) })}</span>
-              <Button
-                disabled={pending || !page.nextCursor}
-                onClick={() => {
-                  setCursors((list) => [...list.slice(0, index + 1), page.nextCursor!]);
-                  setIndex((value) => value + 1);
-                }}
-              >
-                {t('character.next')}
-              </Button>
-            </div>
-          )}
-        </>
+            >
+              {t('character.next')}
+            </Button>
+          </div>
+        )
       }
     >
       <style>{characterPanelCss}</style>
       {error && (
         <p role="alert">
           {error}{' '}
-          <Button
-            disabled={pending}
-            onClick={() =>
-              retryUpgrade.current
-                ? void execute(retryUpgrade.current.command, retryUpgrade.current.requestId)
-                : setRefresh((value) => value + 1)
-            }
-          >
-            {t(retryUpgrade.current ? 'character.upgrade.retryAction' : 'character.retry')}
+          <Button disabled={pending} onClick={() => setRefresh((value) => value + 1)}>
+            {t('character.retry')}
           </Button>
-        </p>
-      )}
-      {notice && (
-        <p role="status" className="character-upgrade-notice">
-          {notice}
         </p>
       )}
       {pending && (
@@ -228,16 +160,14 @@ export function CharacterDialog({
         </p>
       )}
       {tab === 'information' ? (
-        <CharacterProfile player={player} outfit={page?.outfit} coins={page?.coins} gems={page?.gems} />
-      ) : tab === 'upgrades' ? (
-        page && (
-          <CharacterUpgradePanel
-            page={page}
-            selected={selected}
-            pending={pending || !!retryUpgrade.current}
-            onSelect={setSelected}
+        <>
+          <CharacterProfile player={player} outfit={page?.outfit} coins={page?.coins} gems={page?.gems} />
+          <OwnedSkinColors
+            selected={page?.outfit.skin}
+            pending={pending}
+            onApply={(cosmeticId) => void execute({ type: 'apply-cosmetic-color', cosmeticId })}
           />
-        )
+        </>
       ) : (
         <div className="character-items-panel" aria-busy={pending}>
           <div className="character-items-heading">
@@ -269,18 +199,12 @@ export function CharacterDialog({
                   <span>{t('character.selectedLevel', { level: item.definition.level })}</span>
                 )}
                 <span>{t(`character.itemLocation.${item.instance?.location.container ?? 'unlock'}`)}</span>
+                <OwnedItemColors
+                  item={item}
+                  pending={pending}
+                  onApply={(cosmeticId) => void execute({ type: 'apply-cosmetic-color', cosmeticId })}
+                />
                 <div className="character-item-actions">
-                  {item.upgrade && (
-                    <Button
-                      disabled={pending || !!retryUpgrade.current}
-                      onClick={() => {
-                        upgradeGroup.current = item.definition.groupId;
-                        changeTab('upgrades');
-                      }}
-                    >
-                      {t('character.upgrade.available')}
-                    </Button>
-                  )}
                   {item.instance && item.instance.location.container === 'bag' && (
                     <Button
                       disabled={pending}

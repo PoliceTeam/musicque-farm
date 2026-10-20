@@ -1,36 +1,40 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
-import { items } from '@chibi-town/character-core/item-catalog';
-import { layoutAvatar } from '@chibi-town/character-core/layout-logic';
-import { toEquip, wornPet } from '@chibi-town/character-core/outfit-logic';
 import { useEffect, useRef } from 'react';
 import { petSheet, sheet } from '@/assets/asset-catalog';
 import { characterPreviewCss } from '@/assets/generated-styles';
+import { characterPreviewLayout } from '@/features/character/_utils/character-preview-layout';
 import { drawOps, PieceCache } from '@/game/rendering/canvas-renderer';
 
-/** Shared circular preview with a fixed camera and foot anchor across outfit changes. */
+/** Shared circular preview, framing the character and companion without overlap. */
 export function CharacterPreview({ outfit, label }: { outfit: Outfit; label: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const context = ref.current?.getContext('2d');
     if (!context) return;
-    const ops = layoutAvatar(items, sheet, toEquip(outfit), 0, false);
+    const { ops, pet, camera } = characterPreviewLayout(outfit);
     context.clearRect(0, 0, 640, 640);
     context.save();
     context.imageSmoothingEnabled = false;
-    // Keep the same scale and foot anchor when hair or equipment changes.
     context.scale(2, 2);
-    context.translate(160, 240);
-    context.scale(2.4, 2.4);
-    const pet = wornPet(outfit);
+    context.translate(camera.x, camera.y);
+    context.scale(camera.scale, camera.scale);
     if (pet) {
-      const piece = petSheet.pieces[pet.piece];
+      const piece = petSheet.pieces[pet.definition.piece];
       context.save();
-      context.translate(-38, -(pet.fly ?? 0));
-      context.scale(0.8, 0.8);
+      context.translate(pet.x, pet.y);
+      context.scale(pet.scale, pet.scale);
       drawOps(
         context,
         new PieceCache(petSheet),
-        [{ piece: pet.piece, x: -piece.width / 2, y: -piece.rows.length, flip: false, recolor: pet.recolor }],
+        [
+          {
+            piece: pet.definition.piece,
+            x: -piece.width / 2,
+            y: -piece.rows.length,
+            flip: false,
+            recolor: pet.definition.recolor,
+          },
+        ],
         0,
         0,
       );

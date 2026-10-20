@@ -14,6 +14,7 @@ export function executeCharacterInventory(
   command: CharacterInventoryCommand,
   requestId: string,
   now: number,
+  random?: () => number,
 ) {
   const state = ensureCharacterInventory(document, now);
   if (command.type === 'buy-cosmetic') {
@@ -37,8 +38,16 @@ export function executeCharacterInventory(
     return;
   }
   if (command.type === 'upgrade-character-item') {
-    upgradeCharacterItem(document, command.instanceId, command.targetId, requestId, now);
-    return;
+    return upgradeCharacterItem(
+      document,
+      command.instanceId,
+      command.targetId,
+      requestId,
+      now,
+      command.currency,
+      command.recipeVersion,
+      random,
+    );
   }
   if (!Object.hasOwn(state.instances, command.instanceId))
     throw new ApiSdkError('NOT_ALLOWED', undefined, 'INSTANCE_NOT_OWNED');

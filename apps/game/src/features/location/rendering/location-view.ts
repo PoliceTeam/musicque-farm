@@ -13,6 +13,7 @@ import { createEntertainmentShadow } from '@/features/location/rendering/enterta
 import { layoutPet } from '@/game/movement/pet-follow-logic';
 import { drawAvatarLabel } from '@/game/rendering/avatar-label';
 import { createEntranceHint, drawEntranceHint } from '@/game/rendering/entrance-hint';
+import { createServiceNpcView } from '@/game/rendering/service-npc-view';
 
 export type LocationLabels = TFunction<'common'>;
 type Entry = {
@@ -43,6 +44,14 @@ export function createLocationView(
   labels: () => LocationLabels,
 ) {
   const layers = map.layers ?? [];
+  const npcViews = new Map(
+    layers.flatMap((layer) => {
+      const source = layer.asset && assets.get(layer.asset);
+      return layer.npc && source
+        ? [[layer.id, createServiceNpcView(layer, source, () => labels()(`serviceNpcNames.${layer.npc!}`))] as const]
+        : [];
+    }),
+  );
   const shadow = map.presentation === 'street' ? createEntertainmentShadow() : undefined;
   const draw: Entry[] = [];
   const remoteEntries = new Map<RemotePlayer, Entry[]>();
@@ -57,7 +66,9 @@ export function createLocationView(
 
       paint(view, now) {
         const asset = layer.asset ? assets.get(layer.asset) : undefined;
-        if (asset) {
+        const npc = npcViews.get(layer.id);
+        if (npc) npc.paint(view);
+        else if (asset) {
           if (layer.id === 'zone-sign' && asset !== signSource) {
             signSource = asset;
             signVersion++;
@@ -221,7 +232,7 @@ export function createLocationView(
     for (const entry of draw) entry.paint(view, now);
     if (map.presentation === 'street')
       for (const layer of layers)
-        if (layer.entrance && (layer.destination || layer.shop || layer.id === 'racing'))
+        if (!layer.hideEntranceHint && layer.entrance && (layer.destination || layer.shop || layer.id === 'racing'))
           drawEntranceHint(view, enterText, entranceHint, layer.entrance[0], layer.entrance[1] + 22, now);
     if (map.presentation === 'interior')
       for (const layer of layers)
@@ -229,6 +240,7 @@ export function createLocationView(
           drawEntranceHint(view, enterText, entranceHint, layer.shopInteraction[0], layer.shopInteraction[1], now);
     for (const portal of map.portals)
       if (portal.entrance) drawEntranceHint(view, exitText, exitHint, portal.entrance[0], portal.entrance[1], now);
+    for (const npc of npcViews.values()) npc.paintLabel(view);
     drawAvatarLabel(view, t('avatarName', player), hero, state.x, state.y, 1, true);
     for (const other of others.values())
       drawAvatarLabel(view, t('avatarName', other), other.avatar, other.x, other.y, 1);

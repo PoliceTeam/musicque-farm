@@ -24,6 +24,10 @@ const LuckyDrawDialog = lazy(() =>
   import('@/features/lucky-draw/_components/lucky-draw-dialog').then((module) => ({ default: module.LuckyDrawDialog })),
 );
 
+const JewelerDialog = lazy(() =>
+  import('@/features/jeweler/_components/jeweler-dialog').then((module) => ({ default: module.JewelerDialog })),
+);
+
 export const styles = locationCss;
 
 export function Screen({
@@ -34,6 +38,7 @@ export function Screen({
   definition?: MapDefinition;
 }) {
   const { t } = useTranslation('common');
+  const { t: jewelerText } = useTranslation('jeweler');
   const labels = useRef(t);
   labels.current = t;
   const alive = useRef(false);
@@ -62,6 +67,7 @@ export function Screen({
     setChannelDirectory(directory);
   }, []);
   const [shop, setShop] = useState<MapLayer['shop']>();
+  const [jeweler, setJeweler] = useState(false);
   const [attraction, setAttraction] = useState<Attraction>();
   const host = useRef<HTMLDivElement>(null);
   const equippedOutfit = useRef<Outfit | undefined>(undefined);
@@ -138,7 +144,7 @@ export function Screen({
 
       onChannels: () => setChannelDialog(true),
 
-      onShop: setShop,
+      onShop: (value) => (value === 'jewelry' ? setJeweler(true) : setShop(value)),
 
       onAttraction: (value) => {
         if (value === 'racing') navigation.push('/play/fun/pet-racing');
@@ -238,9 +244,13 @@ export function Screen({
       {definition?.layers?.some((layer) => layer.shop) && (
         <Button
           className="location-controls-toggle"
-          onClick={() => setShop(definition.layers?.find((layer) => layer.shop)?.shop)}
+          onClick={() => {
+            const role = definition.layers?.find((layer) => layer.shop)?.shop;
+            if (role === 'jewelry') setJeweler(true);
+            else setShop(role);
+          }}
         >
-          {t('shopEmployee')}
+          {definition.layers.some((layer) => layer.shop === 'jewelry') ? jewelerText('title') : t('shopEmployee')}
         </Button>
       )}
       {definition?.regionId === 'fun' && (
@@ -259,6 +269,23 @@ export function Screen({
           onChanged={updateChannels}
           onClose={() => setChannelDialog(false)}
         />
+      )}
+      {jeweler && (
+        <Suspense fallback={null}>
+          <JewelerDialog
+            onClose={() => setJeweler(false)}
+            onChanged={() => {
+              void Promise.all([getApiSdk().getPlayer(), getApiSdk().getInventory()])
+                .then(([player, inventory]) => {
+                  if (alive.current) {
+                    setHeader({ player, coins: inventory.farm.coins, gems: inventory.farm.gems });
+                    equippedOutfit.current = player.outfit;
+                  }
+                })
+                .catch(() => {});
+            }}
+          />
+        </Suspense>
       )}
       {attraction === 'prizes' && (
         <Suspense fallback={null}>

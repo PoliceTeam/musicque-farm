@@ -3,6 +3,8 @@ export default {
     title: 'Nhân vật',
     information: 'Thông tin',
     basket: 'Giỏ đồ',
+    ownedSkinColors: 'Màu da đã mở',
+    ownedColors: 'Màu đã mở · trang bị vật phẩm để đổi màu',
     upgrades: 'Nâng cấp',
     upgrade: {
       intro: 'Mở cấp ngoại hình tiếp theo cho món đồ bạn đang sở hữu.',

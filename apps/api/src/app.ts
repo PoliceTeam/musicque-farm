@@ -26,7 +26,13 @@ import { createFarmService, farmModule } from '@/modules/farm';
 import { createInventoryService, inventoryModule } from '@/modules/inventory';
 import { createPlayerService, playerModule, withPlayerDocument } from '@/modules/player';
 import { registerSocialRealtime, socialModule } from '@/modules/social';
-import { createChannelPresence, createWorldService, registerWorldRealtime, worldModule } from '@/modules/world';
+import {
+  createChannelPresence,
+  createJewelerAccess,
+  createWorldService,
+  registerWorldRealtime,
+  worldModule,
+} from '@/modules/world';
 
 export type AppDependencies = {
   adapters?: Adapters;
@@ -150,7 +156,7 @@ export async function createApp(deps: AppDependencies) {
   const tables = createTableService({ db, clock, realtime, logger: app.log });
   const player = createPlayerService({ db, clock });
   const farm = createFarmService({ db, clock });
-  const inventory = createInventoryService({ db, clock });
+  const inventory = createInventoryService({ db, clock, checkJewelerAccess: createJewelerAccess(realtime.rooms) });
   const world = createWorldService({ db, clock, presence });
   const arcade = createArcadeService({ db, clock, tables, petRaceReset: config.petRaceReset });
   if (config.backgroundJobs !== 'worker') await arcade.initializePetRaces();

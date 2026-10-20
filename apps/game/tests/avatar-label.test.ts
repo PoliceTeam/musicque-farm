@@ -5,7 +5,7 @@ import { defaultOutfit, toEquip } from '@chibi-town/character-core/outfit-logic'
 import { type CharacterRenderer, MAP_LABEL_STYLE } from '@chibi-town/render-contracts/renderer-types';
 import { expect, it, vi } from 'vitest';
 import { sheet } from '@/assets/asset-catalog';
-import { drawAvatarLabel } from '@/game/rendering/avatar-label';
+import { drawAvatarLabel, drawNpcLabel } from '@/game/rendering/avatar-label';
 
 it('keeps the player name yellow and clear of the rendered head and tall hats at either map scale', () => {
   for (const hat of ['', 'hat.wizard', 'hat.halo'])
@@ -31,4 +31,19 @@ it('preserves the white label on NPCs and remote residents', () => {
   const label = vi.fn();
   drawAvatarLabel({ label } as unknown as CharacterRenderer, 'NPC', avatar, 0, 100, 1);
   expect(label.mock.calls[0][3]).toBe('#ffffff');
+});
+
+it('identifies a service NPC with a yellow name and an inline red star', () => {
+  const label = vi.fn();
+  drawNpcLabel({ label } as unknown as CharacterRenderer, 'Thợ kim hoàn', 1645, 455);
+  expect(label).toHaveBeenCalledOnce();
+  expect(label.mock.calls[0]).toEqual([
+    'Thợ kim hoàn',
+    1645,
+    441,
+    '#ffe066',
+    undefined,
+    14,
+    { text: '*', color: '#ff4444' },
+  ]);
 });

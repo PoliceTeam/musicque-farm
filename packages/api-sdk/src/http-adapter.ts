@@ -28,6 +28,7 @@ import {
   validateCharacterInventoryQuery,
 } from '@chibi-town/contracts/character-inventory';
 import { decodeFarmTheftHistory, decodeFarmVisit, validateStealFarmCrop } from '@chibi-town/contracts/farm-social';
+import { decodeJewelerSnapshot, validateJewelerCommand } from '@chibi-town/contracts/jeweler';
 import { decodeLuckyDrawSnapshot, validateLuckyDrawCommand } from '@chibi-town/contracts/lucky-draw';
 import {
   decodeMiniLobby,
@@ -77,6 +78,9 @@ export function createHttpSdk(options: {
         'NOT_ALLOWED',
         'ACCOUNT_REQUIRED',
         'INSUFFICIENT_COINS',
+        'INSUFFICIENT_GEMS',
+        'NOT_NEAR_JEWELER',
+        'NOT_ENOUGH_MATERIALS',
         'INVENTORY_FULL',
         'REQUEST_CONFLICT',
         'STORAGE_UNAVAILABLE',
@@ -109,6 +113,13 @@ export function createHttpSdk(options: {
   };
 
   return {
+    getJeweler: async () => decodeJewelerSnapshot(await request('/jeweler')),
+
+    executeJeweler: async (input) => {
+      validateJewelerCommand(input);
+      return decodeJewelerSnapshot(await request('/jeweler', input));
+    },
+
     getLuckyDraw: async () => decodeLuckyDrawSnapshot(await request('/lucky-draw')),
 
     executeLuckyDraw: async (input) => {
