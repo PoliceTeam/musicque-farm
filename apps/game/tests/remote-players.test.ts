@@ -1,3 +1,4 @@
+import { LOCATION_WALK_SPEED } from '@chibi-town/game-content/movement-config';
 import { createRealtimeClient } from '@chibi-town/api-sdk';
 import { Action } from '@chibi-town/character-core/animation-logic';
 import { defaultOutfit } from '@chibi-town/character-core/outfit-logic';
@@ -71,7 +72,7 @@ describe('remote players in a map channel', () => {
     others.apply({ type: 'map.moves', moves: [{ id: 'a', x: 40, y: 100 }] });
     others.step(0.25);
     const walker = others.players.get('a')!;
-    expect([walker.x, walker.y]).toEqual([70, 100]);
+    expect([walker.x, walker.y]).toEqual([100 - LOCATION_WALK_SPEED * 0.25, 100]);
     expect([walker.avatar.action, walker.avatar.mirror]).toEqual([Action.Walk, true]);
     others.step(1);
     others.step(0.1);

@@ -1,3 +1,4 @@
+import { PLAYER_WALK_SPEED } from '@chibi-town/game-content/movement-config';
 import type { MapDefinition } from '@chibi-town/game-content';
 import { describe, expect, it } from 'vitest';
 import {
@@ -37,7 +38,7 @@ describe('location input', () => {
       delta = state.delta;
     state.target = [200, 100];
     updateLocationInput(map, state, [1, 1], 0.05, false);
-    expect(Math.hypot(state.x - 100, state.y - 100)).toBeCloseTo(6);
+    expect(Math.hypot(state.x - 100, state.y - 100)).toBeCloseTo(PLAYER_WALK_SPEED * 0.05);
     expect(state.target).toBeUndefined();
     expect(state.position).toBe(position);
     expect(state.delta).toBe(delta);

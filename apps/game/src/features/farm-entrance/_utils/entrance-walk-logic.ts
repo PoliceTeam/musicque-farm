@@ -1,3 +1,4 @@
+import { PLAYER_WALK_SPEED } from '@chibi-town/game-content/movement-config';
 import { ENTRANCE_WALK_BOUNDS } from '@/features/farm-entrance/_utils/entrance-layout';
 
 export type EntranceWalk = { x: number; y: number; target?: [number, number] };
@@ -21,7 +22,7 @@ export function stepEntranceWalk(
   }
   const distance = Math.hypot(dx, dy);
   if (!distance) return { moving: false, dx: 0 };
-  const step = Math.min(state.target ? distance : Infinity, seconds * 205);
+  const step = Math.min(state.target ? distance : Infinity, seconds * PLAYER_WALK_SPEED);
   const beforeX = state.x,
     beforeY = state.y;
   const bounds = ENTRANCE_WALK_BOUNDS;
