@@ -6,6 +6,7 @@ import { createCommandController } from '@/modules/commands/controller';
 // Exhaustive over the contract union: adding a command requires an explicit routing expectation.
 const routes = {
   'buy-cosmetic': true,
+  'upgrade-character-item': true,
   'move-character-item': true,
   'equip-character-item': true,
   'unequip-character-item': true,

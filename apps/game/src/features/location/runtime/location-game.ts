@@ -128,7 +128,8 @@ export function createLocationGame(options: {
 
         target: () => {
           cameraTarget[0] = state.x;
-          cameraTarget[1] = map.presentation ? map.height / 2 : state.y;
+          // Interior exits sit near the bottom: follow the player so wide viewports cannot crop them out.
+          cameraTarget[1] = map.presentation === 'street' ? map.height / 2 : state.y;
           return cameraTarget;
         },
       },

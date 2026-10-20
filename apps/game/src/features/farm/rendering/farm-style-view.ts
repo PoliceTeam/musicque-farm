@@ -132,13 +132,13 @@ export async function farmStyleScenery(
       put(
         `${id}-entrance-v17`,
         createEntranceHint(id === 'exit' ? labels.exit : labels.enter),
-        x - 21,
-        y,
-        42,
-        32,
+        x - 32,
+        y - 12,
+        64,
+        48,
         1000,
       );
-      entranceMarkers.push({ surface: surfaces.at(-1)!, y, phase });
+      entranceMarkers.push({ surface: surfaces.at(-1)!, y: y - 12, phase });
     }
     object('store-supplies', 'hay', 499, 271, 35);
     for (let i = 0; i < 5; i++) object(`building-flower-${i}`, 'decor-flowers-mixed', 367 + i * 40, 285, 27);

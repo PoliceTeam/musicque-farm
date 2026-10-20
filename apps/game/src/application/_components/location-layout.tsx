@@ -69,6 +69,11 @@ export function LocationLayout({
   const [friendsOpen, setFriendsOpen] = useState(false);
   const [friendTab, setFriendTab] = useState<SocialTab>('friends');
   const { incoming: inbox, notice, dismissNotice } = useFriendInbox(auth.player?.id ?? player?.id);
+  const [walletOverride, setWalletOverride] = useState<{ coins: number; gems: number }>();
+  useEffect(
+    () => setWalletOverride(coins === undefined || gems === undefined ? undefined : { coins, gems }),
+    [coins, gems],
+  );
   const [wornOutfit, setWornOutfit] = useState<Outfit>();
   useEffect(() => setWornOutfit(outfit), [outfit]);
   const portrait = useRef<HTMLCanvasElement>(null);
@@ -131,8 +136,12 @@ export function LocationLayout({
           </ProfileMenu>
         }
       >
-        <CurrencyCounter label={t('coins')} icon={<CurrencyIcon kind="coins" />} value={coins} />
-        <CurrencyCounter label={t('gems')} icon={<CurrencyIcon kind="gems" />} value={gems} />
+        <CurrencyCounter
+          label={t('coins')}
+          icon={<CurrencyIcon kind="coins" />}
+          value={walletOverride?.coins ?? coins}
+        />
+        <CurrencyCounter label={t('gems')} icon={<CurrencyIcon kind="gems" />} value={walletOverride?.gems ?? gems} />
         {process.env.NEXT_PUBLIC_API_URL && (
           <InboxButton
             count={inbox}
@@ -171,6 +180,7 @@ export function LocationLayout({
       {characterOpen && (
         <Suspense fallback={null}>
           <CharacterDialog
+            onBalances={setWalletOverride}
             onClose={() => setCharacterOpen(false)}
             onOutfit={(next) => {
               setWornOutfit(next);

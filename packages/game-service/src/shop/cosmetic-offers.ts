@@ -9,6 +9,7 @@ import {
   PREMIUM_COSMETIC_GROUPS,
   PREMIUM_SLOT_PRICES,
 } from '@chibi-town/game-content/cosmetic-shop';
+import { LUCKY_EXCLUSIVE_ITEMS } from '@chibi-town/game-content/lucky-draw';
 import { initialColor } from '../character/outfit-bindings.js';
 import { ensureCharacterInventory, grantCharacterCosmetics } from '../inventory/cosmetic-grants.js';
 import { definition, own } from '../inventory/inventory-state.js';
@@ -22,6 +23,8 @@ for (const entry of Object.values(COSMETIC_CATALOG)) {
 
 /** Higher levels remain valid owned/reward items, but can never be bought, including their palettes. */
 export function isBaseCosmetic(entry: Readonly<CosmeticDefinition>) {
+  if (LUCKY_EXCLUSIVE_ITEMS.some((id) => id === entry.id || (entry.kind === 'item-color' && id === entry.requires)))
+    return false;
   return !('level' in entry) || (entry.level ?? 1) === (minimumLevels.get(entry.groupId) ?? 1);
 }
 

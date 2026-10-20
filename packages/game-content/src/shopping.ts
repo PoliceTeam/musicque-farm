@@ -33,10 +33,10 @@ for (const x of [170, 700, 1230, 1760])
 for (const [i, x] of [-70, 230, 580, 900, 1250, 1550, 1880].entries())
   prop(
     `back-tree-${i}`,
-    i % 2 ? 'scenery:autumn-tree-red' : 'scenery:autumn-tree',
+    i % 2 ? 'scenery:farmstead-tree-orange' : 'scenery:farmstead-tree-yellow',
     x,
     225,
-    i % 2 ? (320 * 136) / 175 : (320 * 189) / 214,
+    i % 2 ? (320 * 223) / 217 : (320 * 211) / 219,
     320,
     530,
   );

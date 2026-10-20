@@ -11,7 +11,7 @@ import { COSMETIC_SHOP_IDS, type CosmeticShopId } from '@chibi-town/game-content
 import { ApiSdkError } from './index.js';
 
 export type CharacterInventoryQuery = {
-  view: 'bag' | 'equipped' | 'warehouse' | 'shop' | 'owned' | 'unequipped';
+  view: 'bag' | 'equipped' | 'warehouse' | 'shop' | 'owned' | 'unequipped' | 'upgrades';
   category?: CosmeticCategory;
   slot?: string;
   groupId?: string;
@@ -19,7 +19,14 @@ export type CharacterInventoryQuery = {
   cursor?: string;
   limit?: number;
 };
+export type CosmeticUpgradeOffer = {
+  target: Readonly<CosmeticDefinition> | null;
+  price: { currency: 'coins'; amount: number };
+  owned: boolean;
+  maxLevel: number;
+};
 export type CharacterInventoryRow = {
+  upgrade?: CosmeticUpgradeOffer;
   definition: Readonly<CosmeticDefinition>;
   owned: boolean;
   canBuy: boolean;
@@ -37,11 +44,13 @@ export type CharacterInventoryPage = {
   bagSlots: number;
   bagUsed: number;
   coins: number;
+  availableCoins?: number;
   gems: number;
   outfit: Outfit;
 };
 export type CharacterInventoryCommand =
   | { type: 'buy-cosmetic'; offerId: string }
+  | { type: 'upgrade-character-item'; instanceId: string; targetId: string }
   | { type: 'move-character-item'; instanceId: string; to: 'bag' | 'warehouse' }
   | { type: 'equip-character-item'; instanceId: string }
   | { type: 'unequip-character-item'; instanceId: string }
@@ -50,7 +59,7 @@ export type CharacterInventoryCommand =
 export function validateCharacterInventoryQuery(query: CharacterInventoryQuery) {
   if (
     !query ||
-    !['bag', 'equipped', 'warehouse', 'shop', 'owned', 'unequipped'].includes(query.view) ||
+    !['bag', 'equipped', 'warehouse', 'shop', 'owned', 'unequipped', 'upgrades'].includes(query.view) ||
     (query.category !== undefined && !['equipment', 'appearance', 'pet'].includes(query.category)) ||
     (query.shop !== undefined && !COSMETIC_SHOP_IDS.includes(query.shop)) ||
     [query.groupId, query.cursor, query.slot].some(
@@ -79,6 +88,7 @@ export function decodeCharacterInventoryPage(value: unknown): CharacterInventory
     page.bagUsed > page.bagSlots ||
     !safe(page.coins) ||
     !safe(page.gems) ||
+    (page.availableCoins !== undefined && (!safe(page.availableCoins) || page.availableCoins > page.coins)) ||
     (page.nextCursor !== null && typeof page.nextCursor !== 'string') ||
     !page.outfit ||
     typeof page.outfit !== 'object' ||
@@ -92,6 +102,18 @@ export function decodeCharacterInventoryPage(value: unknown): CharacterInventory
         typeof row.canBuy !== 'boolean' ||
         typeof row.canApply !== 'boolean' ||
         typeof row.canUnequip !== 'boolean' ||
+        (row.upgrade !== undefined &&
+          (!row.upgrade ||
+            !row.upgrade.price ||
+            row.upgrade.price.currency !== 'coins' ||
+            !safe(row.upgrade.price.amount) ||
+            !safe(row.upgrade.maxLevel) ||
+            typeof row.upgrade.owned !== 'boolean' ||
+            (row.upgrade.target !== null &&
+              (!row.upgrade.target ||
+                !Object.hasOwn(COSMETIC_CATALOG, row.upgrade.target.id) ||
+                row.upgrade.target.groupId !== row.definition.groupId ||
+                row.upgrade.price.amount < 1)))) ||
         (row.offer !== undefined &&
           (!row.offer ||
             row.offer.id !== row.definition.id ||

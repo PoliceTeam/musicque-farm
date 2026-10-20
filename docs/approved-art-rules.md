@@ -73,3 +73,7 @@ Người dùng xác nhận “okey push code đi” sau bản sửa lớp búi t
 ## Đồ cầm tay bổ sung (17/10/2026)
 
 Tách tám món từ atlas người dùng gửi (nguồn trong `docs/art/held-shop/`), không thay các món đã duyệt. Cấu hình crop, kích thước native, góc nghiêng và neo nắm nằm trong `tools/held-shop/items.json`. Xuất bằng `export-items.py`, giữ grip x9/y−15 và hướng món đồ ra ngoài mặt. Đã xem contact sheet ở kích thước native/phóng lớn trên nam/nữ và hai hướng; chưa có xác nhận duyệt riêng bộ mới.
+
+## Cánh Tiểu Tiên độc quyền quay số (18/10/2026)
+
+Người dùng yêu cầu gen cánh mới cho vòng quay, dùng vé giá 15.000 xu. Item `wings.pixie` dùng ImageGen built-in, nguồn/prompt/exporter trong `tools/lucky-draw/`. Giữ nguyên họ `wings.fairy` và các cánh cũ. Cánh mới có bốn phase, cùng gốc gắn sau lưng; đã xem native nam/nữ, hai hướng và preview trình duyệt. **Chưa được người dùng duyệt mỹ thuật**.

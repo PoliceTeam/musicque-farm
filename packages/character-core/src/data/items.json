@@ -1,5 +1,6 @@
 {
  "items": [
+  {"id": "wings.pixie", "label": "Cánh Tiểu Tiên", "slot": "back", "layer": 3, "frames": ["", ".f1", ".f2", ".f3"], "frameMs": 150, "poses": {"0": ["wings.pixie", -44, -62], "1": ["wings.pixie", -44, -63], "2": ["wings.pixie", -44, -63], "3": ["wings.pixie", -44, -63]}},
   {"id": "hair.mop.back", "gender": "male", "label": "Tóc bồng (sau)", "slot": "hairBack", "layer": 5, "hidden": true, "poses": {"0": ["hair.mop.back", -26, -47], "1": ["hair.mop.back", -26, -46], "2": ["hair.mop.back", -26, -46], "3": ["hair.mop.back", -26, -46]}},
   {"id": "hair.mop", "gender": "male", "label": "Tóc bồng", "slot": "hair", "layer": 50, "poses": {"0": ["hair.mop", -27, -65], "1": ["hair.mop", -27, -64], "2": ["hair.mop", -27, -64], "3": ["hair.mop", -27, -64]}},
   {"id": "body", "label": "Thân", "slot": "body", "layer": 10, "poses": {"0": ["body", -18, -28], "2": ["body.step", -18, -28], "3": ["body.step2", -18, -28]}},

@@ -31,6 +31,13 @@ vi.mock('@/game/rendering/renderer-providers', () => ({
 }));
 vi.mock('@/game/rendering/map-assets', () => ({ acquireMapAssets: fixture.assets }));
 vi.mock('@/features/location/rendering/location-view', () => ({ createLocationView: fixture.view }));
+vi.mock('@/features/location/rendering/entertainment-ground', () => ({
+  createEntertainmentGround: async () => ({}),
+
+  createEntertainmentGarden: () => ({}),
+
+  createEntertainmentSky: () => ({}),
+}));
 vi.mock('@chibi-town/ui', () => ({ blocksGameInput: () => false }));
 
 const map: MapDefinition = {
@@ -161,4 +168,32 @@ it('releases assets resolving after unmount without entering the room or creatin
   expect(fixture.release).toHaveBeenCalledOnce();
   expect(fixture.create).not.toHaveBeenCalled();
   expect(fixture.send).not.toHaveBeenCalled();
+});
+
+it('follows interior floor positions so a wide camera can reveal the exit, while streets retain their horizon', async () => {
+  const i18n = createGameI18n();
+  for (const presentation of ['interior', 'street'] as const) {
+    const cleanup = createLocationGame({
+      parent: {} as HTMLElement,
+      map: { ...map, presentation, width: 1600, height: 1000, spawn: [800, 815] },
+
+      labels: () => i18n.getFixedT('vi', 'common'),
+
+      channel: () => undefined,
+
+      onHeader: vi.fn(),
+      onChannels: vi.fn(),
+      onAttraction: vi.fn(),
+      navigate: vi.fn(),
+      onError: vi.fn(),
+    });
+    await flush();
+    const options = fixture.create.mock.calls.at(-1)![1] as RendererOptions;
+    const state = fixture.view.mock.calls.at(-1)![2] as { x: number; y: number };
+    expect(fixture.create).toHaveBeenCalledTimes(presentation === 'interior' ? 1 : 2);
+    expect(options.camera!.target()).toEqual([800, presentation === 'interior' ? 815 : 500]);
+    state.y = 925;
+    expect(options.camera!.target()).toEqual([800, presentation === 'interior' ? 925 : 500]);
+    cleanup();
+  }
 });

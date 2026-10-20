@@ -3,6 +3,7 @@ import type { CosmeticShopId } from './cosmetic-shop.js';
 /** Definitions for shop/reward integration; importing this module grants nothing. */
 export type CosmeticGrantSource =
   | { kind: 'shop'; offerId: string; shop?: CosmeticShopId; paid?: { currency: 'coins' | 'gems'; amount: number } }
+  | { kind: 'upgrade'; from: string; to: string; paid: { currency: 'coins'; amount: number } }
   | { kind: 'quest'; questId: string; rewardId: string }
   | { kind: 'event'; eventId: string; rewardId: string }
   | { kind: 'starter'; bundleId: string }

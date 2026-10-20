@@ -1,3 +1,5 @@
+import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-types';
+
 /** Shared yellow entrance sign used by farm and town locations. */
 export function createEntranceHint(label: string) {
   const c = document.createElement('canvas');
@@ -33,4 +35,16 @@ export function createEntranceHint(label: string) {
   ctx.lineTo(24, 32);
   ctx.stroke();
   return c;
+}
+
+/** A shared footprint and pulse; x/y identify the ground point the arrow points at. */
+export function drawEntranceHint(
+  view: CharacterRenderer,
+  label: string,
+  source: HTMLCanvasElement,
+  x: number,
+  y: number,
+  now: number,
+) {
+  view.surface(`entrance-hint:${label}`, source, x - 32, y - 44 + Math.sin(now / 330) * 1.5, 64, 48);
 }

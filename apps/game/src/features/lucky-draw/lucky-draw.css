@@ -1,0 +1,273 @@
+.game-ui .lucky-draw-dialog {
+  width: min(920px, calc(100vw - 24px));
+  max-width: 920px;
+}
+.lucky-draw-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #796044;
+}
+.lucky-draw-heading p {
+  margin: 4px 0 14px;
+}
+.lucky-draw-heading strong {
+  white-space: nowrap;
+  border: 1px solid #d7b55d;
+  border-radius: 20px;
+  padding: 7px 15px;
+  background: #fff2be;
+  color: #73511d;
+}
+.lucky-draw-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 24px;
+}
+.lucky-draw-play {
+  min-width: 0;
+  padding: 18px 0 4px;
+}
+.lucky-wheel {
+  position: relative;
+  width: min(100%, clamp(240px, calc(100dvh - 400px), 340px));
+  aspect-ratio: 1;
+  margin: 0 auto;
+  filter: drop-shadow(0 10px 9px #66532d26);
+}
+.lucky-wheel-disc {
+  position: absolute;
+  inset: 0;
+  transition: transform 4.2s cubic-bezier(0.12, 0.74, 0.1, 1);
+}
+.lucky-wheel-art {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.lucky-wheel-pointer {
+  position: absolute;
+  width: 13%;
+  height: 18%;
+  object-fit: contain;
+  top: -7%;
+  left: 43.5%;
+  z-index: 2;
+}
+.lucky-wheel-prize {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 18%;
+  aspect-ratio: 1;
+  color: #6b4319;
+  font-size: 20px;
+  font-weight: 800;
+  text-shadow: 0 1px #fff;
+  border-radius: 50%;
+  background: #fffffff0;
+  box-shadow: 0 1px 3px #19646e80;
+  border: 1px solid #3d879e;
+}
+.lucky-wheel-prize small {
+  font-size: clamp(8px, 1vw, 12px);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.lucky-wheel-prize b {
+  color: #e5a82c;
+  line-height: 1;
+  margin-top: 6px;
+}
+.lucky-wheel-prize.is-tickets b {
+  color: #30a8bc;
+}
+.lucky-wheel-prize img {
+  width: 95%;
+  height: 95%;
+  object-fit: contain;
+}
+.lucky-wheel-hub {
+  position: absolute;
+  inset: 38%;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #f0c25a;
+  font-size: 38px;
+  background: radial-gradient(circle at 30% 25%, #fff 12%, #f5f9fc 60%, #aebfcb);
+  box-shadow: 0 2px 5px #245e7f66;
+  border: 2px solid #d7e2e7;
+}
+.lucky-draw-result {
+  min-height: 42px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  text-align: center;
+  font-size: 14px;
+  margin-top: 15px;
+  color: #765a32;
+}
+.lucky-draw-result small {
+  display: block;
+  color: #6a775a;
+}
+.lucky-draw-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 10px;
+}
+.lucky-draw-auto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.lucky-draw-auto input {
+  accent-color: #5a8d80;
+  width: 20px;
+  height: 20px;
+}
+.lucky-draw-auto-hint {
+  display: block;
+  text-align: center;
+  color: #8b7c68;
+  font-size: 11px;
+  margin-top: 9px;
+}
+.lucky-draw-tabs {
+  display: flex;
+  gap: 5px;
+  border-bottom: 1px solid #dfccaa;
+  padding-bottom: 8px;
+}
+.game-ui .lucky-draw-tabs button {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #8d7858;
+  cursor: pointer;
+  font-weight: 700;
+}
+.game-ui .lucky-draw-tabs button[aria-selected="true"] {
+  background: #f1e6cc;
+  color: #674827;
+  box-shadow: inset 0 0 0 1px #d5bf90;
+}
+.lucky-draw-panel {
+  min-height: 330px;
+  text-align: center;
+  padding: 18px 8px;
+  font-size: 13px;
+  color: #7a674e;
+}
+.lucky-draw-panel .character-preview-frame {
+  width: 180px;
+  height: 180px;
+  margin: 9px auto;
+}
+.lucky-draw-panel h3 {
+  color: #65502e;
+  font-size: 20px;
+  margin: 10px 0;
+}
+.lucky-draw-panel p {
+  line-height: 1.6;
+}
+.lucky-draw-exclusive {
+  display: inline-block;
+  border-radius: 10px;
+  padding: 5px 10px;
+  background: #e9ddf8;
+  color: #805ca9;
+  font-weight: 700;
+  font-size: 11px;
+}
+.lucky-draw-rates,
+.lucky-draw-history {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  text-align: left;
+}
+.lucky-draw-rates li,
+.lucky-draw-history li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 3px;
+  border-bottom: 1px solid #e5d9c4;
+}
+.lucky-draw-rates strong {
+  color: #7a5698;
+}
+.lucky-draw-history time {
+  font-size: 11px;
+  color: #94876f;
+}
+.lucky-draw-wallet {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid #dcccaf;
+  padding-top: 4px;
+  margin-top: 0;
+}
+.lucky-draw-wallet > div {
+  flex: 1;
+}
+.lucky-draw-wallet small {
+  display: block;
+  margin-top: 4px;
+  color: #8b795b;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lucky-wheel-disc {
+    transition-duration: 0.25s;
+  }
+}
+@media (max-width: 640px) {
+  .lucky-draw-content {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 15px;
+  }
+  .lucky-draw-heading {
+    align-items: start;
+    font-size: 12px;
+  }
+  .lucky-wheel {
+    width: min(100%, 260px);
+  }
+  .lucky-wheel-prize small {
+    font-size: 10px;
+  }
+  .lucky-draw-panel {
+    min-height: 0;
+  }
+  .lucky-draw-panel .character-preview-frame {
+    width: 150px;
+    height: 150px;
+  }
+  .lucky-draw-wallet {
+    flex-wrap: wrap;
+  }
+  .lucky-draw-wallet > div {
+    flex-basis: 100%;
+  }
+  .lucky-draw-wallet .ui-button {
+    flex: 1;
+  }
+}
+
+.lucky-draw-dialog .ui-dialog-footer > .lucky-draw-wallet {
+  width: 100%;
+}

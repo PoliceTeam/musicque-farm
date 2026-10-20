@@ -29,6 +29,13 @@ import type { CharacterInventoryState } from './character-inventory.js';
 import { pruneReceipts } from './receipt-order.js';
 export type PlayerDocument = {
   version: 1;
+  luckyDraw?: {
+    tickets: number;
+    receipts: Record<
+      string,
+      { fingerprint: string; result?: import('@chibi-town/contracts/lucky-draw').LuckyDrawResult }
+    >;
+  };
   farmTheftHistory?: import('@chibi-town/contracts/farm-social').FarmTheftEntry[];
   petRacing?: {
     bet?: import('@chibi-town/contracts/pet-racing').RaceBet;

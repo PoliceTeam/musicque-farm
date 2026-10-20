@@ -16,7 +16,8 @@ type InventoryCommand = Extract<
       | 'move-character-item'
       | 'equip-character-item'
       | 'unequip-character-item'
-      | 'apply-cosmetic-color';
+      | 'apply-cosmetic-color'
+      | 'upgrade-character-item';
   }
 >;
 
@@ -27,6 +28,7 @@ const inventoryCommands = {
   'equip-character-item': true,
   'unequip-character-item': true,
   'apply-cosmetic-color': true,
+  'upgrade-character-item': true,
   plot: false,
   batch: false,
   expand: false,

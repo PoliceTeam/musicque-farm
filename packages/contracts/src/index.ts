@@ -142,6 +142,10 @@ export function decodeChannelDirectory(value: unknown): ChannelDirectory {
 }
 
 export interface GameSdk {
+  getLuckyDraw(): Promise<import('./lucky-draw.js').LuckyDrawSnapshot>;
+  executeLuckyDraw(
+    input: import('./lucky-draw.js').LuckyDrawCommand,
+  ): Promise<import('./lucky-draw.js').LuckyDrawSnapshot>;
   getFarmVisit(ownerId: string): Promise<import('./farm-social.js').FarmVisit>;
   stealFarmCrop(input: import('./farm-social.js').StealFarmCrop): Promise<import('./farm-social.js').FarmVisit>;
   getFarmTheftHistory(): Promise<import('./farm-social.js').FarmTheftEntry[]>;
@@ -255,6 +259,12 @@ export function validateCommand(command: Command) {
       break;
     case 'move-character-item':
       if (!['bag', 'warehouse'].includes(command.to)) throw new ApiSdkError('INVALID_COMMAND');
+      if (typeof command.instanceId !== 'string' || !command.instanceId || command.instanceId.length > 512)
+        throw new ApiSdkError('INVALID_COMMAND');
+      break;
+    case 'upgrade-character-item':
+      if (typeof command.targetId !== 'string' || !command.targetId || command.targetId.length > 256)
+        throw new ApiSdkError('INVALID_COMMAND');
       if (typeof command.instanceId !== 'string' || !command.instanceId || command.instanceId.length > 512)
         throw new ApiSdkError('INVALID_COMMAND');
       break;

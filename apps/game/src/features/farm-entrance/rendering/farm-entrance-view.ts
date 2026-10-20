@@ -12,6 +12,7 @@ import {
 } from '@/features/farm-entrance/_utils/entrance-layout';
 import { createEntranceTerrain } from '@/features/farm-entrance/rendering/entrance-terrain-view';
 import { drawAvatarLabel } from '@/game/rendering/avatar-label';
+import { createEntranceHint, drawEntranceHint } from '@/game/rendering/entrance-hint';
 
 const feature = (key: string) => `farm-entrance/${key}.webp`;
 
@@ -45,7 +46,7 @@ const SCENERY = [
 ];
 export const ENTRANCE_ASSETS = [
   ...SCENERY.map((key) => `scenery:${key}`),
-  ...['gate', 'shop', 'market', 'notice', 'chest', 'farm-sign', 'farmer', 'gardener', 'arrow'].map(feature),
+  ...['gate', 'shop', 'market', 'notice', 'chest', 'farm-sign', 'farmer', 'gardener'].map(feature),
 ];
 
 type Prop = {
@@ -60,6 +61,8 @@ type Prop = {
 
 /** Independent scenery pieces share a ground plane and retain their source aspect ratios. */
 export function createFarmEntranceView(assets: Map<string, HTMLCanvasElement>, name: string) {
+  const arrow = createEntranceHint('');
+
   const asset = (key: string) => assets.get(`scenery:${key}`)!;
 
   const ground = createEntranceTerrain(asset);
@@ -192,7 +195,7 @@ export function createFarmEntranceView(assets: Map<string, HTMLCanvasElement>, n
     for (const target of ENTRANCE_TARGETS) {
       if (!target.arrow) continue;
       const [x, y] = target.arrow;
-      view.surface('entrance-arrow', assets.get(feature('arrow'))!, x - 12, y - 10 + Math.sin(now / 330) * 1.5, 24, 23);
+      drawEntranceHint(view, '', arrow, x, y + 12, now);
     }
     drawAvatarLabel(view, name, hero, position.x, position.y, FARM_CHARACTER_SCALE, true);
     view.endFrame();

@@ -6,6 +6,7 @@ import { initialColor } from '../character/outfit-bindings.js';
 import type { PlayerDocument } from '../player-document.js';
 import { buyCosmetic } from '../shop/cosmetic-offers.js';
 import { ensureCharacterInventory } from './cosmetic-grants.js';
+import { upgradeCharacterItem } from './cosmetic-upgrades.js';
 import { bagSlot, definition, own } from './inventory-state.js';
 
 export function executeCharacterInventory(
@@ -33,6 +34,10 @@ export function executeCharacterInventory(
       next[field.key] = entry.colorValue;
     } else throw new ApiSdkError('INVALID_COMMAND');
     equipOwnedOutfit(document, next, now);
+    return;
+  }
+  if (command.type === 'upgrade-character-item') {
+    upgradeCharacterItem(document, command.instanceId, command.targetId, requestId, now);
     return;
   }
   if (!Object.hasOwn(state.instances, command.instanceId))

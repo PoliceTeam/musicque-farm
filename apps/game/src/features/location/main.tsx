@@ -20,6 +20,10 @@ const ShopDialog = lazy(() =>
   import('@/features/shop/_components/shop-dialog').then((module) => ({ default: module.ShopDialog })),
 );
 
+const LuckyDrawDialog = lazy(() =>
+  import('@/features/lucky-draw/_components/lucky-draw-dialog').then((module) => ({ default: module.LuckyDrawDialog })),
+);
+
 export const styles = locationCss;
 
 export function Screen({
@@ -256,7 +260,15 @@ export function Screen({
           onClose={() => setChannelDialog(false)}
         />
       )}
-      {attraction && attraction !== 'racing' && (
+      {attraction === 'prizes' && (
+        <Suspense fallback={null}>
+          <LuckyDrawDialog
+            onClose={() => setAttraction(undefined)}
+            onChanged={(data) => setHeader((value) => value && { ...value, coins: data.coins, gems: data.gems })}
+          />
+        </Suspense>
+      )}
+      {attraction && attraction !== 'racing' && attraction !== 'prizes' && (
         <Dialog title={t(`attractions.${attraction}`)} onClose={() => setAttraction(undefined)} closeLabel={t('close')}>
           <p>{t('entertainmentPreview')}</p>
         </Dialog>

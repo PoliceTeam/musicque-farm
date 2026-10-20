@@ -5,9 +5,10 @@ import { ApiSdkError } from '@chibi-town/contracts';
 import type { CharacterInventoryPage, CharacterInventoryQuery } from '@chibi-town/contracts/character-inventory';
 import type { CharacterCosmeticInstance } from '@chibi-town/game-content/cosmetic-economy';
 import { skinId } from '../character/outfit-bindings.js';
-import type { PlayerDocument } from '../player-document.js';
+import { type PlayerDocument, reservedArcadeCoins } from '../player-document.js';
 import { cosmeticOffer, cosmeticShop, isBaseCosmetic } from '../shop/cosmetic-offers.js';
 import { ensureCharacterInventory } from './cosmetic-grants.js';
+import { cosmeticUpgradeOffer } from './cosmetic-upgrades.js';
 import { own } from './inventory-state.js';
 
 export function characterInventoryPage(
@@ -50,10 +51,25 @@ export function characterInventoryPage(
     worn.add(item.cosmeticId);
     if (item.colorUnlockId) worn.add(item.colorUnlockId);
   }
+  if (query.view === 'upgrades') {
+    const highest = new Map<string, Readonly<CosmeticDefinition>>();
+    for (const entry of definitions) {
+      if (
+        !own(state, entry.id) ||
+        (entry.kind !== 'item' && entry.kind !== 'pet') ||
+        !cosmeticUpgradeOffer(state, entry)
+      )
+        continue;
+      const previous = highest.get(entry.groupId);
+      if (!previous || (entry.level ?? 1) > (('level' in previous ? previous.level : 1) ?? 1))
+        highest.set(entry.groupId, entry);
+    }
+    definitions = [...highest.values()];
+  }
   const visible = definitions.filter((entry) => {
     const item = instanceByCosmetic.get(entry.id as CharacterCosmeticInstance['cosmeticId']);
     if (
-      query.view === 'owned' || query.view === 'unequipped'
+      query.view === 'owned' || query.view === 'unequipped' || query.view === 'upgrades'
         ? !own(state, entry.id) || (query.view === 'unequipped' && worn.has(entry.id))
         : query.view !== 'shop' && item?.location.container !== query.view
     )
@@ -67,6 +83,7 @@ export function characterInventoryPage(
     const item = instanceByCosmetic.get(entry.id as CharacterCosmeticInstance['cosmeticId']);
     return {
       definition: entry,
+      ...(item && own(state, entry.id) ? { upgrade: cosmeticUpgradeOffer(state, entry) } : {}),
       owned: own(state, entry.id),
       canUnequip:
         item?.location.container === 'equipped' &&
@@ -93,6 +110,7 @@ export function characterInventoryPage(
     bagSlots: state.bagSlots,
     bagUsed: Object.values(state.instances).filter((item) => item.location.container === 'bag').length,
     coins: document.farm.coins,
+    availableCoins: Math.max(0, document.farm.coins - reservedArcadeCoins(document)),
     gems: document.farm.gems,
     outfit: structuredClone(document.outfit ?? defaultOutfit),
   };

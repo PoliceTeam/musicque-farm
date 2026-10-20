@@ -12,7 +12,7 @@ import type { RemotePlayer } from '@/features/location/_utils/remote-players-log
 import { createEntertainmentShadow } from '@/features/location/rendering/entertainment-ground';
 import { layoutPet } from '@/game/movement/pet-follow-logic';
 import { drawAvatarLabel } from '@/game/rendering/avatar-label';
-import { createEntranceHint } from '@/game/rendering/entrance-hint';
+import { createEntranceHint, drawEntranceHint } from '@/game/rendering/entrance-hint';
 
 export type LocationLabels = TFunction<'common'>;
 type Entry = {
@@ -222,35 +222,13 @@ export function createLocationView(
     if (map.presentation === 'street')
       for (const layer of layers)
         if (layer.entrance && (layer.destination || layer.shop || layer.id === 'racing'))
-          view.surface(
-            `location-entrance-hint:${enterText}`,
-            entranceHint,
-            layer.entrance[0] - 32,
-            layer.entrance[1] - 22 + Math.sin(now / 330) * 1.5,
-            64,
-            48,
-          );
+          drawEntranceHint(view, enterText, entranceHint, layer.entrance[0], layer.entrance[1] + 22, now);
     if (map.presentation === 'interior')
       for (const layer of layers)
         if (layer.shop && layer.shopInteraction)
-          view.surface(
-            `location-shop-hint:${enterText}`,
-            entranceHint,
-            layer.shopInteraction[0] - 32,
-            layer.shopInteraction[1] - 48 + Math.sin(now / 330) * 1.5,
-            64,
-            48,
-          );
+          drawEntranceHint(view, enterText, entranceHint, layer.shopInteraction[0], layer.shopInteraction[1], now);
     for (const portal of map.portals)
-      if (portal.entrance)
-        view.surface(
-          `location-exit-hint:${exitText}`,
-          exitHint,
-          portal.entrance[0] - 21,
-          portal.entrance[1] - 32 + Math.sin(now / 330) * 1.5,
-          42,
-          32,
-        );
+      if (portal.entrance) drawEntranceHint(view, exitText, exitHint, portal.entrance[0], portal.entrance[1], now);
     drawAvatarLabel(view, t('avatarName', player), hero, state.x, state.y, 1, true);
     for (const other of others.values())
       drawAvatarLabel(view, t('avatarName', other), other.avatar, other.x, other.y, 1);

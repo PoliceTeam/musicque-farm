@@ -334,3 +334,180 @@
     padding: 3px;
   }
 }
+
+.character-upgrade-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-right: 32px;
+}
+.character-upgrade-heading h3 {
+  margin: 0;
+  color: #73502e;
+}
+.character-upgrade-heading > strong {
+  color: #87683c;
+  font-size: 12px;
+}
+.character-upgrade-intro {
+  font-size: 13px;
+  color: #947e5d;
+  margin: 8px 0 10px;
+}
+.character-upgrade-empty {
+  padding: 36px 20px;
+  text-align: center;
+  color: #907c5d;
+  line-height: 1.7;
+}
+.character-upgrade-picker {
+  border: 0;
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 12px;
+}
+.game-ui .character-upgrade-picker > button {
+  flex: 0 0 112px;
+  border: 1px solid #d8c6a1;
+  border-radius: 12px;
+  padding: 8px;
+  background: #fff8e9;
+  cursor: pointer;
+  color: #816443;
+}
+.game-ui .character-upgrade-picker > button[aria-pressed="true"] {
+  border-color: #94aa77;
+  box-shadow: inset 0 0 0 2px #b1c28f;
+  background: #eef0d5;
+}
+.character-upgrade-picker .cosmetic-thumbnail {
+  width: 75px;
+  height: 44px;
+  display: block;
+  margin: auto;
+}
+.character-upgrade-picker span {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+.character-upgrade-comparison {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  margin: 7px 0 10px;
+}
+.character-upgrade-comparison > div {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 9px 6px;
+  border: 1px solid #e0d4b6;
+  border-radius: 14px;
+  background: #f6f0de;
+}
+.character-upgrade-comparison > div.is-next {
+  background: #f0f2dc;
+  border-color: #b9c394;
+}
+.character-upgrade-comparison small {
+  color: #a08761;
+  font-size: 11px;
+  font-weight: 700;
+}
+.character-upgrade-comparison strong {
+  font-size: 13px;
+  color: #735432;
+}
+.character-upgrade-comparison .character-preview-frame {
+  width: 125px;
+  height: 125px;
+}
+.character-upgrade-arrow {
+  font-size: 28px;
+  text-align: center;
+  color: #c3a56a;
+}
+.character-upgrade-summary {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+  color: #8a785b;
+  font-size: 12px;
+}
+.character-upgrade-summary p {
+  margin: 0;
+}
+.character-upgrade-guarantee {
+  padding: 5px 12px;
+  border-radius: 16px;
+  color: #547844;
+  background: #e5edcd;
+  font-weight: 800;
+}
+.character-upgrade-action .ui-button {
+  margin-top: 5px;
+  min-width: 220px;
+}
+.character-upgrade-notice {
+  color: #5e7c43;
+  padding: 10px 12px;
+  background: #edf0d8;
+  border-radius: 8px;
+  font-size: 12px;
+}
+@media (max-width: 560px) {
+  .game-ui .character-dialog > .ui-folder-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2px;
+  }
+  .game-ui .character-dialog > .ui-folder-tabs .ui-button {
+    min-width: 0;
+    min-height: 44px;
+    padding: 10px 4px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .character-upgrade-heading {
+    padding-top: 35px;
+  }
+  .character-upgrade-comparison {
+    gap: 4px;
+    grid-template-columns: minmax(0, 1fr) 22px minmax(0, 1fr);
+  }
+  .character-upgrade-comparison .character-preview-frame {
+    width: min(120px, 100%);
+    height: auto;
+    aspect-ratio: 1;
+  }
+  .character-upgrade-comparison strong {
+    font-size: 11px;
+  }
+  .character-upgrade-picker > button {
+    flex-basis: 96px;
+  }
+}
+
+.character-upgrade-action {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: 100%;
+  font-size: 12px;
+  color: #8a785b;
+}
+.game-ui .character-dialog .ui-dialog-footer:has(.character-upgrade-action) {
+  justify-content: center;
+  border-top: 1px solid #e0d4b6;
+  padding-top: 10px;
+}

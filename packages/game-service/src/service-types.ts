@@ -36,6 +36,7 @@ export type FarmCommand = Exclude<
       | 'move-character-item'
       | 'equip-character-item'
       | 'unequip-character-item'
-      | 'apply-cosmetic-color';
+      | 'apply-cosmetic-color'
+      | 'upgrade-character-item';
   }
 >;

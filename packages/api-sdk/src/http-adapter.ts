@@ -28,6 +28,7 @@ import {
   validateCharacterInventoryQuery,
 } from '@chibi-town/contracts/character-inventory';
 import { decodeFarmTheftHistory, decodeFarmVisit, validateStealFarmCrop } from '@chibi-town/contracts/farm-social';
+import { decodeLuckyDrawSnapshot, validateLuckyDrawCommand } from '@chibi-town/contracts/lucky-draw';
 import {
   decodeMiniLobby,
   decodeMiniResult,
@@ -108,6 +109,13 @@ export function createHttpSdk(options: {
   };
 
   return {
+    getLuckyDraw: async () => decodeLuckyDrawSnapshot(await request('/lucky-draw')),
+
+    executeLuckyDraw: async (input) => {
+      validateLuckyDrawCommand(input);
+      return decodeLuckyDrawSnapshot(await request('/lucky-draw', input));
+    },
+
     getFarmVisit: async (ownerId) => {
       if (!isPlayerId(ownerId)) throw new ApiSdkError('INVALID_COMMAND');
       return decodeFarmVisit(await request(`/farms/${encodeURIComponent(ownerId)}`));

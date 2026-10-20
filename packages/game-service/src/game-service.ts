@@ -10,6 +10,7 @@ import { createSettingsService } from './arcade/settings-service.js';
 import { createTienService } from './arcade/tien-service.js';
 import { characterInventoryPage } from './character-inventory.js';
 import { createFarmService } from './farm/farm-service.js';
+import { createLuckyDrawService } from './lucky-draw/lucky-draw-service.js';
 import { createPlayerService } from './player/player-service.js';
 import type { GameService, GameServiceOptions } from './service-types.js';
 import { createWorldService } from './world/world-service.js';
@@ -21,6 +22,7 @@ export function createGameService(options: GameServiceOptions): GameService {
   const practice = createPracticeContext(options);
   return {
     ...createPlayerService(options),
+    ...createLuckyDrawService(options),
     ...createPetRacingService(options),
     ...createWorldService(options),
     ...createFarmService(options),
