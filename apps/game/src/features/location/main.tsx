@@ -6,6 +6,7 @@ import { Button, Dialog } from '@chibi-town/ui/react';
 import { useRouter } from 'next/navigation';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LoadingOverlay } from '@/application/_components/loading-overlay';
 import { LocationLayout, type LocationPlayer } from '@/application/_components/location-layout';
 import { getApiSdk } from '@/application/api-sdk';
 import { locationCss } from '@/assets/generated-styles';
@@ -90,6 +91,7 @@ export function Screen({
     };
   }, [definition]);
   const [error, setError] = useState('');
+  const [ready, setReady] = useState(false);
   const [header, setHeader] = useState<{ player: LocationPlayer; coins: number; gems: number }>();
   useEffect(() => {
     channelRef.current = undefined;
@@ -109,6 +111,7 @@ export function Screen({
   }, [definition, updateChannels]);
   useEffect(() => {
     if (!definition) return;
+    setReady(false);
     return createLocationGame({
       parent: host.current!,
       map: definition,
@@ -118,6 +121,8 @@ export function Screen({
       channel: () => channelRef.current,
 
       onHeader: setHeader,
+
+      onReady: () => setReady(true),
 
       onPlayer: (id, point) => {
         if (!point) return;
@@ -239,6 +244,7 @@ export function Screen({
               })}
             </Button>
           ))}
+        {!ready && !error && <LoadingOverlay label={t('loadingLocation')} />}
         {error && <p role="alert">{error}</p>}
       </nav>
       {definition?.layers?.some((layer) => layer.shop) && (

@@ -3,6 +3,7 @@ import { Button, Dialog } from '@chibi-town/ui/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LoadingOverlay } from '@/application/_components/loading-overlay';
 import { LocationLayout, type LocationPlayer } from '@/application/_components/location-layout';
 import { getApiSdk } from '@/application/api-sdk';
 import { farmEntranceCss } from '@/assets/generated-styles';
@@ -20,6 +21,7 @@ export function Screen({ audio }: { audio: ReturnType<typeof createGameAudio> })
   const portals = useRef<HTMLElement>(null);
   const [header, setHeader] = useState<{ player: LocationPlayer; coins: number; gems: number; farmLevel: number }>();
   const [dialog, setDialog] = useState<'menu' | 'friends' | 'history' | 'shop'>();
+  const [ready, setReady] = useState(false);
   const [failure, setFailure] = useState(false);
   const [attempt, setAttempt] = useState(0);
   // biome-ignore lint/correctness/useExhaustiveDependencies: Changing attempt explicitly retries a failed load.
@@ -27,6 +29,7 @@ export function Screen({ audio }: { audio: ReturnType<typeof createGameAudio> })
     let disposed = false;
     let cleanup: (() => void) | undefined;
     setFailure(false);
+    setReady(false);
 
     const action = (next: EntranceAction) => {
       audio.play('select');
@@ -49,10 +52,14 @@ export function Screen({ audio }: { audio: ReturnType<typeof createGameAudio> })
           player.outfit,
           common('avatarName', { level: player.level, name: player.name }),
           action,
+          { enter: common('enterLocation'), exit: common('exitLocation') },
           portals.current,
         );
         if (disposed) destroy();
-        else cleanup = destroy;
+        else {
+          cleanup = destroy;
+          setReady(true);
+        }
       })
       .catch(() => {
         if (!disposed) setFailure(true);
@@ -87,6 +94,7 @@ export function Screen({ audio }: { audio: ReturnType<typeof createGameAudio> })
         </Button>
       }
     >
+      {!ready && !failure && <LoadingOverlay label={common('loadingLocation')} />}
       <div className="farm-entrance-viewport">
         <div className="farm-entrance-scene">
           <div className="farm-entrance-canvas" ref={host} />

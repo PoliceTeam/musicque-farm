@@ -63,8 +63,13 @@ type Prop = {
 };
 
 /** Independent scenery pieces share a ground plane and retain their source aspect ratios. */
-export function createFarmEntranceView(assets: Map<string, HTMLCanvasElement>, name: string) {
-  const arrow = createEntranceHint('');
+export function createFarmEntranceView(
+  assets: Map<string, HTMLCanvasElement>,
+  name: string,
+  labels: { enter: string; exit: string },
+) {
+  const enter = createEntranceHint(labels.enter);
+  const exit = createEntranceHint(labels.exit);
 
   const asset = (key: string) => assets.get(`scenery:${key}`)!;
 
@@ -187,7 +192,8 @@ export function createFarmEntranceView(assets: Map<string, HTMLCanvasElement>, n
     for (const target of ENTRANCE_TARGETS) {
       if (!target.arrow) continue;
       const [x, y] = target.arrow;
-      drawEntranceHint(view, '', arrow, x, y + 12, now);
+      const isExit = target.action === 'exit';
+      drawEntranceHint(view, isExit ? labels.exit : labels.enter, isExit ? exit : enter, x, y + 12, now);
     }
     drawAvatarLabel(view, name, hero, position.x, position.y, FARM_CHARACTER_SCALE, true);
     view.endFrame();

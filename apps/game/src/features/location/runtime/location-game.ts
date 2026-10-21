@@ -46,10 +46,12 @@ export function createLocationGame(options: {
   onAttraction(id: Attraction): void;
   onShop?(shop: NonNullable<MapLayer['shop']>): void;
   navigate(path: string): void;
+  onReady?(): void;
   onError(): void;
 }) {
   const map = options.map;
   let disposed = false;
+  let ready = false;
   let renderer: CharacterRenderer | undefined;
   let release: (() => void) | undefined;
   let leaveRoom: (() => void) | undefined;
@@ -204,6 +206,10 @@ export function createLocationGame(options: {
       },
 
       onFrame(view, now, delta, input) {
+        if (!ready) {
+          ready = true;
+          options.onReady?.();
+        }
         const selectedId = options.selectedPlayer?.();
         if (selectedId) {
           const selected = others.players.get(selectedId);

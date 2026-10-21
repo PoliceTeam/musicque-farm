@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { type ComponentType, useEffect, useRef, useState } from 'react';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { AppImage } from '@/application/_components/app-image';
+import { LoadingOverlay } from '@/application/_components/loading-overlay';
 import { locationMusic } from '@/application/_utils/location-music';
 import { publicPath, routePath } from '@/application/_utils/public-path';
 import { getApiSdk } from '@/application/api-sdk';
@@ -266,6 +267,7 @@ function GameApplicationContent() {
   }, [audio, screen]);
   const [chatHost, setChatHost] = useState<HTMLDivElement | null>(null);
   const Screen = screen?.module.Screen;
+  const changingScreen = !!screen && screen.path !== `${pathname}?${search}`;
   const chatArea = screen ? chatAreaForScreen(screen.path, screen.definition) : undefined;
   const authClient = getAuthClient();
   const entry = pathname === '/' && !!authClient && auth.status !== 'signed-in';
@@ -345,7 +347,10 @@ function GameApplicationContent() {
               }
             />
           ) : (
-            <p role="status">{auth.status === 'checking' ? t('checking', { ns: 'auth' }) : t('loadingLocation')}</p>
+            <LoadingOverlay label={auth.status === 'checking' ? t('checking', { ns: 'auth' }) : t('loadingLocation')} />
+          )}
+          {Screen && audio && (auth.status === 'checking' || changingScreen) && !error && (
+            <LoadingOverlay label={auth.status === 'checking' ? t('checking', { ns: 'auth' }) : t('loadingLocation')} />
           )}
           {chatArea &&
             Screen &&

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { type ReactNode, Suspense } from 'react';
+import { LoadingOverlay } from '@/application/_components/loading-overlay';
 import { publicPath } from '@/application/_utils/public-path';
 import { GameApplication } from '@/application/game-application';
 import vi from '@/application/i18n/locales/vi/common';
@@ -42,7 +43,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="vi">
       <body style={{ margin: 0 }}>
-        <Suspense fallback={<p role="status">{vi.loadingGame}</p>}>
+        <Suspense fallback={<LoadingOverlay label={vi.loadingGame} />}>
           <GameApplication />
         </Suspense>
         {children}

@@ -19,7 +19,7 @@ import { createFarmCropFrames, createFarmPlantFrame } from '@/features/farm/rend
 import { createFarmPondMotion } from '@/features/farm/rendering/farm-pond-view';
 import { farmSceneAssetLoader, loadFarmSceneAssets } from '@/features/farm/rendering/farm-scene-assets';
 import { createFarmTerrain } from '@/features/farm/rendering/farm-terrain-view';
-import { createEntranceHint } from '@/game/rendering/entrance-hint';
+import { createEntranceHint, entranceHintPlacement } from '@/game/rendering/entrance-hint';
 
 function canvas(w: number, h: number) {
   const c = document.createElement('canvas');
@@ -40,7 +40,7 @@ export async function farmStyleScenery(
   const { ground, random } = createFarmTerrain(asset, FARM_LAWNS);
   const surfaces = [{ key: 'farm-v11-ground', source: ground, x: 0, y: 0, width: 1280, height: 720, depth: -1 }];
   let generation = '';
-  const entranceMarkers: { surface: (typeof surfaces)[number]; y: number; phase: number }[] = [];
+  const entranceMarkers: { surface: (typeof surfaces)[number]; phase: number; point: number }[] = [];
 
   function put(key: string, source: HTMLCanvasElement, x: number, y: number, w: number, h: number, depth = y + h) {
     surfaces.push({ key: `v5-${generation}-${key}`, source, x, y, width: w, height: h, depth });
@@ -129,16 +129,18 @@ export async function farmStyleScenery(
       const f = features.find((f) => f.id === id);
       const x = f ? f.stand[0] : FARM_EXIT.hint[0],
         y = f ? f.area.y1 - 7 : FARM_EXIT.hint[1];
+      const point = id === 'exit' ? y : y + 32;
+      const at = entranceHintPlacement(x, point, 0);
       put(
-        `${id}-entrance-v17`,
+        `${id}-entrance-v18`,
         createEntranceHint(id === 'exit' ? labels.exit : labels.enter),
-        x - 32,
-        y - 12,
-        64,
-        48,
+        at.x,
+        at.y,
+        at.width,
+        at.height,
         1000,
       );
-      entranceMarkers.push({ surface: surfaces.at(-1)!, y: y - 12, phase });
+      entranceMarkers.push({ surface: surfaces.at(-1)!, phase, point });
     }
     object('store-supplies', 'hay', 499, 271, 35);
     for (let i = 0; i < 5; i++) object(`building-flower-${i}`, 'decor-flowers-mixed', 367 + i * 40, 285, 27);
@@ -421,7 +423,8 @@ export async function farmStyleScenery(
       refreshHerds();
       herdSignature = herd;
     }
-    for (const marker of entranceMarkers) marker.surface.y = marker.y + Math.sin(now / 330 + marker.phase * 0.6) * 1.5;
+    for (const marker of entranceMarkers)
+      marker.surface.y = entranceHintPlacement(0, marker.point, now, marker.phase * 0.6).y;
     if (feedEntry) {
       const amount = Math.ceil(farmFoodPercent(progress, 'livestock', now) / 50);
       feedEntry.source = feedFrames[amount];

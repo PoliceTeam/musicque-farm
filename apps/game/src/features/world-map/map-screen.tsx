@@ -56,6 +56,7 @@ import { Button } from '@chibi-town/ui/react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LoadingOverlay } from '@/application/_components/loading-overlay';
 import { getApiSdk } from '@/application/api-sdk';
 import { createGameUi } from '@/application/game-ui-handler';
 import { AudioSettings } from '@/features/settings/_components/audio-settings';
@@ -82,6 +83,7 @@ export function MapScreen({
   const [selected, setSelected] = useState<WorldZone>();
   const [available, setAvailable] = useState<Record<string, MapDefinition[]>>({});
   const [error, setError] = useState('');
+  const [ready, setReady] = useState(false);
   useEffect(() => {
     let disposed = false;
     document.body.classList.add('world-map-page');
@@ -159,7 +161,10 @@ export function MapScreen({
     })
       .then((next) => {
         if (disposed) next.destroy();
-        else view = next;
+        else {
+          view = next;
+          setReady(true);
+        }
       })
       .catch(() => {
         if (!disposed) setError(t('mapLoadFailed'));
@@ -218,6 +223,7 @@ export function MapScreen({
     return <div id="map" ref={host} aria-hidden="true" style={{ ...backdrop, pointerEvents: 'none' }} />;
   return (
     <>
+      {!ready && !error && <LoadingOverlay label={t('loadingLocation')} />}
       <div id="map" ref={host} style={backdrop} />
       <main className="world-shell">
         <div className="time-tools">

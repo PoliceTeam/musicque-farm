@@ -16,6 +16,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from 'zustand';
+import { LoadingOverlay } from '@/application/_components/loading-overlay';
 import { LocationLayout } from '@/application/_components/location-layout';
 import { getApiSdk, getDevelopmentTimeScale } from '@/application/api-sdk';
 import { createGameUi } from '@/application/game-ui-handler';
@@ -83,6 +84,7 @@ export function FarmScreen({
   const player = useStore(model.store, (state) => state.player);
   const pending = useStore(model.store, (state) => state.pending);
   const [cropId, setCropId] = useState<CropId>('tomato');
+  const [ready, setReady] = useState(false);
   const [failure, setFailure] = useState('');
   const [selection, setSelection] = useState<Selection>();
   const [shopUnit, setShopUnit] = useState<FarmUnit>('livestock');
@@ -197,8 +199,10 @@ export function FarmScreen({
         model.store.getState().player,
       )
         .then((next) => {
-          if (alive.current && current === generation.current) game.current = next;
-          else next.destroy();
+          if (alive.current && current === generation.current) {
+            game.current = next;
+            setReady(true);
+          } else next.destroy();
         })
         .catch(() => {
           if (alive.current) setFailure(t('artLoadFailed'));
@@ -327,6 +331,7 @@ export function FarmScreen({
           <Button onClick={() => navigation.push('/farm')}>{t('returnEntrance')}</Button>
         </div>
       )}
+      {!ready && !failure && <LoadingOverlay label={common('loadingLocation')} />}
       {failure && (
         <div className="ui-runtime-error" role="alert">
           {failure}

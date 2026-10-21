@@ -18,6 +18,7 @@ export async function createFarmEntranceGame(
   outfit: Outfit,
   name: string,
   onAction: (action: EntranceAction) => void,
+  labels: { enter: string; exit: string },
   portals?: HTMLElement | null,
 ) {
   const [providers, resources] = await Promise.all([
@@ -26,7 +27,7 @@ export async function createFarmEntranceGame(
   ]);
   const hero = new AvatarState(toEquip(outfit));
   const state: EntranceWalk = { x: 640, y: 594 };
-  const draw = createFarmEntranceView(resources.assets, name);
+  const draw = createFarmEntranceView(resources.assets, name, labels);
   let overlayTransform = ';';
   try {
     const renderer = providers.create('phaser', {

@@ -1,0 +1,99 @@
+.game-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgb(5 8 12 / 58%);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  color: #e6edf4;
+  font-family: "Trebuchet MS", sans-serif;
+  text-align: center;
+}
+.game-loading-logo {
+  display: block;
+  width: min(300px, 68vw);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 26px #149de52b);
+  animation: game-loading-breathe 2s ease-in-out infinite;
+}
+.game-loading-overlay p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #aebfce;
+}
+.game-loading-dots {
+  display: flex;
+  gap: 8px;
+}
+.game-loading-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffd65b;
+  animation: game-loading-dot 1.2s ease-in-out infinite;
+}
+.game-loading-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.game-loading-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes game-loading-breathe {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes game-loading-dot {
+  50% {
+    opacity: 0.3;
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-loading-logo,
+  .game-loading-dots i {
+    animation: none;
+  }
+}
+
+.game-loading-mascot {
+  position: relative;
+  width: 160px;
+  height: 108px;
+  display: grid;
+  place-items: center;
+}
+.game-loading-mascot img {
+  display: block;
+  width: 102px;
+  height: 102px;
+  image-rendering: pixelated;
+}
+.game-loading-track {
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, transparent 0 10px, #ffcf5b80 10px 28px);
+  animation: game-loading-road 0.5s linear infinite;
+}
+@keyframes game-loading-road {
+  to {
+    background-position-x: -28px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-loading-track {
+    animation: none;
+  }
+}
