@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 SERVER="${SERVER:-ptdevs@167.86.125.164}"
 SSH_KEY="${SSH_KEY-$HOME/.ssh/police}"
 REMOTE_DIR="${REMOTE_DIR:-/home/ptdevs/internal/chibi-town}"
-ENV_FILE="${ENV_FILE:-deploy/.env.police.prod}"
+ENV_FILE="${ENV_FILE:-deploy/.env.prod}"
 PROJECT_NAME="${PROJECT_NAME:-chibi-town-prod}"
 BUILD_ONLY=false
 BUILD_WEB=false

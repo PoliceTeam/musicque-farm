@@ -22,7 +22,18 @@
     "sso:up": "pnpm --filter @chibi-town/sso sso:up",
     "sso:configure": "pnpm --filter @chibi-town/sso sso:configure",
     "sso:sync": "pnpm --filter @chibi-town/sso sso:sync",
-    "sso:down": "pnpm --filter @chibi-town/sso sso:down"
+    "sso:sync:prod": "bash apps/sso/deploy.prod.sh --sync-only",
+    "sso:down": "pnpm --filter @chibi-town/sso sso:down",
+    "deploy": "bash scripts/deploy.prod.sh",
+    "deploy:web": "bash scripts/deploy.prod.sh --web-only",
+    "deploy:api": "bash scripts/deploy.prod.sh --api-only",
+    "deploy:build": "bash scripts/deploy.prod.sh --build-only",
+    "deploy:rollback": "bash scripts/rollback.prod.sh",
+    "deploy:status": "bash scripts/remote.prod.sh status",
+    "deploy:logs": "bash scripts/remote.prod.sh logs",
+    "sso:deploy": "bash apps/sso/deploy.prod.sh",
+    "sso:admin": "bash scripts/remote.prod.sh sso-admin",
+    "env:check": "node scripts/env-check.mjs"
   },
   "devDependencies": {
     "turbo": "2.11.7",

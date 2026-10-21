@@ -15,7 +15,7 @@ async function mockCommands(t) {
   const directory = await mkdtemp(path.join(tmpdir(), 'farm-deploy-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const log = path.join(directory, 'calls.jsonl');
-  const docker = `#!${process.execPath}
+  const docker = `#!${process.execPath} --
 const fs = require('node:fs');
 const args = process.argv.slice(2);
 fs.appendFileSync(process.env.DEPLOY_TEST_LOG, JSON.stringify(['docker', ...args]) + '\\n');
@@ -85,3 +85,58 @@ test('Farm tags only the repository being built, including partial deployments',
   assert.ok(!webBlock.includes('"chibi-town-api:rollback-$STAMP"'));
   assert.ok(source.includes('for file in $4; do\n  image=${file%.tar.gz}'));
 });
+
+test('env check detects missing, empty and quoted whitespace without printing secrets', async (t) => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'farm-env-check-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const target = path.join(directory, '.env.prod');
+  await writeFile(`${target}.example`, '# REQUIRED: FIRST\nFIRST=\n# REQUIRED: SECOND\nSECOND=\nOPTIONAL=\n');
+  await writeFile(target, 'FIRST=do-not-print-this\nSECOND="   "\n');
+  const run = () => spawnSync(process.execPath, ['scripts/env-check.mjs', path.relative(root, target)], { cwd: root, encoding: 'utf8' });
+  const failed = run();
+  assert.equal(failed.status, 1);
+  assert.match(failed.stderr, /SECOND/);
+  assert.ok(!failed.stderr.includes('do-not-print-this'));
+  await writeFile(target, 'FIRST=do-not-print-this\nSECOND=present\n');
+  assert.equal(run().status, 0);
+  await rm(target);
+  assert.equal(run().status, 1);
+});
+
+for (const missing of [false, true]) {
+  test(`rollback validates both images before retag and starts worker after wait (missing=${missing})`, async (t) => {
+    const directory = await mkdtemp(path.join(tmpdir(), 'farm-rollback-'));
+    t.after(() => rm(directory, { recursive: true, force: true }));
+    const log = path.join(directory, 'calls.jsonl');
+    await writeFile(path.join(directory, 'ssh'), '#!/bin/bash\nexec bash -s -- "$ROLLBACK_TEST_DIR" chibi-town-prod\n', { mode: 0o755 });
+    await writeFile(path.join(directory, 'docker'), `#!${process.execPath} --
+const fs = require('node:fs');
+const a = process.argv.slice(2);
+fs.appendFileSync(process.env.DEPLOY_TEST_LOG, JSON.stringify(a) + '\\n');
+if (a.includes('--environment')) console.log('SSO_NETWORK=musicque_music-order-network');
+if (a[0] === 'image' && a[1] === 'ls' && !(process.env.MISSING_ROLLBACK === 'true' && a.at(-1) === 'chibi-town-web')) console.log(a.at(-1) + ':rollback-20261021000000');
+if (a.includes('ps')) console.log('worker-id');
+if (a[0] === 'inspect') console.log('true');
+`, { mode: 0o755 });
+    const result = spawnSync('bash', ['scripts/rollback.prod.sh'], {
+      cwd: root,
+      env: { ...process.env, PATH: `${directory}:${process.env.PATH}`, ROLLBACK_TEST_DIR: directory, DEPLOY_TEST_LOG: log, MISSING_ROLLBACK: String(missing) },
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, missing ? 1 : 0, result.stderr + result.stdout);
+    const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
+    const tags = calls.filter(call => call[0] === 'tag');
+    if (missing) {
+      assert.equal(result.status, 1, result.stderr);
+      assert.equal(tags.length, 0);
+    } else {
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(tags.length, 2);
+      const up = calls.filter(call => call.includes('up'));
+      assert.ok(up[0].includes('--no-build') && up[0].includes('--wait'));
+      assert.deepEqual(up[0].slice(-2), ['api', 'web']);
+      assert.equal(up[1].at(-1), 'worker');
+    }
+    assert.ok(calls.every(call => !call.includes('prune')));
+  });
+}

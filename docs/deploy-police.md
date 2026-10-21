@@ -1,5 +1,45 @@
 # Triển khai musicque.politetech.com
 
+## Deploy bằng tay từ máy local
+
+Luôn dùng **`pnpm run deploy`**: `pnpm deploy` là lệnh built-in của pnpm.
+Cần Node 24+, pnpm, Docker Desktop/build linux/amd64, SSH và Python 3 trên server.
+Tất cả lệnh dưới đây chạy từ root Farm và chỉ kết nối production khi người vận hành gọi.
+
+| Lệnh | Mục đích |
+| --- | --- |
+| `pnpm run env:check` | Kiểm hai env, chỉ báo tên biến thiếu/rỗng |
+| `pnpm run deploy:build` | Chỉ build local, không SSH |
+| `pnpm run deploy` | Build và deploy API + worker + web |
+| `pnpm run deploy:web` / `pnpm run deploy:api` | Deploy riêng web / API + worker |
+| `pnpm run deploy:status` | Container, latest/rollback và HTTP công khai |
+| `pnpm run deploy:logs -- api` | 100 dòng log; service api (mặc định), web, worker |
+| `pnpm run deploy:rollback` | Retag rollback mới nhất từng image, chờ API/web healthy rồi worker; không prune |
+| `pnpm run sso:deploy` | Deploy Keycloak, chưa sync realm |
+| `pnpm run sso:sync:prod` | Sync realm production qua tunnel |
+| `pnpm run sso:admin` | Tunnel tới admin, giữ đến Ctrl+C |
+
+Thứ tự: tạo/kiểm env → `env:check` → nếu có thay đổi SSO: `sso:deploy`, `sso:sync:prod`
+→ `deploy` → `deploy:status`; kiểm đăng nhập và chuyển tài khoản Farm/Musicque.
+Nếu lỗi image: `deploy:logs`, `deploy:rollback`, rồi `deploy:status`.
+Rollback chọn riêng bản mới nhất của mỗi image, phù hợp deploy từng phần; không rollback DB/env/realm.
+
+Env local: `deploy/.env.prod`, `apps/sso/.env.prod`, tạo từ các file `.example`, quyền 600,
+điền secret bằng editor; nhãn `# REQUIRED: TEN_BIEN` xác định biến bắt buộc cho police có SSO.
+Không commit env. Client secret phải khớp Keycloak; token key mỗi backend riêng.
+`SSO_ADMIN_HOSTNAME=http://localhost:18180/sso` được Keycloak quảng bá;
+vào `http://localhost:18180/sso/admin/` qua tunnel, lấy mật khẩu từ `apps/sso/.env.prod`.
+Nếu đổi `TUNNEL_PORT`, cập nhật `SSO_ADMIN_HOSTNAME` tương ứng rồi deploy SSO.
+
+Override qua môi trường: `SERVER` (ptdevs@167.86.125.164), `SSH_KEY` (~/.ssh/police;
+rỗng để dùng agent), `REMOTE_DIR` (Farm /home/ptdevs/internal/chibi-town;
+SSO /home/ptdevs/internal/chibi-sso), `PROJECT_NAME`, `ENV_FILE` cho từng deploy.
+Không export chung `REMOTE_DIR`/`PROJECT_NAME` giữa Farm và SSO.
+`deploy:status` lọc container police `chibi-town-prod-*`.
+Deploy thành công tự prune image của project, giữ latest + một rollback mới nhất
+(và image còn container tham chiếu); giữ volume và cache build dùng chung.
+
+
 Trạng thái triển khai thực tế xem [deploy-police-status.md](deploy-police-status.md).
 Các lệnh dưới đây là runbook cho người vận hành; giữ backup trước mỗi lần thay đổi.
 Không cần Node trên Ubuntu. Giữ nginx/cert hiện có, Musicque `/api/`, `/socket.io`, `/` vẫn đi client 3800.
