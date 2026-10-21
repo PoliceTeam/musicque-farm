@@ -8,6 +8,7 @@ RUN mvn -B -q package
 
 # Optional import tools: build --target tools, context apps/sso; no source DB secrets baked in.
 FROM node:22-alpine AS tools
+LABEL com.musicque.project=sso
 WORKDIR /tools
 RUN corepack enable && corepack prepare pnpm@11.22.0 --activate
 COPY package.json ./
@@ -17,5 +18,6 @@ USER node
 ENTRYPOINT ["node", "import-legacy-users.mjs"]
 
 FROM quay.io/keycloak/keycloak:26.8.1
+LABEL com.musicque.project=sso
 COPY --from=providers /build/target/legacy-password-1.0.0.jar /opt/keycloak/providers/
 COPY themes /opt/keycloak/themes

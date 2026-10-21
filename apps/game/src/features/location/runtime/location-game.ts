@@ -7,6 +7,7 @@ import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-ty
 import { blocksGameInput } from '@chibi-town/ui';
 import type { LocationPlayer } from '@/application/_components/location-layout';
 import { getApiSdk, getRealtime } from '@/application/api-sdk';
+import { type ChatBubbles, expireBubbles, queueBubble } from '@/features/chat/_utils/chat-bubbles';
 import {
   type Attraction,
   createLocationInputState,
@@ -101,17 +102,36 @@ export function createLocationGame(options: {
     /** Maps with channels are shared: show the other players of this channel and report our own position. */
     const realtime = map.channels ? getRealtime() : undefined;
     const others = createRemotePlayers(player.id);
+    const bubbles: ChatBubbles = new Map();
+    let bubbleChannel: number | undefined;
     let enteredChannel: number | undefined;
     const reported = { x: state.x, y: state.y, at: 0 };
     if (realtime) {
-      const unsubscribe = realtime.subscribe(others.apply);
+      const unsubscribe = realtime.subscribe((event) => {
+        others.apply(event);
+        if (event.type === 'disconnected' || event.type === 'reconnected') {
+          bubbles.clear();
+          bubbleChannel = undefined;
+        }
+        if (event.type === 'map.state' && event.mapId === map.id) {
+          if (bubbleChannel !== event.channelId) bubbles.clear();
+          bubbleChannel = event.channelId;
+        }
+        if (
+          event.type === 'chat.message' &&
+          event.scope.regionId === map.regionId &&
+          event.scope.mapId === map.id &&
+          event.scope.channelId === bubbleChannel
+        )
+          queueBubble(bubbles, event.message, Date.now());
+      });
       realtime.send({ type: 'map.enter', regionId: map.regionId, mapId: map.id, x: state.x, y: state.y });
       leaveRoom = () => {
         unsubscribe();
         realtime.send({ type: 'map.leave' });
       };
     }
-    const draw = createLocationView(map, resource.assets, state, hero, player, others.players, options.labels);
+    const draw = createLocationView(map, resource.assets, state, hero, player, others.players, options.labels, bubbles);
     renderer = providers.create('phaser', {
       parent: options.parent,
       width: map.width,
@@ -228,6 +248,7 @@ export function createLocationGame(options: {
             reported.at = now;
           }
         }
+        expireBubbles(bubbles, Date.now());
         draw(view, now);
       },
     });

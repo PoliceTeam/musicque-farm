@@ -15,7 +15,7 @@ export class CharacterView {
   private readonly surfaces = new Map<string, string>();
   private readonly labelStyles = new Map<
     Phaser.GameObjects.Text,
-    { text: string; color: string; fontSize: number; border?: string }
+    { text: string; color: string; fontSize: number; border?: string; bubble?: boolean }
   >();
   private labelScale: number | undefined;
   private labelCount = 0;
@@ -108,6 +108,7 @@ export class CharacterView {
     border?: string,
     fontSize: number = MAP_LABEL_STYLE.fontSize,
     prefix?: { text: string; color: string },
+    bubble = false,
   ) {
     let label = this.labels[this.labelCount];
     if (!label) {
@@ -128,6 +129,11 @@ export class CharacterView {
     // TextStyle.setColor/setShadow rebuild and upload the canvas even if values are unchanged.
     // Only transforms belong on the frame path; cache style per pooled Text object.
     const previous = this.labelStyles.get(label);
+    if (bubble !== (previous?.bubble ?? false))
+      label
+        .setBackgroundColor(bubble ? '#263b30' : '')
+        .setPadding(bubble ? 6 : 2, bubble ? 4 : 2, bubble ? 6 : 2, bubble ? 4 : 2)
+        .setAlign(bubble ? 'center' : 'left');
     if (!previous || previous.text !== text) label.setText(text);
     if (!previous || previous.fontSize !== fontSize) label.setFontSize(fontSize);
     if (!previous || previous.color !== color) label.setColor(color);
@@ -138,9 +144,10 @@ export class CharacterView {
       previous.text !== text ||
       previous.fontSize !== fontSize ||
       previous.color !== color ||
-      previous.border !== border
+      previous.border !== border ||
+      previous.bubble !== bubble
     )
-      this.labelStyles.set(label, { text, color, fontSize, border });
+      this.labelStyles.set(label, { text, color, fontSize, border, bubble });
     if (this.labelScale === undefined) {
       const cssWidth = this.scene.game.canvas.getBoundingClientRect().width;
       this.labelScale = cssWidth > 0 ? this.scene.scale.width / cssWidth / this.scene.cameras.main.zoom : 0.5;
@@ -158,6 +165,12 @@ export class CharacterView {
       label.setX(x + ((indicator.width + gap) * this.labelScale!) / 2);
       indicator.setX(x - ((label.width + gap) * this.labelScale!) / 2);
     }
+  }
+
+  speechBubble(text: string, x: number, labelY: number) {
+    this.label(text, Math.round(x), labelY, '#ffffff', undefined, MAP_LABEL_STYLE.fontSize, undefined, true);
+    const label = this.labels[this.labelCount - 1];
+    label.setY(labelY - 24 * this.labelScale!);
   }
 
   particles(key: string, effect: ParticleEffect) {

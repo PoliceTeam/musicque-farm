@@ -33,7 +33,7 @@ if [[ "$SYNC_ONLY" == false ]]; then
   docker save musicque-sso-keycloak:26.8.1 musicque-sso-tools:latest | gzip > musicque-sso.tar.gz
   if [[ "$BUILD_ONLY" == true ]]; then echo 'Built musicque-sso.tar.gz'; exit 0; fi
   ssh "${SSH_OPTS[@]}" "$SERVER" "umask 077; mkdir -p '$REMOTE_DIR/realm'; touch '$REMOTE_DIR/.env.prod.upload'; chmod 600 '$REMOTE_DIR/.env.prod.upload'"
-  scp "${SSH_OPTS[@]}" musicque-sso.tar.gz apps/sso/compose.yaml apps/sso/compose.prod.yaml "$SERVER:$REMOTE_DIR/"
+  scp "${SSH_OPTS[@]}" musicque-sso.tar.gz apps/sso/compose.yaml apps/sso/compose.prod.yaml apps/sso/prune-images.sh "$SERVER:$REMOTE_DIR/"
   scp "${SSH_OPTS[@]}" apps/sso/realm/sso-realm.json "$SERVER:$REMOTE_DIR/realm/"
   scp "${SSH_OPTS[@]}" "$ENV_FILE" "$SERVER:$REMOTE_DIR/.env.prod.upload"
   ssh "${SSH_OPTS[@]}" "$SERVER" bash -s -- "$REMOTE_DIR" "$PROJECT_NAME" "$STAMP" <<'REMOTE'
@@ -50,8 +50,10 @@ docker load < musicque-sso.tar.gz
 rm -f musicque-sso.tar.gz
 docker compose --env-file .env.prod -f compose.yaml -f compose.prod.yaml -p "$2" up -d --no-build --wait
 docker compose --env-file .env.prod -f compose.yaml -f compose.prod.yaml -p "$2" ps
+bash prune-images.sh
 REMOTE
   rm -f musicque-sso.tar.gz
+  bash apps/sso/prune-images.sh
 fi
 if [[ "$SYNC" == true ]]; then
   TUNNEL_DIR=$(mktemp -d)

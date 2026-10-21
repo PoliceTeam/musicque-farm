@@ -3,14 +3,14 @@ import type { MapDefinition } from '@chibi-town/game-content';
 import { CHAT_HISTORY_LIMIT, publicChatArea } from '@chibi-town/game-content/public-chat';
 
 export function chatAreaForScreen(path: string, definition?: MapDefinition): ChatArea | undefined {
-  if (definition) return { regionId: definition.regionId, mapId: definition.id };
   const pathname = path.split('?')[0];
   const parts = pathname.split('/');
-  if (parts[1] === 'play' && publicChatArea(parts[2], parts[3])) return { regionId: parts[2], mapId: parts[3] };
-  if (['/', '/map', '/map.html', '/index.html'].includes(pathname)) return { regionId: 'world', mapId: 'world-map' };
-  if (['/farm', '/farm.html'].includes(pathname)) return { regionId: 'farm', mapId: 'farm-entrance' };
-  if (pathname === '/farm/home') return { regionId: 'farm', mapId: 'farm-home' };
-  if (pathname.startsWith('/arcade')) return { regionId: 'fun', mapId: 'arcade-hall' };
+  const area = definition
+    ? publicChatArea(definition.regionId, definition.id)
+    : parts[1] === 'play'
+      ? publicChatArea(parts[2], parts[3])
+      : undefined;
+  if (area) return { regionId: area.regionId, mapId: area.mapId };
   return undefined;
 }
 

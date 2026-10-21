@@ -1,6 +1,7 @@
 # Triển khai musicque.politetech.com
 
-Các lệnh server dưới đây dành cho người vận hành chạy sau khi review. Đợt chuẩn bị này chỉ chạy local.
+Trạng thái triển khai thực tế xem [deploy-police-status.md](deploy-police-status.md).
+Các lệnh dưới đây là runbook cho người vận hành; giữ backup trước mỗi lần thay đổi.
 Không cần Node trên Ubuntu. Giữ nginx/cert hiện có, Musicque `/api/`, `/socket.io`, `/` vẫn đi client 3800.
 
 ## 1. Chuẩn bị và backup
@@ -144,6 +145,7 @@ Sau đó local Farm:
 
 ```sh
 ./scripts/deploy.prod.sh
+# Mặc định ENV_FILE=deploy/.env.police.prod; tự chạy pnpm check trước build.
 # --web-only / --api-only (gồm worker) / --build-only; env override như script SSO.
 ```
 
@@ -166,8 +168,10 @@ không đặt SSO_NETWORK nếu không cần overlay. `SSH_KEY=''` giữ cấu h
   kiểm tra cookie Path/Secure/HttpOnly, WebSocket `/farm/api/ws` nâng cấp 101, worker trả thưởng khi offline.
 - `docker compose … ps` healthy, logs không chứa credential; kiểm tra migrations và số user/identity trước mở traffic.
 
-Rollback: giữ image tag `rollback-<UTC>` script đã tạo, backup env/nginx và DB. Retag image cũ về tag compose,
-khôi phục env phù hợp rồi `docker compose … up -d --no-build`; không `down -v`, không prune image/volume.
+Farm và SSO giữ đúng một tag rollback mới nhất cho mỗi repository sau deploy thành công;
+image có container tham chiếu luôn được giữ. Chỉ dọn image dangling có label riêng của project.
+Giữ backup env/nginx và DB. Retag rollback về tag compose rồi `up -d --no-build` để phục hồi;
+không `down -v`, không prune toàn server dùng chung.
 Schema đã migrate có thể không tương thích image cũ: chỉ restore DB đã backup trong maintenance window, cùng phiên bản app.
 Keycloak nâng phiên bản cũng cần DB backup tương ứng; không downgrade DB đang chạy bằng image cũ tùy ý.
 Với Musicque: gỡ toàn bộ `SSO_*` khỏi env backend và recreate API để quay lại JWT, deploy lại client JWT nếu

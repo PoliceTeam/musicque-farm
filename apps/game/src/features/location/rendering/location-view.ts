@@ -7,6 +7,7 @@ import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-ty
 import type { TFunction } from 'i18next';
 import type { LocationPlayer } from '@/application/_components/location-layout';
 import { petSheet, sheet } from '@/assets/asset-catalog';
+import type { ChatBubbles } from '@/features/chat/_utils/chat-bubbles';
 import type { LocationInputState } from '@/features/location/_utils/location-input-logic';
 import type { RemotePlayer } from '@/features/location/_utils/remote-players-logic';
 import { createEntertainmentShadow } from '@/features/location/rendering/entertainment-ground';
@@ -42,6 +43,7 @@ export function createLocationView(
   player: LocationPlayer,
   others: Map<string, RemotePlayer>,
   labels: () => LocationLabels,
+  bubbles: ChatBubbles = new Map(),
 ) {
   const layers = map.layers ?? [];
   const npcViews = new Map(
@@ -241,9 +243,14 @@ export function createLocationView(
     for (const portal of map.portals)
       if (portal.entrance) drawEntranceHint(view, exitText, exitHint, portal.entrance[0], portal.entrance[1], now);
     for (const npc of npcViews.values()) npc.paintLabel(view);
-    drawAvatarLabel(view, t('avatarName', player), hero, state.x, state.y, 1, true);
-    for (const other of others.values())
-      drawAvatarLabel(view, t('avatarName', other), other.avatar, other.x, other.y, 1);
+    const selfY = drawAvatarLabel(view, t('avatarName', player), hero, state.x, state.y, 1, true);
+    const selfBubble = bubbles.get(player.id);
+    if (selfBubble) view.speechBubble?.(selfBubble.text, state.x, selfY);
+    for (const other of others.values()) {
+      const labelY = drawAvatarLabel(view, t('avatarName', other), other.avatar, other.x, other.y, 1);
+      const bubble = bubbles.get(other.id);
+      if (bubble) view.speechBubble?.(bubble.text, other.x, labelY);
+    }
     view.endFrame();
   };
 }

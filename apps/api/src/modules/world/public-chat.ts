@@ -1,6 +1,11 @@
 import type { ChatArea, ChatMessage, ChatScope } from '@chibi-town/contracts/public-chat';
 import type { RealtimeCommand } from '@chibi-town/contracts/realtime';
-import { CHAT_HISTORY_LIMIT, CHAT_HISTORY_TTL, CHAT_SEND_INTERVAL } from '@chibi-town/game-content/public-chat';
+import {
+  CHAT_HISTORY_LIMIT,
+  CHAT_HISTORY_TTL,
+  CHAT_SEND_INTERVAL,
+  publicChatArea,
+} from '@chibi-town/game-content/public-chat';
 import type { Connection, Coordination, RealtimeService } from '@chibi-town/realtime-core';
 import type { PlayerAccount } from '@/_utils/session-auth';
 
@@ -9,7 +14,7 @@ const topicFor = (scope: ChatScope) => `chat:${scope.regionId}:${scope.mapId}:${
 type Receipt = { id: string; topic: string; text: string; message: ChatMessage };
 type SenderState = { at: number; receipts: Receipt[] };
 
-/** Public chat has independent subscriptions; watching a farm/interior never replaces a movement room. */
+/** Chat subscriptions share the public location/channel policy with the client. */
 export function registerPublicChat(
   realtime: RealtimeService,
   deps: {
@@ -31,7 +36,10 @@ export function registerPublicChat(
     'chat.watch',
     async (connection, command) => {
       const scope = await deps.resolveScope(connection.identity.context as PlayerAccount, command);
-      if (!scope) return;
+      if (!scope || !publicChatArea(scope.regionId, scope.mapId)) {
+        await leave(connection);
+        return;
+      }
       const previous = watched.get(connection.id);
       if (previous && topicFor(previous) !== topicFor(scope)) await leave(connection);
       await realtime.subscribe(connection, topicFor(scope));
@@ -50,7 +58,12 @@ export function registerPublicChat(
     const fail = (error: 'NOT_READY' | 'TOO_FAST' | 'CONFLICT') =>
       realtime.send(connection, { type: 'chat.result', requestId: command.requestId, messageId: null, error });
 
-    if (!scope) return fail('NOT_READY');
+    if (!scope || !publicChatArea(scope.regionId, scope.mapId)) return fail('NOT_READY');
+    const resolved = await deps.resolveScope(connection.identity.context as PlayerAccount, scope);
+    if (!resolved || topicFor(resolved) !== topicFor(scope)) {
+      await leave(connection);
+      return fail('NOT_READY');
+    }
     const player = connection.identity.context as PlayerAccount;
     const topic = topicFor(scope);
     const id = `${connection.identity.playerId}:${command.requestId}`;

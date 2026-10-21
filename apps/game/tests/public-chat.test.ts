@@ -2,6 +2,7 @@ import { createRealtimeClient } from '@chibi-town/api-sdk';
 import { type ChatMessage, normalizeChatText, validChatText } from '@chibi-town/contracts/public-chat';
 import { decodeRealtimeCommand, decodeRealtimeEvent } from '@chibi-town/contracts/realtime';
 import { MAPS } from '@chibi-town/game-content';
+import { publicChatArea } from '@chibi-town/game-content/public-chat';
 import { expect, it } from 'vitest';
 import { chatAreaForScreen, mergeChatMessages, opensPublicChat, sameChatScope } from '@/features/chat/_utils/chat-area';
 
@@ -66,15 +67,14 @@ it('opens only on a deliberate Space outside controls, IME and modal dialogs', (
   expect(opensPublicChat(space, false, true)).toBe(false);
 });
 
-it('resolves every real map plus public screens and deduplicates bounded history within a scope', () => {
-  for (const map of MAPS)
-    expect(chatAreaForScreen(`/play/${map.regionId}/${map.id}`, map)).toEqual({
-      regionId: map.regionId,
-      mapId: map.id,
-    });
-  for (const path of ['/', '/farm', '/farm/home', '/play/fun/pet-racing'])
-    expect(chatAreaForScreen(path)).toBeDefined();
-  expect(chatAreaForScreen('/character')).toBeUndefined();
+it('allows only location maps with remote channel presence and deduplicates bounded history', () => {
+  for (const map of MAPS) {
+    const allowed = map.scene === 'location' && !!map.channels;
+    expect(!!publicChatArea(map.regionId, map.id)).toBe(allowed);
+    expect(!!chatAreaForScreen(`/play/${map.regionId}/${map.id}`, map)).toBe(allowed);
+  }
+  for (const path of ['/', '/map', '/map.html', '/farm', '/farm/home', '/arcade', '/play/fun/pet-racing', '/character'])
+    expect(chatAreaForScreen(path)).toBeUndefined();
   const messages = Array.from({ length: 55 }, (_, n) => ({
     id: `player:${n}`,
     playerId: 'player',

@@ -116,19 +116,24 @@ it('deduplicates retries across tabs, rejects reused payloads and shares spam li
   expect((await a.watch()).messages).toHaveLength(2);
 });
 
-it('supports shared public chat in every registered map and virtual area, keeps only fifty recent messages and rejects sends after leaving', async () => {
+it('rejects private and solo screens, supports public interiors, keeps only fifty recent messages and rejects sends after leaving', async () => {
   const t = await setup();
   const a = await t.connect(t.a.cookie);
+  await a.watch();
   for (const [regionId, mapId] of [
     ['world', 'world-map'],
     ['farm', 'farm-entrance'],
     ['farm', 'farm-home'],
     ['fun', 'pet-racing'],
-    ['center', 'salon'],
+    ['fun', 'arcade-hall'],
   ]) {
     t.test.advance(1100);
-    expect(await a.watch(mapId, regionId)).toMatchObject({ scope: { regionId, mapId, channelId: 0 } });
+    a.send({ type: 'chat.watch', regionId, mapId });
+    a.send({ type: 'chat.send', requestId: mapId, text: 'Không được gửi' });
+    expect(await a.result(mapId)).toMatchObject({ error: 'NOT_READY' });
   }
+  t.test.advance(1100);
+  await a.watch('salon');
   for (let n = 0; n < 52; n++) {
     t.test.advance(1100);
     a.send({ type: 'chat.send', requestId: `line-${n}`, text: `Tin ${n}` });

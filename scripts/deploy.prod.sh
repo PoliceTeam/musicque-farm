@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 SERVER="${SERVER:-ptdevs@167.86.125.164}"
 SSH_KEY="${SSH_KEY-$HOME/.ssh/police}"
 REMOTE_DIR="${REMOTE_DIR:-/home/ptdevs/internal/chibi-town}"
-ENV_FILE="${ENV_FILE:-deploy/.env.prod}"
+ENV_FILE="${ENV_FILE:-deploy/.env.police.prod}"
 PROJECT_NAME="${PROJECT_NAME:-chibi-town-prod}"
 BUILD_ONLY=false
 BUILD_WEB=false
@@ -33,19 +33,26 @@ public_setting() {
     node -e 'process.stdout.write(process.env[process.argv[1]] ?? process.argv[2])' "$1" "$2"
   fi
 }
+docker info >/dev/null
+pnpm check
 FILES=()
 SERVICES=()
+PREVIOUS_IMAGES=()
 STAMP=$(date -u +%Y%m%d%H%M%S)
 if [[ "$BUILD_API" == true ]]; then
-  docker image inspect chibi-town-api:latest >/dev/null 2>&1 && docker tag chibi-town-api:latest "chibi-town-api:rollback-$STAMP" || true
-  docker build --platform linux/amd64 -f apps/api/Dockerfile -t chibi-town-api:latest .
+  PREVIOUS_IMAGE=$(docker image inspect --format '{{.Id}}' chibi-town-api:latest 2>/dev/null || true)
+  [[ -z "$PREVIOUS_IMAGE" ]] || PREVIOUS_IMAGES+=("$PREVIOUS_IMAGE")
+  [[ -z "$PREVIOUS_IMAGE" ]] || docker tag "$PREVIOUS_IMAGE" "chibi-town-api:rollback-$STAMP"
+  docker build --platform linux/amd64 --label com.chibi-town.app=farm -f apps/api/Dockerfile -t chibi-town-api:latest .
   docker save chibi-town-api:latest | gzip > chibi-town-api.tar.gz
   FILES+=(chibi-town-api.tar.gz)
   SERVICES+=(api worker)
 fi
 if [[ "$BUILD_WEB" == true ]]; then
-  docker image inspect chibi-town-web:latest >/dev/null 2>&1 && docker tag chibi-town-web:latest "chibi-town-web:rollback-$STAMP" || true
-  docker build --platform linux/amd64 -f apps/game/Dockerfile -t chibi-town-web:latest \
+  PREVIOUS_IMAGE=$(docker image inspect --format '{{.Id}}' chibi-town-web:latest 2>/dev/null || true)
+  [[ -z "$PREVIOUS_IMAGE" ]] || PREVIOUS_IMAGES+=("$PREVIOUS_IMAGE")
+  [[ -z "$PREVIOUS_IMAGE" ]] || docker tag "$PREVIOUS_IMAGE" "chibi-town-web:rollback-$STAMP"
+  docker build --platform linux/amd64 --label com.chibi-town.app=farm -f apps/game/Dockerfile -t chibi-town-web:latest \
     --build-arg "NEXT_PUBLIC_BASE_PATH=$(public_setting NEXT_PUBLIC_BASE_PATH '')" \
     --build-arg "NEXT_PUBLIC_API_URL=$(public_setting NEXT_PUBLIC_API_URL /api)" \
     --build-arg "NEXT_PUBLIC_SITE_URL=$(public_setting NEXT_PUBLIC_SITE_URL '')" .
@@ -53,9 +60,14 @@ if [[ "$BUILD_WEB" == true ]]; then
   FILES+=(chibi-town-web.tar.gz)
   SERVICES+=(web)
 fi
-if [[ "$BUILD_ONLY" == true ]]; then echo "Built: ${FILES[*]}"; exit 0; fi
+if [[ "$BUILD_ONLY" == true ]]; then
+  bash scripts/prune-farm-images.sh "${PREVIOUS_IMAGES[@]}"
+  echo "Built: ${FILES[*]}"
+  exit 0
+fi
 ssh "${SSH_OPTS[@]}" "$SERVER" "umask 077; mkdir -p '$REMOTE_DIR'; touch '$REMOTE_DIR/.env.prod.upload'; chmod 600 '$REMOTE_DIR/.env.prod.upload'"
 scp "${SSH_OPTS[@]}" "${FILES[@]}" "$SERVER:$REMOTE_DIR/"
+scp "${SSH_OPTS[@]}" scripts/prune-farm-images.sh "$SERVER:$REMOTE_DIR/prune-farm-images.sh"
 scp "${SSH_OPTS[@]}" deploy/docker-compose.sso.yml "$SERVER:$REMOTE_DIR/docker-compose.sso.yml"
 scp "${SSH_OPTS[@]}" deploy/docker-compose.prod.yml "$SERVER:$REMOTE_DIR/docker-compose.yml"
 # Temporary upload stays private even when replacing an existing permissive env file.
@@ -69,15 +81,33 @@ cd "$1"
 chmod 600 .env.prod.upload
 [[ ! -f .env.prod ]] || install -m 600 .env.prod ".env.prod.backup-$3"
 mv .env.prod.upload .env.prod
-for image in chibi-town-api chibi-town-web; do
+PREVIOUS_IMAGES=()
+for file in $4; do
+  image=${file%.tar.gz}
+  PREVIOUS_IMAGE=$(docker image inspect --format '{{.Id}}' "$image:latest" 2>/dev/null || true)
+  [[ -z "$PREVIOUS_IMAGE" ]] || PREVIOUS_IMAGES+=("$PREVIOUS_IMAGE")
   docker image inspect "$image:latest" >/dev/null 2>&1 && docker tag "$image:latest" "$image:rollback-$3" || true
 done
 for file in $4; do docker load < "$file"; rm -f "$file"; done
-# Compose dependencies include private Postgres/Redis; keep volumes and rollback images.
+# Compose dependencies include private Postgres/Redis; keep volumes.
 COMPOSE=(-f docker-compose.yml)
 [[ "$6" == false ]] || COMPOSE+=(-f docker-compose.sso.yml)
-docker compose "${COMPOSE[@]}" --env-file .env.prod -p "$2" up -d --wait $5
+# Compose --wait rejects a service with healthcheck disabled on some server versions.
+# Wait for HTTP services and their healthy dependencies before starting the worker.
+WAIT_SERVICES=()
+START_WORKER=false
+for service in $5; do
+  if [[ "$service" == worker ]]; then START_WORKER=true; else WAIT_SERVICES+=("$service"); fi
+done
+docker compose "${COMPOSE[@]}" --env-file .env.prod -p "$2" up -d --wait "${WAIT_SERVICES[@]}"
+if [[ "$START_WORKER" == true ]]; then
+  docker compose "${COMPOSE[@]}" --env-file .env.prod -p "$2" up -d --no-build worker
+  WORKER_ID=$(docker compose "${COMPOSE[@]}" --env-file .env.prod -p "$2" ps -q worker)
+  [[ -n "$WORKER_ID" && "$(docker inspect --format '{{.State.Running}}' "$WORKER_ID")" == true ]]
+fi
 docker compose "${COMPOSE[@]}" --env-file .env.prod -p "$2" ps
+bash prune-farm-images.sh "${PREVIOUS_IMAGES[@]}"
 REMOTE
 rm -f "${FILES[@]}"
+bash scripts/prune-farm-images.sh "${PREVIOUS_IMAGES[@]}"
 echo 'Farm production deploy complete.'

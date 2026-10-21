@@ -3,6 +3,7 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import type { GameSdk } from '@chibi-town/contracts';
 import type { createGameAudio } from '@chibi-town/game-audio';
+import { hasOpenGameDialog } from '@chibi-town/ui';
 import { CurrencyCounter, CurrencyIcon, GameHeader, ProfileMenu } from '@chibi-town/ui/react';
 import Link from 'next/link';
 import { lazy, type ReactNode, type RefObject, Suspense, useContext, useEffect, useRef, useState } from 'react';
@@ -13,6 +14,8 @@ import { AuthContext } from '@/application/auth-context';
 import { socialCss } from '@/assets/generated-styles';
 import { ChangePasswordDialog } from '@/features/auth/change-password-dialog';
 import { RenameDialog } from '@/features/auth/rename-dialog';
+import { opensPublicChat } from '@/features/chat/_utils/chat-area';
+import { ChatContext } from '@/features/chat/chat-context';
 import { AudioSettings } from '@/features/settings/_components/audio-settings';
 import { InboxButton } from '@/features/social/_components/inbox-button';
 import { SocialNotification } from '@/features/social/_components/social-notification';
@@ -72,7 +75,26 @@ export function LocationLayout({
   const [renameOpen, setRenameOpen] = useState(false);
   const [characterOpen, setCharacterOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
-  const [friendTab, setFriendTab] = useState<SocialTab>('friends');
+  const [friendTab, setFriendTab] = useState<SocialTab | 'chat'>('friends');
+  const chat = useContext(ChatContext);
+  useEffect(() => {
+    if (!chat.area) return;
+
+    const keydown = (event: KeyboardEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const interactive = !!target?.closest(
+        'input, textarea, select, button, a, [role="textbox"], [contenteditable]:not([contenteditable="false"])',
+      );
+      if (!opensPublicChat(event, interactive, hasOpenGameDialog())) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setFriendTab('chat');
+      setFriendsOpen(true);
+    };
+
+    window.addEventListener('keydown', keydown, true);
+    return () => window.removeEventListener('keydown', keydown, true);
+  }, [chat.area]);
   const { incoming: inbox, notice, dismissNotice } = useFriendInbox(auth.player?.id ?? player?.id);
   const [walletOverride, setWalletOverride] = useState<{ coins: number; gems: number }>();
   useEffect(

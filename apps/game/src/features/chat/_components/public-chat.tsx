@@ -1,16 +1,24 @@
 import { type ChatArea, type ChatMessage, type ChatScope, normalizeChatText } from '@chibi-town/contracts/public-chat';
 import { CHAT_MAX_LENGTH, publicChatArea } from '@chibi-town/game-content/public-chat';
-import { hasOpenGameDialog } from '@chibi-town/ui';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { getRealtime } from '@/application/api-sdk';
 import { publicChatCss } from '@/assets/generated-styles';
-import { mergeChatMessages, opensPublicChat, sameChatScope } from '@/features/chat/_utils/chat-area';
+import { mergeChatMessages, sameChatScope } from '@/features/chat/_utils/chat-area';
 
-export function PublicChat({ area, playerId }: { area: ChatArea; playerId?: string }) {
+export function PublicChat({
+  area,
+  playerId,
+  host,
+}: {
+  area: ChatArea;
+  playerId?: string;
+  host: HTMLDivElement | null;
+}) {
   const { t } = useTranslation('chat');
   const { regionId, mapId } = area;
-  const [open, setOpen] = useState(false);
+  const open = !!host;
   const [draft, setDraft] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [scope, setScope] = useState<ChatScope>();
@@ -19,7 +27,6 @@ export function PublicChat({ area, playerId }: { area: ChatArea; playerId?: stri
   const [error, setError] = useState('');
   const input = useRef<HTMLInputElement>(null);
   const log = useRef<HTMLDivElement>(null);
-  const previousFocus = useRef<HTMLElement | null>(null);
   const atBottom = useRef(true);
   const joined = useRef(false);
   const composing = useRef(false);
@@ -29,34 +36,12 @@ export function PublicChat({ area, playerId }: { area: ChatArea; playerId?: stri
   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const realtime = useRef<ReturnType<typeof getRealtime>>(undefined);
 
-  function close() {
-    setOpen(false);
-    previousFocus.current?.focus({ preventScroll: true });
-  }
-
   useEffect(() => {
-    const keydown = (event: KeyboardEvent) => {
-      const target = event.target instanceof Element ? event.target : null;
-      const interactive = !!target?.closest(
-        'input, textarea, select, button, a, [role="textbox"], [contenteditable]:not([contenteditable="false"])',
-      );
-      if (!opensPublicChat(event, interactive, hasOpenGameDialog())) return;
-      event.preventDefault();
-      event.stopPropagation();
-      previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      setOpen(true);
-      requestAnimationFrame(() => input.current?.focus());
-    };
-
-    window.addEventListener('keydown', keydown, true);
-    return () => window.removeEventListener('keydown', keydown, true);
-  }, []);
-  useEffect(() => {
-    if (open) {
+    if (host) {
       input.current?.focus();
       atBottom.current = true;
     }
-  }, [open]);
+  }, [host]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: New messages and opening the log require scrolling after commit.
   useEffect(() => {
     if (atBottom.current && log.current) log.current.scrollTop = log.current.scrollHeight;
@@ -147,22 +132,11 @@ export function PublicChat({ area, playerId }: { area: ChatArea; playerId?: stri
   }
 
   const label = publicChatArea(regionId, mapId)?.label ?? '';
-  return (
-    <aside className={`game-ui public-chat${open ? ' is-open' : ''}`} aria-label={t('title')}>
+  if (!host) return null;
+  return createPortal(
+    <section className={`game-ui public-chat${open ? ' is-open' : ''}`} aria-label={t('title')}>
       <style>{publicChatCss}</style>
-      <button
-        type="button"
-        className="public-chat-toggle"
-        aria-expanded={open}
-        onClick={() => {
-          previousFocus.current = document.activeElement as HTMLElement;
-          if (open) close();
-          else setOpen(true);
-        }}
-      >
-        {t('title')} <span>{scope ? t('area', { name: label, channel: scope.channelId }) : label}</span>
-        <kbd>Space</kbd>
-      </button>
+      <p>{scope ? t('area', { name: label, channel: scope.channelId }) : label}</p>
       {(open || messages.length > 0) && (
         <div
           className="public-chat-log"
@@ -212,10 +186,6 @@ export function PublicChat({ area, playerId }: { area: ChatArea; playerId?: stri
             onChange={(event) => setDraft([...event.target.value].slice(0, CHAT_MAX_LENGTH).join(''))}
             onKeyDown={(event) => {
               event.stopPropagation();
-              if (event.key === 'Escape') {
-                event.preventDefault();
-                close();
-              }
               if (event.key === 'Enter' && !event.nativeEvent.isComposing && event.nativeEvent.keyCode !== 229) {
                 event.preventDefault();
                 if (!event.repeat) send();
@@ -235,6 +205,7 @@ export function PublicChat({ area, playerId }: { area: ChatArea; playerId?: stri
           </small>
         </form>
       )}
-    </aside>
+    </section>,
+    host,
   );
 }

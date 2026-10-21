@@ -23,14 +23,16 @@ export function drawAvatarLabel(
     top = nameplateTop(items, sheet, avatar.equip);
     tops.set(avatar.equip, top);
   }
+  const labelY = Math.round(y) + top * scale - MAP_LABEL_STYLE.headClearance;
   renderer.label(
     text,
     Math.round(x),
-    Math.round(y) + top * scale - MAP_LABEL_STYLE.headClearance,
+    labelY,
     player ? MAP_LABEL_STYLE.playerColor : MAP_LABEL_STYLE.otherColor,
     border,
     MAP_LABEL_STYLE.fontSize,
   );
+  return labelY;
 }
 
 /** Raster NPC service names sit above the head, with a separate red service indicator. */

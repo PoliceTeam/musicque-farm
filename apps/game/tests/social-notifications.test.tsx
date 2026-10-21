@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { I18nextProvider } from 'react-i18next';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createGameI18n } from '@/application/i18n/instance';
+import { ChatContext } from '@/features/chat/chat-context';
 import { FriendsDialog } from '@/features/social/_components/friends-dialog';
 import { InboxButton } from '@/features/social/_components/inbox-button';
 import { newFriendNotice, noticeTab } from '@/features/social/_utils/friend-notifications';
@@ -83,4 +84,25 @@ it('announces successful send completion exactly once and never announces failed
     code: 'FRIEND_REQUEST_COOLDOWN',
   });
   expect(seen).toHaveLength(1);
+});
+
+it('includes the community tab only in shared locations, inside the same inbox dialog', () => {
+  const render = (shared: boolean) =>
+    renderToStaticMarkup(
+      <I18nextProvider i18n={createGameI18n()}>
+        <ChatContext.Provider
+          value={{
+            area: shared ? { regionId: 'center', mapId: 'shopping-street' } : undefined,
+
+            setHost() {},
+          }}
+        >
+          <FriendsDialog onClose={() => {}} />
+        </ChatContext.Provider>
+      </I18nextProvider>,
+    );
+
+  expect(render(true)).toContain('Chat khu');
+  expect(render(false)).not.toContain('Chat khu');
+  expect((render(true).match(/<dialog\b/g) ?? []).length).toBe(1);
 });

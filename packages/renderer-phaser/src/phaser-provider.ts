@@ -107,6 +107,10 @@ export const createPhaserProvider: RendererProvider = (options) => {
       if (!destroyed) view?.surface(...args);
     },
 
+    speechBubble(...args) {
+      if (!destroyed) view?.speechBubble(...args);
+    },
+
     label(...args) {
       if (!destroyed) view?.label(...args);
     },

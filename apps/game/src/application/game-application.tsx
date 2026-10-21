@@ -20,6 +20,7 @@ import { authCss, themeCss } from '@/assets/generated-styles';
 import { AuthDialog } from '@/features/auth/auth-dialog';
 import { PublicChat } from '@/features/chat/_components/public-chat';
 import { chatAreaForScreen } from '@/features/chat/_utils/chat-area';
+import { ChatContext } from '@/features/chat/chat-context';
 
 type Audio = ReturnType<typeof createGameAudio>;
 type ScreenModule = {
@@ -263,6 +264,7 @@ function GameApplicationContent() {
   useEffect(() => {
     if (screen) audio?.setMusic(locationMusic(resolveRoute(screen.path.split('?')[0]) ?? '/map', screen.definition));
   }, [audio, screen]);
+  const [chatHost, setChatHost] = useState<HTMLDivElement | null>(null);
   const Screen = screen?.module.Screen;
   const chatArea = screen ? chatAreaForScreen(screen.path, screen.definition) : undefined;
   const authClient = getAuthClient();
@@ -277,85 +279,92 @@ function GameApplicationContent() {
         openAuth: () => setAuthOpen(true),
       }}
     >
-      <div
-        id="app"
-        data-route={entry ? '/login' : resolveRoute(pathname)}
-        style={
-          entry ? { minHeight: '100dvh', background: 'radial-gradient(ellipse at top, #327b58, #0e3e32)' } : undefined
-        }
-      >
-        {((entry && auth.status !== 'checking') ||
-          authOpen ||
-          (auth.player &&
-            !auth.player.guest &&
-            (auth.player.username === null || auth.player.characterSetupRequired))) &&
-          authClient && (
-            <AuthDialog
-              client={authClient}
-              entry={entry}
-              onContinueGuest={
-                entry
-                  ? async () => {
-                      const player = auth.player ?? (await authClient.guest());
-                      shouldShowGuestPrompt(() => window.sessionStorage);
-                      setAuthOpen(false);
-                      setAuth({ ...auth, status: 'signed-in', player });
-                      navigation.replace('/');
-                    }
-                  : undefined
-              }
-              google={auth.google}
-              sso={auth.sso}
-              confirmationPlayer={auth.player}
-              usernameRequired={!!auth.player && !auth.player.guest && auth.player.username === null}
-              registrationBonus={new URLSearchParams(search).get('auth') === 'registered'}
-              googleFailed={new URLSearchParams(search).get('auth') === 'failed'}
-              ssoFailed={['sso-failed', 'handoff-failed'].includes(new URLSearchParams(search).get('auth') || '')}
-              onClose={() => setAuthOpen(false)}
-              onSignedIn={() => {
-                if (entry) {
-                  window.location.assign(publicPath('/'));
-                  return;
+      <ChatContext.Provider value={{ area: chatArea, setHost: setChatHost }}>
+        <div
+          id="app"
+          data-route={entry ? '/login' : resolveRoute(pathname)}
+          style={
+            entry ? { minHeight: '100dvh', background: 'radial-gradient(ellipse at top, #327b58, #0e3e32)' } : undefined
+          }
+        >
+          {((entry && auth.status !== 'checking') ||
+            authOpen ||
+            (auth.player &&
+              !auth.player.guest &&
+              (auth.player.username === null || auth.player.characterSetupRequired))) &&
+            authClient && (
+              <AuthDialog
+                client={authClient}
+                entry={entry}
+                onContinueGuest={
+                  entry
+                    ? async () => {
+                        const player = auth.player ?? (await authClient.guest());
+                        shouldShowGuestPrompt(() => window.sessionStorage);
+                        setAuthOpen(false);
+                        setAuth({ ...auth, status: 'signed-in', player });
+                        navigation.replace('/');
+                      }
+                    : undefined
                 }
-                const url = new URL(window.location.href);
-                url.searchParams.delete('auth');
-                window.location.assign(url.href);
-              }}
+                google={auth.google}
+                sso={auth.sso}
+                confirmationPlayer={auth.player}
+                usernameRequired={!!auth.player && !auth.player.guest && auth.player.username === null}
+                registrationBonus={new URLSearchParams(search).get('auth') === 'registered'}
+                googleFailed={new URLSearchParams(search).get('auth') === 'failed'}
+                ssoFailed={['sso-failed', 'handoff-failed'].includes(new URLSearchParams(search).get('auth') || '')}
+                onClose={() => setAuthOpen(false)}
+                onSignedIn={() => {
+                  if (entry) {
+                    window.location.assign(publicPath('/'));
+                    return;
+                  }
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete('auth');
+                  window.location.assign(url.href);
+                }}
+              />
+            )}
+          {error ? (
+            <div role="alert">
+              {error}{' '}
+              <button type="button" onClick={() => navigation.push('/')}>
+                {t('backToMap')}
+              </button>
+            </div>
+          ) : Screen && audio ? (
+            <Screen
+              key={screen.path}
+              audio={audio}
+              definition={screen.definition}
+              backgroundOnly={
+                auth.status !== 'signed-in' ||
+                !!auth.player?.characterSetupRequired ||
+                (!!auth.player && !auth.player.guest && auth.player.username === null)
+              }
             />
+          ) : (
+            <p role="status">{auth.status === 'checking' ? t('checking', { ns: 'auth' }) : t('loadingLocation')}</p>
           )}
-        {error ? (
-          <div role="alert">
-            {error}{' '}
-            <button type="button" onClick={() => navigation.push('/')}>
-              {t('backToMap')}
-            </button>
-          </div>
-        ) : Screen && audio ? (
-          <Screen
-            key={screen.path}
-            audio={audio}
-            definition={screen.definition}
-            backgroundOnly={
-              auth.status !== 'signed-in' ||
-              !!auth.player?.characterSetupRequired ||
-              (!!auth.player && !auth.player.guest && auth.player.username === null)
-            }
-          />
-        ) : (
-          <p role="status">{auth.status === 'checking' ? t('checking', { ns: 'auth' }) : t('loadingLocation')}</p>
-        )}
-        {chatArea &&
-          Screen &&
-          audio &&
-          !error &&
-          !entry &&
-          !authOpen &&
-          auth.status === 'signed-in' &&
-          !auth.player?.characterSetupRequired &&
-          (!auth.player || auth.player.guest || auth.player.username !== null) && (
-            <PublicChat key={`${chatArea.regionId}/${chatArea.mapId}`} area={chatArea} playerId={auth.player?.id} />
-          )}
-      </div>
+          {chatArea &&
+            Screen &&
+            audio &&
+            !error &&
+            !entry &&
+            !authOpen &&
+            auth.status === 'signed-in' &&
+            !auth.player?.characterSetupRequired &&
+            (!auth.player || auth.player.guest || auth.player.username !== null) && (
+              <PublicChat
+                key={`${chatArea.regionId}/${chatArea.mapId}`}
+                area={chatArea}
+                host={chatHost}
+                playerId={auth.player?.id}
+              />
+            )}
+        </div>
+      </ChatContext.Provider>
     </AuthContext.Provider>
   );
 }

@@ -19,6 +19,10 @@ it('keeps map typography stable across camera scales without rebuilding unchange
     'setPosition',
     'setDepth',
     'setVisible',
+    'setY',
+    'setBackgroundColor',
+    'setPadding',
+    'setAlign',
   ])
     text[method] = vi.fn(() => text);
   const scene = {
@@ -66,4 +70,19 @@ it('keeps map typography stable across camera scales without rebuilding unchange
   view.label('LV 2 Bạn', 30, 40, '#ffffff', undefined, 16);
   expect(text.setShadow).toHaveBeenLastCalledWith(0, 0, '#49320e', 0, true, false);
   expect(text.setColor).toHaveBeenCalledTimes(2);
+  // Bubble bottom stays above the full CSS-height name, at every camera zoom.
+  for (const zoom of [1, 2, 3.25]) {
+    scene.cameras.main.zoom = zoom;
+    view.beginFrame();
+    view.speechBubble('<b>Xin chào</b>\nCả khu', 100, 200);
+    const scale = 2 / zoom;
+    expect(text.setY).toHaveBeenLastCalledWith(200 - 24 * scale);
+    expect(text.setBackgroundColor).toHaveBeenLastCalledWith('#263b30');
+    expect(text.setText).toHaveBeenLastCalledWith('<b>Xin chào</b>\nCả khu');
+  }
+  expect(text.setBackgroundColor).toHaveBeenCalledTimes(1);
+  view.beginFrame();
+  view.label('Tên vẫn bình thường', 100, 200, '#ffe066');
+  expect(text.setBackgroundColor).toHaveBeenLastCalledWith('');
+  expect(text.setPadding).toHaveBeenLastCalledWith(2, 2, 2, 2);
 });
