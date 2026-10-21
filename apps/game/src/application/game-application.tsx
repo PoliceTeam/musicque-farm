@@ -4,7 +4,7 @@ import { createGameAudio } from '@chibi-town/game-audio';
 import { type MapDefinition, validateWorld } from '@chibi-town/game-content';
 import { ImageProvider } from '@chibi-town/ui/react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { type ComponentType, useEffect, useRef, useState } from 'react';
+import { type ComponentType, lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { AppImage } from '@/application/_components/app-image';
 import { LoadingOverlay } from '@/application/_components/loading-overlay';
@@ -15,13 +15,22 @@ import type { AuthPlayer } from '@/application/auth-client';
 import { AUTH_REQUIRED_EVENT, getAuthClient } from '@/application/auth-client';
 import { AuthContext, shouldShowGuestPrompt } from '@/application/auth-context';
 import { createGameI18n, refreshGameI18nResources } from '@/application/i18n/instance';
+import {
+  beginPerformanceLoad,
+  performanceLoggingEnabled,
+  performanceMark,
+  performanceSpan,
+} from '@/application/performance-log';
 import { gameRoute } from '@/application/screen-router';
 import { registeredImageAssets } from '@/assets/generated-assets';
-import { authCss, themeCss } from '@/assets/generated-styles';
+import { authCss } from '@/assets/generated-styles/auth-css';
+import { themeCss } from '@/assets/generated-styles/theme-css';
 import { AuthDialog } from '@/features/auth/auth-dialog';
 import { PublicChat } from '@/features/chat/_components/public-chat';
 import { chatAreaForScreen } from '@/features/chat/_utils/chat-area';
 import { ChatContext } from '@/features/chat/chat-context';
+
+const PerformancePanel = lazy(() => import('@/application/_components/performance-panel'));
 
 type Audio = ReturnType<typeof createGameAudio>;
 type ScreenModule = {
@@ -88,6 +97,10 @@ function GameApplicationContent() {
   const navigation = useRouter();
   const search = useSearchParams().toString();
   const [audio, setAudio] = useState<Audio>();
+  const [perfEnabled, setPerfEnabled] = useState(false);
+  useEffect(() => {
+    setPerfEnabled(performanceLoggingEnabled());
+  }, []);
   const [screen, setScreen] = useState<{
     module: ScreenModule;
     path: string;
@@ -110,12 +123,18 @@ function GameApplicationContent() {
   const [authOpen, setAuthOpen] = useState(false);
   const [entryRequest] = useState(() => ({ pathname, search }));
   useEffect(() => {
+    const run = beginPerformanceLoad(entryRequest.pathname);
+    const authDone = performanceSpan('auth', run);
     const client = getAuthClient();
-    if (!client) return;
+    if (!client) {
+      authDone();
+      return;
+    }
     let disposed = false;
     void client[entryRequest.pathname === '/' ? 'session' : 'start']()
       .then(
         ({ player, providers }) => {
+          authDone();
           const current = player;
           if (disposed) return;
           if (!current) {
@@ -139,6 +158,7 @@ function GameApplicationContent() {
           }
         },
         () => {
+          performanceMark('failed', run);
           if (!disposed) setError(translate.current('locationLoadFailed'));
         },
       )
@@ -213,6 +233,7 @@ function GameApplicationContent() {
       return;
     }
     let disposed = false;
+    const run = beginPerformanceLoad(pathname);
     const route = resolveRoute(pathname);
     setError('');
     if (!route) {
@@ -225,7 +246,9 @@ function GameApplicationContent() {
       let definition: MapDefinition | undefined;
       let renderer = route;
       if (route === '/location') {
+        const worldDone = performanceSpan('world-data', run);
         const world = await getApiSdk().getWorld();
+        worldDone();
         validateWorld(world);
         const [, , regionId, mapId] = pathname.split('/');
         definition = world.maps.find((map) => map.regionId === regionId && map.id === mapId);
@@ -245,7 +268,10 @@ function GameApplicationContent() {
       }
       if (renderer === '/farm' && process.env.NODE_ENV !== 'production' && new URLSearchParams(search).has('review'))
         renderer = '/farm/home';
-      return { module: await loaders[renderer](), definition };
+      const codeDone = performanceSpan('screen-code', run);
+      const module = await loaders[renderer]();
+      codeDone();
+      return { module, definition };
     };
 
     void load()
@@ -256,7 +282,10 @@ function GameApplicationContent() {
         setScreen({ module, path: `${pathname}?${search}`, definition });
       })
       .catch(() => {
-        if (!disposed) setError(translate.current('locationLoadFailed'));
+        if (!disposed) {
+          performanceMark('failed', run);
+          setError(translate.current('locationLoadFailed'));
+        }
       });
     return () => {
       disposed = true;
@@ -351,6 +380,11 @@ function GameApplicationContent() {
           )}
           {Screen && audio && (auth.status === 'checking' || changingScreen) && !error && (
             <LoadingOverlay label={auth.status === 'checking' ? t('checking', { ns: 'auth' }) : t('loadingLocation')} />
+          )}
+          {perfEnabled && (
+            <Suspense fallback={null}>
+              <PerformancePanel />
+            </Suspense>
           )}
           {chatArea &&
             Screen &&

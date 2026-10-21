@@ -1,5 +1,14 @@
 import { arcadeVi } from '@chibi-town/arcade-games-react/locales/vi';
 export default {
+  performance: {
+    title: 'Hiệu năng · debug',
+    localOnly: 'Log chỉ lưu tại máy, không gửi lên server.',
+    waiting: 'Đang chờ tải màn…',
+    phase: 'Mốc',
+    elapsed: 'Từ đầu lượt',
+    duration: 'Thời lượng',
+    export: 'Xuất log hiệu năng',
+  },
   serviceNpcNames: {
     store: 'Nhân viên cửa hàng',
     jewelry: 'Thợ kim hoàn',

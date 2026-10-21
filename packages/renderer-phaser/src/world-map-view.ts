@@ -65,6 +65,8 @@ export type WorldMapViewOptions = {
   ) => { at: Point; moving: boolean; facingLeft: boolean };
   lighting: () => WorldLighting;
   zoneAt: (point: Point) => WorldMapZoneView | undefined;
+  onReady?: () => void;
+  onFirstFrame?: () => void;
   onHover?: (zone: WorldMapZoneView | undefined) => void;
   onSelect?: (zone: WorldMapZoneView) => void;
 };
@@ -185,6 +187,8 @@ export function createWorldMapView(options: WorldMapViewOptions): WorldMapView {
     }
 
     create() {
+      this.events.once(Phaser.Scenes.Events.CREATE, () => options.onReady?.());
+      this.game.events.once(Phaser.Core.Events.POST_RENDER, () => options.onFirstFrame?.());
       if (this.game.renderer.type === Phaser.WEBGL) {
         this.add
           .shader(

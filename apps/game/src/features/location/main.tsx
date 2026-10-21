@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { LoadingOverlay } from '@/application/_components/loading-overlay';
 import { LocationLayout, type LocationPlayer } from '@/application/_components/location-layout';
 import { getApiSdk } from '@/application/api-sdk';
-import { locationCss } from '@/assets/generated-styles';
+import { locationCss } from '@/assets/generated-styles/location-css';
 import { ChannelDialog } from '@/features/location/_components/channel-dialog';
 import type { Attraction } from '@/features/location/_utils/location-input-logic';
 import { navigateLocationPortal } from '@/features/location/location-navigation-handler';

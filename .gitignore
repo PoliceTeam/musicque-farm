@@ -37,3 +37,7 @@ apps/api/.data/
 # Production secrets and image archives
 deploy/.env.prod
 *.tar.gz
+
+# Isolated production bundle analysis
+apps/game/.next-perf/
+apps/game/src/assets/generated-styles/

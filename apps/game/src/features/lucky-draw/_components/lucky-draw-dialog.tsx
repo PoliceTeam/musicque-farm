@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { AppImage } from '@/application/_components/app-image';
 import { getApiSdk } from '@/application/api-sdk';
 import { publicAssetUrls } from '@/assets/generated-assets';
-import { luckyDrawCss } from '@/assets/generated-styles';
+import { luckyDrawCss } from '@/assets/generated-styles/lucky-draw-css';
 import { CharacterPreview } from '@/features/character/_components/character-preview';
 import { nextWheelRotation } from '@/features/lucky-draw/_utils/wheel-logic';
 import { previewCosmetic } from '@/features/shop/_utils/preview-outfit';

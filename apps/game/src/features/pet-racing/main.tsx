@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocationLayout, type LocationPlayer } from '@/application/_components/location-layout';
 import { getApiSdk } from '@/application/api-sdk';
-import { petRacingCss } from '@/assets/generated-styles';
+import { petRacingCss } from '@/assets/generated-styles/pet-racing-css';
 import { RaceBetDialog } from '@/features/pet-racing/_components/race-bet-dialog';
 import { RaceBetSummary } from '@/features/pet-racing/_components/race-bet-summary';
 import { RaceResultDialog } from '@/features/pet-racing/_components/race-result-dialog';

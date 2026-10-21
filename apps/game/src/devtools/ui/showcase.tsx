@@ -3,7 +3,8 @@ import { Button, Dialog, InventoryGrid, Meter } from '@chibi-town/ui/react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { createGameUi } from '@/application/game-ui-handler';
-import { inventoryCss, showcaseCss } from '@/assets/generated-styles';
+import { inventoryCss } from '@/assets/generated-styles/inventory-css';
+import { showcaseCss } from '@/assets/generated-styles/showcase-css';
 import { AudioSettings } from '@/features/settings/_components/audio-settings';
 export const styles = inventoryCss + showcaseCss;
 

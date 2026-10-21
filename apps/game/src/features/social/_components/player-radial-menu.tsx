@@ -3,7 +3,7 @@ import type { RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getRealtime } from '@/application/api-sdk';
-import { socialCss } from '@/assets/generated-styles';
+import { socialCss } from '@/assets/generated-styles/social-css';
 import { socialClient } from '@/features/social/social-client';
 import { socialErrorMessage } from '@/features/social/social-error-message';
 

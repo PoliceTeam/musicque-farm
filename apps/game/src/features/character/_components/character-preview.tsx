@@ -1,7 +1,7 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import { useEffect, useRef } from 'react';
 import { petSheet, sheet } from '@/assets/asset-catalog';
-import { characterPreviewCss } from '@/assets/generated-styles';
+import { characterPreviewCss } from '@/assets/generated-styles/character-preview-css';
 import { characterPreviewLayout } from '@/features/character/_utils/character-preview-layout';
 import { drawOps, PieceCache } from '@/game/rendering/canvas-renderer';
 

@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { publicPath } from '@/application/_utils/public-path';
 import { getAuthClient } from '@/application/auth-client';
 import { AuthContext } from '@/application/auth-context';
-import { socialCss } from '@/assets/generated-styles';
+import { socialCss } from '@/assets/generated-styles/social-css';
 import { ChangePasswordDialog } from '@/features/auth/change-password-dialog';
 import { RenameDialog } from '@/features/auth/rename-dialog';
 import { opensPublicChat } from '@/features/chat/_utils/chat-area';

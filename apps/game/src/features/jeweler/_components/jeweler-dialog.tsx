@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { AppImage } from '@/application/_components/app-image';
 import { getApiSdk } from '@/application/api-sdk';
 import { publicAssetUrls } from '@/assets/generated-assets';
-import { characterPanelCss, jewelerCss } from '@/assets/generated-styles';
+import { characterPanelCss } from '@/assets/generated-styles/character-panel-css';
+import { jewelerCss } from '@/assets/generated-styles/jeweler-css';
 import {
   CharacterUpgradeAction,
   CharacterUpgradePanel,

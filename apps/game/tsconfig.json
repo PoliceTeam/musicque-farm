@@ -26,6 +26,15 @@
     "incremental": true,
     "esModuleInterop": true
   },
-  "include": ["src", "tests", "vitest.config.ts", "next-env.d.ts", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
+  "include": [
+    "src",
+    "tests",
+    "vitest.config.ts",
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    ".next-perf/types/**/*.ts",
+    ".next-perf/dev/types/**/*.ts"
+  ],
   "exclude": ["node_modules", ".next/dev/types/validator.ts"]
 }

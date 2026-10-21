@@ -12,7 +12,7 @@ import { getApiSdk, getRealtime } from '@/application/api-sdk';
 import { AuthContext } from '@/application/auth-context';
 import { createGameUi } from '@/application/game-ui-handler';
 import { arcadeUrls } from '@/assets/generated-assets';
-import { arcadeCss } from '@/assets/generated-styles';
+import { arcadeCss } from '@/assets/generated-styles/arcade-css';
 import { ArcadeAvatar } from './_components/arcade-avatar';
 import { accountRequiredSdk } from './_utils/account-required-sdk';
 import { arcadeGames } from './_utils/registered-games';

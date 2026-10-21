@@ -3,9 +3,10 @@ import {
   createGameSdk,
   createLocalDocument,
   createMemoryRepository,
-  createRealtimeClient,
   type GameSdk,
 } from '@chibi-town/api-sdk';
+import { createHttpSdk } from '@chibi-town/api-sdk/http-adapter';
+import { createRealtimeClient } from '@chibi-town/api-sdk/realtime-client';
 import type { GameRealtime } from '@chibi-town/contracts/realtime';
 import type { FarmProgress } from '@chibi-town/gameplay';
 import { createDevLocalSdk, devNumber } from '@/application/_utils/dev-local-sdk';
@@ -33,8 +34,7 @@ let sdk: GameSdk | undefined;
 export function getApiSdk(): GameSdk {
   if (sdk) return sdk;
   if (process.env.NEXT_PUBLIC_API_URL) {
-    sdk = createGameSdk({
-      adapter: 'http',
+    sdk = createHttpSdk({
       baseUrl: process.env.NEXT_PUBLIC_API_URL,
 
       onUnauthenticated: () => window.dispatchEvent(new Event(AUTH_REQUIRED_EVENT)),

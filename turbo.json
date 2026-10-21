@@ -40,7 +40,7 @@
       "dependsOn": ["^build", "prepare-assets"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/tools/runtime/run-game-task.mjs"],
-      "env": ["NEXT_PUBLIC_*", "NEXT_OUTPUT"]
+      "env": ["NEXT_PUBLIC_*", "NEXT_OUTPUT", "ANALYZE", "NEXT_ANALYSIS_DIR"]
     },
     "@chibi-town/game#typecheck": {
       "dependsOn": ["^build", "prepare-assets"],
@@ -61,6 +61,7 @@
         "package.json",
         "src/assets/**",
         "!src/assets/generated-*.ts",
+        "!src/assets/generated-styles/**",
         "src/**/*.css",
         "$TURBO_ROOT$/packages/ui/src/theme.css",
         "$TURBO_ROOT$/packages/arcade-games-react/src/theme.css",
@@ -84,6 +85,7 @@
         "src/assets/generated-map-assets.ts",
         "src/assets/generated-sprite-sources.ts",
         "src/assets/generated-styles.ts",
+        "src/assets/generated-styles/**",
         "public/chibi-assets/**"
       ]
     },

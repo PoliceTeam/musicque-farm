@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { LoadingOverlay } from '@/application/_components/loading-overlay';
 import { LocationLayout, type LocationPlayer } from '@/application/_components/location-layout';
 import { getApiSdk } from '@/application/api-sdk';
-import { farmEntranceCss } from '@/assets/generated-styles';
+import { farmEntranceCss } from '@/assets/generated-styles/farm-entrance-css';
 import { FarmSocialDialog } from '@/features/farm-entrance/_components/farm-social-dialog';
 import { ENTRANCE_SIZE, ENTRANCE_TARGETS, type EntranceAction } from '@/features/farm-entrance/_utils/entrance-layout';
 import { createFarmEntranceGame } from '@/features/farm-entrance/runtime/farm-entrance-game';

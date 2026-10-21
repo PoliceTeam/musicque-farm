@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { getRealtime } from '@/application/api-sdk';
-import { publicChatCss } from '@/assets/generated-styles';
+import { publicChatCss } from '@/assets/generated-styles/public-chat-css';
 import { mergeChatMessages, sameChatScope } from '@/features/chat/_utils/chat-area';
 
 export function PublicChat({

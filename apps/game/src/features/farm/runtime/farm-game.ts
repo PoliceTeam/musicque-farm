@@ -1,6 +1,7 @@
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import type { FarmProgress } from '@chibi-town/gameplay/farm-crop-logic';
 import { blocksGameInput } from '@chibi-town/ui';
+import { currentPerformanceLoad, performanceMark } from '@/application/performance-log';
 import {
   FARM_CHARACTER_SCALE,
   FARM_WORLD,
@@ -43,6 +44,7 @@ export async function createFarmGame(
   },
   identity?: { name: string; level: number },
 ) {
+  const perfRun = currentPerformanceLoad();
   const [providers, style] = await Promise.all([
     createPreviewProviders('phaser'),
     farmStyleScenery(progress, levels, { enter: progressLabels.enter ?? '', exit: progressLabels.exit ?? '' }),
@@ -101,8 +103,11 @@ export async function createFarmGame(
 
     onFrame(renderer, now, delta, input) {
       if (!running) return;
+      const beforeX = player.x,
+        beforeY = player.y;
       if (!blocksGameInput())
         updateFarmWalk(farm, Math.min(0.05, Math.max(0, delta / 1000)), input?.direction ?? [0, 0]);
+      if (beforeX !== player.x || beforeY !== player.y) performanceMark('movement-observed', perfRun);
       style.sync(clock());
       view.draw(renderer, now);
     },

@@ -7,7 +7,7 @@ import { Button, Dialog, Tabs } from '@chibi-town/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getApiSdk } from '@/application/api-sdk';
-import { shopCss } from '@/assets/generated-styles';
+import { shopCss } from '@/assets/generated-styles/shop-css';
 import { CharacterPreview } from '@/features/character/_components/character-preview';
 import { CosmeticThumbnail } from '@/features/character/_components/cosmetic-thumbnail';
 import { previewCosmetic } from '@/features/shop/_utils/preview-outfit';

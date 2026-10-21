@@ -1,0 +1,41 @@
+.game-performance-panel {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  z-index: 11000;
+  max-width: min(480px, calc(100vw - 16px));
+  max-height: 45dvh;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid #73c6e0;
+  border-radius: 8px;
+  background: #07121bef;
+  color: #e9f4fa;
+  font: 11px / 1.5 monospace;
+}
+.game-performance-panel summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.game-performance-panel p {
+  margin: 4px 0;
+}
+.game-performance-panel table {
+  width: 100%;
+  margin: 8px 0;
+  border-collapse: collapse;
+}
+.game-performance-panel th,
+.game-performance-panel td {
+  padding: 2px 5px;
+  text-align: left;
+}
+.game-performance-panel button {
+  padding: 6px 10px;
+  border: 1px solid #73c6e0;
+  border-radius: 5px;
+  background: #17405a;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+}

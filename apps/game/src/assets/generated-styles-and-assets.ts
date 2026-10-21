@@ -1,2 +1,2 @@
+export { mapCss } from '@/assets/generated-styles/map-css';
 export { spriteUrls } from './generated-assets';
-export { mapCss } from './generated-styles';

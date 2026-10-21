@@ -1,4 +1,5 @@
 import type { MapDefinition } from '@chibi-town/game-content';
+import { performanceSpan } from '@/application/performance-log';
 
 import {
   entertainmentUrls,
@@ -44,6 +45,7 @@ export function acquireMapAssets(map: MapDefinition, generated = new Map<string,
 
 /** Shared leases for standalone scenes and maps; IDs resolve to one common source URL. */
 export async function acquireSceneAssets(ids: readonly string[], generated = new Map<string, HTMLCanvasElement>()) {
+  const finish = performanceSpan('scene-assets');
   const urls = [...new Set(ids)];
   const acquired: string[] = [];
 
@@ -80,8 +82,10 @@ export async function acquireSceneAssets(ids: readonly string[], generated = new
           return [url, await entry.source] as const;
         }),
     );
+    finish();
     return { assets: new Map([...pairs, ...generated]), release };
   } catch (error) {
+    finish();
     release();
     throw error;
   }

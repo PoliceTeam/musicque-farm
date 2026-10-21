@@ -5,7 +5,7 @@ import { Button, Dialog, Tabs } from '@chibi-town/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getApiSdk } from '@/application/api-sdk';
-import { characterPanelCss } from '@/assets/generated-styles';
+import { characterPanelCss } from '@/assets/generated-styles/character-panel-css';
 import { CharacterProfile } from '@/features/character/_components/character-profile';
 import { CosmeticThumbnail } from '@/features/character/_components/cosmetic-thumbnail';
 import { OwnedItemColors, OwnedSkinColors } from '@/features/character/_components/owned-item-colors';

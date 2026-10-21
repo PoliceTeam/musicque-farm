@@ -2,7 +2,7 @@ import type { createGameAudio } from '@chibi-town/game-audio';
 import { publicPath } from '@/application/_utils/public-path';
 import { getApiSdk } from '@/application/api-sdk';
 import { createGameUi } from '@/application/game-ui-handler';
-import { baseCss as screenCss } from '@/assets/generated-styles';
+import { baseCss as screenCss } from '@/assets/generated-styles/base-css';
 import { createTownGame } from '@/devtools/town/runtime/town-game';
 
 export const styles = screenCss;

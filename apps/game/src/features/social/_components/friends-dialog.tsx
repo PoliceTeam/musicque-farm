@@ -3,7 +3,7 @@ import { Button, Dialog, Tabs } from '@chibi-town/ui/react';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getRealtime } from '@/application/api-sdk';
-import { socialCss } from '@/assets/generated-styles';
+import { socialCss } from '@/assets/generated-styles/social-css';
 import { ChatContext } from '@/features/chat/chat-context';
 import { FriendActions } from '@/features/social/_components/friend-actions';
 import { InboxIcon } from '@/features/social/_components/inbox-button';

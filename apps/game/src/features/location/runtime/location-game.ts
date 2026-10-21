@@ -7,6 +7,7 @@ import type { CharacterRenderer } from '@chibi-town/render-contracts/renderer-ty
 import { blocksGameInput } from '@chibi-town/ui';
 import type { LocationPlayer } from '@/application/_components/location-layout';
 import { getApiSdk, getRealtime } from '@/application/api-sdk';
+import { currentPerformanceLoad, performanceMark } from '@/application/performance-log';
 import { type ChatBubbles, expireBubbles, queueBubble } from '@/features/chat/_utils/chat-bubbles';
 import {
   type Attraction,
@@ -49,6 +50,7 @@ export function createLocationGame(options: {
   onReady?(): void;
   onError(): void;
 }) {
+  const perfRun = currentPerformanceLoad();
   const map = options.map;
   let disposed = false;
   let ready = false;
@@ -232,7 +234,10 @@ export function createLocationGame(options: {
           signLabel = options.labels()('channelSign');
         }
         const dt = Math.min(delta / 1000, 0.05);
+        const beforeX = state.x,
+          beforeY = state.y;
         updateLocationInput(map, state, input?.direction, dt, blocksGameInput());
+        if (beforeX !== state.x || beforeY !== state.y) performanceMark('movement-observed', perfRun);
         if (state.dx) hero.mirror = state.dx < 0;
         hero.setAction(state.moving ? Action.Walk : Action.Stand);
         if (state.pet)

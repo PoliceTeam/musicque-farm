@@ -2,6 +2,7 @@ import { Action, AvatarState } from '@chibi-town/character-core/animation-logic'
 import type { Outfit } from '@chibi-town/character-core/character-types';
 import { toEquip } from '@chibi-town/character-core/outfit-logic';
 import { blocksGameInput } from '@chibi-town/ui';
+import { currentPerformanceLoad, performanceMark } from '@/application/performance-log';
 import {
   ENTRANCE_SIZE,
   ENTRANCE_WALK_BOUNDS,
@@ -21,6 +22,7 @@ export async function createFarmEntranceGame(
   labels: { enter: string; exit: string },
   portals?: HTMLElement | null,
 ) {
+  const perfRun = currentPerformanceLoad();
   const [providers, resources] = await Promise.all([
     createPreviewProviders('phaser'),
     acquireSceneAssets(ENTRANCE_ASSETS),
@@ -75,6 +77,7 @@ export async function createFarmEntranceGame(
           Math.min(delta, 50) / 1000,
           blocksGameInput(),
         );
+        if (motion.moving) performanceMark('movement-observed', perfRun);
         if (motion.dx) hero.mirror = motion.dx < 0;
         hero.setAction(motion.moving ? Action.Walk : Action.Stand);
         draw(view, hero, now, state);

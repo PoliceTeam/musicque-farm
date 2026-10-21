@@ -5,6 +5,7 @@ import { farmEggBaskets } from '@chibi-town/gameplay/farm-egg-logic';
 import { farmFoodPercent } from '@chibi-town/gameplay/farm-feeding-logic';
 import { farmLayoutSignature } from '@chibi-town/gameplay/farm-layout-logic';
 import { FARM_UNIT_LIMITS } from '@chibi-town/gameplay/farm-unit-logic';
+import { performanceSpan } from '@/application/performance-log';
 import { CROP_GROWTH_FRAMES, cropAssetName, cropGrowthFrame } from '@/features/farm/_utils/crop-growth-frames';
 import {
   FARM_EGG_BASKET_SPOTS,
@@ -33,7 +34,8 @@ export async function farmStyleScenery(
   levels: FarmUnitLevels,
   labels = { enter: '→', exit: '←' },
 ) {
-  const images = await loadFarmSceneAssets();
+  const finishAssets = performanceSpan('scene-assets');
+  const images = await loadFarmSceneAssets().finally(finishAssets);
 
   const asset = farmSceneAssetLoader(images);
 
