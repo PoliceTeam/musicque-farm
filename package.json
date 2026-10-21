@@ -24,7 +24,7 @@
     "sso:sync": "pnpm --filter @chibi-town/sso sso:sync",
     "sso:sync:prod": "bash apps/sso/deploy.prod.sh --sync-only",
     "sso:down": "pnpm --filter @chibi-town/sso sso:down",
-    "deploy": "bash scripts/deploy.prod.sh",
+    "deploy:prod": "bash scripts/deploy.prod.sh",
     "deploy:web": "bash scripts/deploy.prod.sh --web-only",
     "deploy:api": "bash scripts/deploy.prod.sh --api-only",
     "deploy:build": "bash scripts/deploy.prod.sh --build-only",

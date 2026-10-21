@@ -140,3 +140,13 @@ if (a[0] === 'inspect') console.log('true');
     assert.ok(calls.every(call => !call.includes('prune')));
   });
 }
+
+test('root scripts never shadow pnpm built-ins used by the API image', async () => {
+  // pnpm 11 runs a root script instead of the built-in, which broke
+  // `pnpm --filter @chibi-town/api deploy --prod --legacy /out` in apps/api/Dockerfile.
+  const { scripts } = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
+  for (const builtin of ['deploy', 'install', 'add', 'exec', 'publish', 'pack'])
+    assert.equal(Object.hasOwn(scripts, builtin), false, `package.json script "${builtin}" shadows pnpm ${builtin}`);
+  const dockerfile = await readFile(path.join(root, 'apps/api/Dockerfile'), 'utf8');
+  assert.match(dockerfile, /pnpm --filter @chibi-town\/api deploy --prod/);
+});

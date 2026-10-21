@@ -2,7 +2,7 @@
 
 ## Deploy bằng tay từ máy local
 
-Luôn dùng **`pnpm run deploy`**: `pnpm deploy` là lệnh built-in của pnpm.
+Dùng **`pnpm run deploy:prod`**. Không đặt script gốc tên `deploy`: pnpm 11 để script đó đè lệnh built-in `pnpm deploy`, mà `apps/api/Dockerfile` cần lệnh built-in (`pnpm --filter @chibi-town/api deploy --prod --legacy /out`).
 Cần Node 24+, pnpm, Docker Desktop/build linux/amd64, SSH và Python 3 trên server.
 Tất cả lệnh dưới đây chạy từ root Farm và chỉ kết nối production khi người vận hành gọi.
 
@@ -10,7 +10,7 @@ Tất cả lệnh dưới đây chạy từ root Farm và chỉ kết nối prod
 | --- | --- |
 | `pnpm run env:check` | Kiểm hai env, chỉ báo tên biến thiếu/rỗng |
 | `pnpm run deploy:build` | Chỉ build local, không SSH |
-| `pnpm run deploy` | Build và deploy API + worker + web |
+| `pnpm run deploy:prod` | Build và deploy API + worker + web |
 | `pnpm run deploy:web` / `pnpm run deploy:api` | Deploy riêng web / API + worker |
 | `pnpm run deploy:status` | Container, latest/rollback và HTTP công khai |
 | `pnpm run deploy:logs -- api` | 100 dòng log; service api (mặc định), web, worker |
