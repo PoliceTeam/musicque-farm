@@ -11,7 +11,7 @@ export function unitUpgradePrice(unit: 'livestock' | 'poultry' | 'pond', capacit
   if (!Number.isSafeInteger(capacity)) return 0;
   if (unit === 'livestock') return capacity >= 10 && capacity < 20 ? 20_000 * (capacity - 9) ** 2 : 0;
   if (unit === 'pond') return capacity >= 2 && capacity < 10 ? 50_000 * (capacity - 1) ** 2 : 0;
-  return capacity >= 6 && capacity < 24 ? 200 + (capacity - 6) * 75 : 0;
+  return capacity >= 6 && capacity < 24 ? 10_000 + (capacity - 6) * 5_000 : 0;
 }
 
 export type FarmChest = 'main' | 'home';

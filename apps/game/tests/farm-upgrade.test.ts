@@ -32,6 +32,15 @@ describe('requested upgrade prices', () => {
   });
   it.each([
     ['livestock', 10, [20000, 80000, 180000, 320000, 500000, 720000, 980000, 1280000, 1620000, 2000000], 7700000],
+    [
+      'poultry',
+      6,
+      [
+        10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000, 65000, 70000, 75000, 80000, 85000,
+        90000, 95000,
+      ],
+      945000,
+    ],
     ['pond', 2, [50000, 200000, 450000, 800000, 1250000, 1800000, 2450000, 3200000], 10200000],
   ] as const)('%s buys exactly one place at each price and stops at MAX', (unit, start, prices, total) => {
     const state = createFarmProgress();
@@ -47,6 +56,22 @@ describe('requested upgrade prices', () => {
     expect(expandFarmUnit(state, unit)).toBe(false);
     expect(unitUpgradePrice(unit, state.capacity[unit])).toBe(0);
     expect(parseFarmProgress(state)).toEqual(state);
+  });
+  it('new registered players cannot max poultry; 12 to 13 costs 40000 and insufficient funds preserve state', () => {
+    const state = createFarmProgress();
+    state.coins = 80000;
+    while (expandFarmUnit(state, 'poultry')) {
+      /* Spend the starter budget on expansion only. */
+    }
+    expect(state.capacity.poultry).toBe(10);
+    expect(state.coins).toBe(10000);
+    state.capacity.poultry = 12;
+    state.coins = 39999;
+    const before = structuredClone(state);
+    expect(unitUpgradePrice('poultry', 12)).toBe(40000);
+    expect(expandFarmUnit(state, 'poultry')).toBe(false);
+    expect(state).toEqual(before);
+    expect(parseFarmProgress(state).capacity.poultry).toBe(12);
   });
   it('keeps every chest price and its correct currency, with level 6 as MAX', () => {
     const main = [50000, 100000, 50, 100, 150];
