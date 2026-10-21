@@ -70,6 +70,8 @@ describe('warehouse and free range animals', () => {
     expect(parseFarmProgress(p).fedAt.poultry).toBeNull();
     expect(feedFarmUnit(p, 'poultry', 2000)).toBe(true);
     expect(p.fedAt).toEqual({ livestock: 1000, poultry: 2000, pond: null });
+    // Upgrade prices are covered by farm-upgrade.test.ts; fund every step so this only checks separation.
+    p.coins = 10_000_000;
     for (let i = 6; i < 24; i++) expect(expandFarmUnit(p, 'poultry')).toBe(true);
     expect(p.units.livestock).toBe(0);
     expect(p.capacity.livestock).toBe(10);
