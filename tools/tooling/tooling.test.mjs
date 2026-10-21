@@ -57,8 +57,9 @@ test('asset cache restores generated modules and public images without hashing i
   ]) assert.ok(Object.hasOwn(preparation.inputs, input), input);
   const cache = mkdtempSync(join(tmpdir(), 'game-assets-cache-'));
   const saved = [];
+  // --no-color: with FORCE_COLOR set, turbo puts ANSI codes inside "Cached:    1 cached" and the match fails.
   const run = () => execFileSync('pnpm', [
-    'turbo', 'run', 'prepare-assets', '--filter=@chibi-town/game', '--cache=local:rw', '--cache-dir', cache,
+    'turbo', 'run', 'prepare-assets', '--filter=@chibi-town/game', '--cache=local:rw', '--cache-dir', cache, '--no-color',
   ], { cwd: root, encoding: 'utf8' });
   try {
     run();
