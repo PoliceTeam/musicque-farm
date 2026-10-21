@@ -6,6 +6,13 @@ Dùng **`pnpm run deploy:prod`**. Không đặt script gốc tên `deploy`: pnpm
 Cần Node 24+, pnpm, Docker Desktop/build linux/amd64, SSH và Python 3 trên server.
 Tất cả lệnh dưới đây chạy từ root Farm và chỉ kết nối production khi người vận hành gọi.
 
+Trước khi chạy `pnpm run deploy:prod`:
+1. Không có agent/IDE nào đang sửa code hoặc chạy build/test song song (dễ gây test lỗi giả và quá tải máy).
+2. Mọi thay đổi đã commit **và push**: script dừng nếu còn file chưa commit hoặc HEAD khác `origin/main`,
+   vì image được build từ thư mục làm việc. `--build-only` không bị chặn; `ALLOW_DIRTY=1` chỉ dùng khi khẩn cấp.
+3. `pnpm run env:check` báo đủ biến.
+4. Docker Desktop đang chạy. Script tự chạy `pnpm check` (khoảng 2–5 phút) trước khi build.
+
 | Lệnh | Mục đích |
 | --- | --- |
 | `pnpm run env:check` | Kiểm hai env, chỉ báo tên biến thiếu/rỗng |

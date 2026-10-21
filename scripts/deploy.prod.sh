@@ -33,6 +33,20 @@ public_setting() {
     node -e 'process.stdout.write(process.env[process.argv[1]] ?? process.argv[2])' "$1" "$2"
   fi
 }
+# Images are built from the working tree: refuse to ship uncommitted or unpushed code (e.g. an agent's
+# half-finished edits). --build-only stays allowed for local trial builds; ALLOW_DIRTY=1 is an explicit escape.
+if [[ "$BUILD_ONLY" == false && "${ALLOW_DIRTY:-}" != 1 ]]; then
+  [[ -z "$(git status --porcelain)" ]] || {
+    echo 'Có thay đổi chưa commit; commit/push hoặc stash trước khi deploy (ALLOW_DIRTY=1 để bỏ qua).'
+    git status --short | head -20
+    exit 1
+  }
+  git fetch -q origin main
+  [[ "$(git rev-parse HEAD)" == "$(git rev-parse origin/main)" ]] || {
+    echo 'HEAD khác origin/main; push (hoặc pull) để deploy đúng bản đã lên GitHub.'
+    exit 1
+  }
+fi
 docker info >/dev/null
 pnpm check
 FILES=()
