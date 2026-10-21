@@ -6,6 +6,9 @@ services:
     environment:
       KC_HOSTNAME: ${SSO_URL:?Set the public HTTPS SSO URL}
       KC_HOSTNAME_STRICT: 'true'
+      # nginx blocks /sso/admin from the Internet; the admin console is reached only via an SSH tunnel
+      # (`pnpm sso:admin`, local 18180 -> server 127.0.0.1:8180), so it advertises that URL instead.
+      KC_HOSTNAME_ADMIN: ${SSO_ADMIN_HOSTNAME:-http://localhost:18180/sso}
       KC_HTTP_ENABLED: 'true'
       KC_HTTP_RELATIVE_PATH: /sso
       KC_HTTP_MANAGEMENT_RELATIVE_PATH: /sso
