@@ -36,6 +36,7 @@ export type PlayerDocument = {
   };
   luckyDraw?: {
     tickets: number;
+    gemMisses?: number;
     receipts: Record<
       string,
       { fingerprint: string; result?: import('@chibi-town/contracts/lucky-draw').LuckyDrawResult }

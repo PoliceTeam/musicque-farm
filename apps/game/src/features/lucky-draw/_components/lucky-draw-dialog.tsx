@@ -1,7 +1,12 @@
 import { COSMETIC_CATALOG } from '@chibi-town/character-core/cosmetic-catalog';
 import { ApiSdkError } from '@chibi-town/contracts';
 import type { LuckyDrawCommand, LuckyDrawResult, LuckyDrawSnapshot } from '@chibi-town/contracts/lucky-draw';
-import { LUCKY_DRAW_ID, LUCKY_PRIZES, LUCKY_TICKET_PRICE } from '@chibi-town/game-content/lucky-draw';
+import {
+  LUCKY_DRAW_ID,
+  LUCKY_GEM_GUARANTEE_SPINS,
+  LUCKY_PRIZES,
+  LUCKY_TICKET_PRICE,
+} from '@chibi-town/game-content/lucky-draw';
 import { Button, Dialog } from '@chibi-town/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +15,7 @@ import { getApiSdk } from '@/application/api-sdk';
 import { publicAssetUrls } from '@/assets/generated-assets';
 import { luckyDrawCss } from '@/assets/generated-styles/lucky-draw-css';
 import { CharacterPreview } from '@/features/character/_components/character-preview';
-import { nextWheelRotation } from '@/features/lucky-draw/_utils/wheel-logic';
+import { nextWheelRotation, wheelSectorBackground } from '@/features/lucky-draw/_utils/wheel-logic';
 import { previewCosmetic } from '@/features/shop/_utils/preview-outfit';
 
 const asset = (name: string) => publicAssetUrls[`lucky-draw/${name}.webp`];
@@ -41,7 +46,7 @@ export function LuckyDrawDialog({ onClose, onChanged }: { onClose(): void; onCha
   const label = (prize: Prize) =>
     prize.kind === 'cosmetic'
       ? t('wings')
-      : t(prize.kind === 'coins' ? 'coins' : 'prizeTickets', { count: prize.amount });
+      : t(prize.kind === 'coins' ? 'coins' : prize.kind === 'gems' ? 'gems' : 'prizeTickets', { count: prize.amount });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reload explicitly retries loading after a transport failure.
   useEffect(() => {
@@ -146,6 +151,7 @@ export function LuckyDrawDialog({ onClose, onChanged }: { onClose(): void; onCha
             <div>
               <strong>{t('ticketPrice')}</strong>
               <small>{t('balance', { count: data.availableCoins })}</small>
+              <small>{t('gemBalance', { count: data.gems })}</small>
             </div>
             <Button
               disabled={blocked || data.availableCoins < LUCKY_TICKET_PRICE}
@@ -177,9 +183,17 @@ export function LuckyDrawDialog({ onClose, onChanged }: { onClose(): void; onCha
         <>
           <div className="lucky-draw-content">
             <section className="lucky-draw-play">
-              <div className={`lucky-wheel${spinning ? ' is-spinning' : ''}`} role="img" aria-label={t('wheel')}>
+              <div
+                className={`lucky-wheel${spinning ? ' is-spinning' : ''}`}
+                role="img"
+                aria-label={t('wheel', { count: LUCKY_PRIZES.length })}
+              >
                 <div className="lucky-wheel-disc" style={{ transform: `rotate(${rotation}deg)` }}>
                   <AppImage width={512} height={512} className="lucky-wheel-art" src={asset('wheel')} alt="" />
+                  <span
+                    className="lucky-wheel-sectors"
+                    style={{ background: wheelSectorBackground(LUCKY_PRIZES.length) }}
+                  />
                   {LUCKY_PRIZES.map((prize, index) => {
                     const angle = ((index + 0.5) * Math.PI * 2) / LUCKY_PRIZES.length;
                     return (
@@ -192,7 +206,7 @@ export function LuckyDrawDialog({ onClose, onChanged }: { onClose(): void; onCha
                           <AppImage width={128} height={80} src={asset('pixie-wings')} alt="" />
                         ) : (
                           <>
-                            <b>{prize.kind === 'tickets' ? '▰' : '●'}</b>
+                            <b>{prize.kind === 'tickets' ? '▰' : prize.kind === 'gems' ? '◆' : '●'}</b>
                             <small>{prize.amount.toLocaleString('vi-VN')}</small>
                           </>
                         )}
@@ -273,6 +287,7 @@ export function LuckyDrawDialog({ onClose, onChanged }: { onClose(): void; onCha
                 {tab === 'rates' && (
                   <>
                     <p>{t('ratesHint')}</p>
+                    <p>{t('gemGuaranteeHint', { count: LUCKY_GEM_GUARANTEE_SPINS })}</p>
                     <ul className="lucky-draw-rates">
                       {LUCKY_PRIZES.map((prize) => (
                         <li key={prize.id}>

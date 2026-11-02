@@ -21,6 +21,7 @@ export default {
   tryOn: 'Xem trên nhân vật',
   chance: 'Tỷ lệ nhận: {{percent}}%',
   coins: '{{count, number}} xu',
+  gems: '{{count, number}} gem',
   prizeTickets: '{{count}} vé quay',
   won: 'Bạn nhận được {{name}}!',
   duplicate: 'Bạn đã có Cánh Tiểu Tiên. Nhận thay thế 30.000 xu.',
@@ -34,9 +35,12 @@ export default {
   retryTransaction: 'Kiểm tra lại giao dịch',
   bought: 'Đã mua {{count}} vé quay.',
   emptyHistory: 'Chưa có lượt quay nào.',
-  ratesHint: 'Mỗi lượt độc lập. Các ô có diện tích bằng nhau để hiển thị; tỷ lệ thực tế là các số bên dưới.',
+  ratesHint: 'Tỷ lệ cơ bản cho lượt quay thường. Các ô có diện tích bằng nhau để hiển thị, không biểu thị tỷ lệ trúng.',
+  gemGuaranteeHint:
+    'Tối đa {{count}} lượt liên tiếp sẽ có ít nhất 1 lượt trúng gem. Lượt bảo đảm chỉ quay gem: 2/3 nhận 1 gem, 1/3 nhận 3 gem. Trúng gem sẽ bắt đầu đếm lại.',
   duplicateHint: 'Cánh đã sở hữu được đổi thành 30.000 xu. Không cần nhận lại thủ công; thưởng được lưu khi quay.',
   balance: '{{count, number}} xu khả dụng',
-  wheel: 'Vòng quay với tám phần thưởng',
+  gemBalance: '{{count, number}} gem trong ví',
+  wheel: 'Vòng quay với {{count}} phần thưởng',
   viewInventory: 'Đồ nhận được nằm trong giỏ đồ ở menu nhân vật.',
 } as const;

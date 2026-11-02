@@ -5,6 +5,7 @@ import {
   LUCKY_DRAW_ID,
   LUCKY_DUPLICATE_COINS,
   LUCKY_EXCLUSIVE_ITEMS,
+  LUCKY_GEM_GUARANTEE_SPINS,
   LUCKY_PRIZES,
   LUCKY_TICKET_PRICE,
 } from '@chibi-town/game-content/lucky-draw';
@@ -40,7 +41,7 @@ export function createLuckyDrawService(
     executeLuckyDraw(input) {
       validateLuckyDrawCommand(input);
       return (document) => {
-        const state = document.luckyDraw ?? { tickets: 0, receipts: {} };
+        const state: NonNullable<PlayerDocument['luckyDraw']> = document.luckyDraw ?? { tickets: 0, receipts: {} };
         const fingerprint = JSON.stringify(
           input.type === 'spin' ? [input.type, input.drawId] : [input.type, input.count],
         );
@@ -62,16 +63,27 @@ export function createLuckyDrawService(
           if (state.tickets < 1) throw new ApiSdkError('NOT_ALLOWED', undefined, 'NO_DRAW_TICKET');
           const random = options.random?.() ?? globalThis.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296;
           if (!Number.isFinite(random) || random < 0 || random >= 1) throw new ApiSdkError('INVALID_COMMAND');
-          let remaining = random * LUCKY_PRIZES.reduce((sum, prize) => sum + prize.weight, 0);
-          const prize = LUCKY_PRIZES.find((candidate) => {
+          // Sau hai lượt hụt gem, chỉ roll trong nhóm gem; bộ đếm lưu cùng ví và receipt.
+          const gemMisses = state.gemMisses ?? 0;
+          const prizes =
+            gemMisses >= LUCKY_GEM_GUARANTEE_SPINS - 1
+              ? LUCKY_PRIZES.filter((candidate) => candidate.kind === 'gems')
+              : LUCKY_PRIZES;
+          let remaining = random * prizes.reduce((sum, prize) => sum + prize.weight, 0);
+          const prize = prizes.find((candidate) => {
             remaining -= candidate.weight;
             return remaining < 0;
           })!;
           const inventory = ensureCharacterInventory(document, now);
           const duplicate = prize.kind === 'cosmetic' && own(inventory, prize.cosmeticId);
           const coins = duplicate ? LUCKY_DUPLICATE_COINS : prize.kind === 'coins' ? prize.amount : 0;
+          const gems = document.farm.gems + (prize.kind === 'gems' ? prize.amount : 0);
           const tickets = state.tickets - 1 + (prize.kind === 'tickets' ? prize.amount : 0);
-          if (!Number.isSafeInteger(document.farm.coins + coins) || !Number.isSafeInteger(tickets))
+          if (
+            !Number.isSafeInteger(document.farm.coins + coins) ||
+            !Number.isSafeInteger(gems) ||
+            !Number.isSafeInteger(tickets)
+          )
             throw new ApiSdkError('INVALID_COMMAND');
           if (prize.kind === 'cosmetic' && !duplicate)
             grantCharacterCosmetics(
@@ -83,6 +95,8 @@ export function createLuckyDrawService(
             );
           state.tickets = tickets;
           document.farm.coins += coins;
+          document.farm.gems = gems;
+          state.gemMisses = prize.kind === 'gems' ? 0 : gemMisses + 1;
           result = { requestId: input.requestId, prizeId: prize.id, spunAt: now, duplicate };
         }
         Object.defineProperty(state.receipts, input.requestId, {

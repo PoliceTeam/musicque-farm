@@ -117,10 +117,47 @@ describe('lucky draw transactions', () => {
       expect(result.result!.prizeId).toBe(prize.id);
       const angle = nextWheelRotation(739, index, LUCKY_PRIZES.length);
       expect(angle).toBeGreaterThan(739 + 2160 - 1);
-      expect((angle + (index + 0.5) * 45) % 360).toBeCloseTo(0);
+      expect((angle + (index + 0.5) * (360 / LUCKY_PRIZES.length)) % 360).toBeCloseTo(0);
       start += prize.weight;
     }
     expect(start).toBe(100);
+  });
+  it.each([
+    { random: 0.53, prizeId: 'gems-1', amount: 1 },
+    { random: 0.829999, prizeId: 'gems-1', amount: 1 },
+    { random: 0.83, prizeId: 'gems-3', amount: 3 },
+    { random: 0.979999, prizeId: 'gems-3', amount: 3 },
+  ])(
+    'credits $prizeId once at roll $random and persists the wallet and history',
+    async ({ random, prizeId, amount }) => {
+      const { sdk, repository } = fixture(random);
+      const before = await sdk.getLuckyDraw();
+      await sdk.executeLuckyDraw({ type: 'buy-tickets', count: 1, requestId: 'buy' });
+      const command = spin('gem-reward');
+      const [first, replay] = await Promise.all([sdk.executeLuckyDraw(command), sdk.executeLuckyDraw(command)]);
+      expect(replay).toEqual(first);
+      expect(first).toMatchObject({
+        coins: before.coins - 15_000,
+        gems: before.gems + amount,
+        tickets: 0,
+        result: { prizeId, duplicate: false },
+        history: [{ requestId: 'gem-reward', prizeId }],
+      });
+      const reopened = createGameSdk({ adapter: 'local', repository });
+      expect(await reopened.getLuckyDraw()).toEqual(await sdk.getLuckyDraw());
+      await reopened.executeLuckyDraw(command);
+      expect((await reopened.getLuckyDraw()).gems).toBe(before.gems + amount);
+    },
+  );
+  it('rejects gem overflow without consuming a ticket or saving a result', async () => {
+    const { sdk, repository } = fixture(0.97);
+    await sdk.executeLuckyDraw({ type: 'buy-tickets', count: 1, requestId: 'buy' });
+    await repository.transaction((document) => {
+      document.farm.gems = Number.MAX_SAFE_INTEGER - 2;
+    });
+    const before = await sdk.getLuckyDraw();
+    await expect(sdk.executeLuckyDraw(spin('overflow'))).rejects.toMatchObject({ code: 'INVALID_COMMAND' });
+    expect(await sdk.getLuckyDraw()).toEqual(before);
   });
   it('supports prototype-shaped receipt IDs without rerolling or mutating object prototypes', async () => {
     const { sdk } = fixture(0);

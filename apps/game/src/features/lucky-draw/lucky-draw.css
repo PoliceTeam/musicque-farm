@@ -46,6 +46,11 @@
   height: 100%;
   object-fit: contain;
 }
+.lucky-wheel-sectors {
+  position: absolute;
+  inset: 7.5%;
+  border-radius: 50%;
+}
 .lucky-wheel-pointer {
   position: absolute;
   width: 13%;
@@ -83,6 +88,9 @@
 }
 .lucky-wheel-prize.is-tickets b {
   color: #30a8bc;
+}
+.lucky-wheel-prize.is-gems b {
+  color: #9960d2;
 }
 .lucky-wheel-prize img {
   width: 95%;

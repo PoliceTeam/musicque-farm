@@ -1,6 +1,6 @@
 import { LUCKY_DRAW_ID } from '@chibi-town/game-content/lucky-draw';
 import { eq } from 'drizzle-orm';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { playerDocuments } from '@/infrastructure/database/schema';
 import { createTestApp } from './test-app.js';
 
@@ -9,7 +9,45 @@ describe('lucky draw HTTP transactions', () => {
   beforeEach(async () => {
     t = await createTestApp();
   });
-  afterEach(() => t.close());
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    await t.close();
+  });
+  it.each([
+    { random: 0.68, prizeId: 'gems-1', amount: 1 },
+    { random: 0.97, prizeId: 'gems-3', amount: 3 },
+  ])(
+    'persists $prizeId once under concurrent HTTP retries and leaves other accounts unchanged',
+    async ({ random, prizeId, amount }) => {
+      const a = await t.register('draw_gems_a');
+      const b = await t.register('draw_gems_b');
+      const sdk = t.sdkFor(a.cookie);
+      const before = await sdk.getLuckyDraw();
+      const other = await t.sdkFor(b.cookie).getLuckyDraw();
+      await sdk.executeLuckyDraw({ type: 'buy-tickets', count: 1, requestId: 'buy-gem-ticket' });
+      vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation((array) => {
+        if (array instanceof Uint32Array) array.fill(Math.floor(random * 4294967296));
+        return array;
+      });
+      const command = { type: 'spin' as const, drawId: LUCKY_DRAW_ID, requestId: 'gem-roll' };
+      const [first, replay] = await Promise.all([sdk.executeLuckyDraw(command), sdk.executeLuckyDraw(command)]);
+      expect(first).toEqual(replay);
+      expect(first).toMatchObject({
+        coins: before.coins - 15_000,
+        gems: before.gems + amount,
+        tickets: 0,
+        result: { prizeId, duplicate: false },
+      });
+      const reopened = t.sdkFor(a.cookie);
+      await reopened.executeLuckyDraw(command);
+      const saved = await reopened.getLuckyDraw();
+      expect(saved.gems).toBe(before.gems + amount);
+      expect(saved.history).toHaveLength(1);
+      const [row] = await t.db.select().from(playerDocuments).where(eq(playerDocuments.playerId, a.player.id));
+      expect(row.document.farm.gems).toBe(before.gems + amount);
+      expect(await t.sdkFor(b.cookie).getLuckyDraw()).toEqual(other);
+    },
+  );
   it('requires authentication, takes the account from the session and buys once under concurrency', async () => {
     expect((await t.app.inject({ method: 'GET', url: '/api/lucky-draw' })).statusCode).toBe(401);
     const a = await t.register('draw_a');
